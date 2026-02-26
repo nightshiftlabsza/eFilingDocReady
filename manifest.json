@@ -1,7 +1,7 @@
 {
-  "name": "SARS Doc Compiler",
-  "short_name": "Doc Compiler",
-  "description": "Merge, compress and export documents ready for SARS eFiling.",
+  "name": "eFiling DocReady",
+  "short_name": "DocReady",
+  "description": "Merge, compress and export documents ready for SARS eFiling in seconds.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#154734",
