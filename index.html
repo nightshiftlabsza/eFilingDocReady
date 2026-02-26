@@ -25,190 +25,285 @@
             --bg: #141615; --card: #1F2220; --text-main: #EFEFEF; --text-muted: #8F9491;
             --primary: #CBA052; --primary-hover: #B38B42; --accent: #154734; --border: #303431;
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 30px 15px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
-        .app-container { background: var(--card); max-width: 480px; width: 100%; border-radius: var(--radius); padding: 32px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); border: 1px solid var(--border); border-top: 6px solid var(--accent); transition: all 0.4s ease; }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .title-group h1 { margin: 0; font-size: 22px; font-weight: 600; color: var(--text-main); letter-spacing: -0.5px; }
-        .title-group p { margin: 6px 0 0 0; font-size: 13px; color: var(--text-muted); font-weight: 300; }
-        .theme-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 0 10px; height: 34px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-muted); transition: 0.3s; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; white-space: nowrap; flex-shrink: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 24px 15px 40px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
+        .app-container { background: var(--card); max-width: 480px; width: 100%; border-radius: var(--radius); padding: 28px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.07); border: 1px solid var(--border); border-top: 5px solid var(--accent); transition: all 0.4s ease; }
+
+        /* ── Header ── */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
+        .title-group h1 { margin: 0; font-size: 21px; font-weight: 600; color: var(--text-main); letter-spacing: -0.4px; }
+        .title-group p { margin: 5px 0 0; font-size: 12.5px; color: var(--text-muted); font-weight: 400; }
+        .theme-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 0 10px; height: 32px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-muted); transition: 0.3s; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
         .theme-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-        .theme-btn .theme-icon { font-size: 13px; }
+        .theme-btn .theme-icon { font-size: 12px; }
 
-        /* Preset strip */
-        .preset-strip { display: flex; gap: 8px; margin-bottom: 20px; }
+        /* ── Preset strip ── */
+        .preset-strip { display: flex; gap: 8px; margin-bottom: 0; }
         .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
-        .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.06); }
-        body.dark-mode .preset-btn.active { background: rgba(203,160,82,0.08); }
+        .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.05); }
+        body.dark-mode .preset-btn.active { background: rgba(203,160,82,0.07); }
         .preset-btn:hover:not(.active) { border-color: var(--text-muted); }
 
-        /* Add buttons */
-        .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
-        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 18px; border-radius: var(--radius); font-weight: 500; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        /* ── Email adjuster ── */
+        .email-adjuster { display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+        .email-adjuster span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .email-adjuster-val { font-size: 13px; font-weight: 600; color: var(--primary); min-width: 60px; text-align: center; }
+        body.dark-mode .email-adjuster-val { color: var(--primary); }
+        .stepper { display: flex; align-items: center; gap: 0; }
+        .step-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Inter', sans-serif; }
+        .step-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .step-btn:first-child { border-radius: 6px 0 0 6px; }
+        .step-btn:last-child  { border-radius: 0 6px 6px 0; }
+        .step-val { border: 1px solid var(--border); border-left: none; border-right: none; height: 28px; min-width: 52px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-main); background: var(--card); }
+
+        /* ── Divider ── */
+        .section-gap { height: 18px; }
+
+        /* ── Add buttons ── */
+        .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
+        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 16px 10px; border-radius: var(--radius); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; }
         .btn-action:hover { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.03); }
         body.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
+        .btn-action svg { transition: 0.2s; }
 
-        /* File list */
-        .file-list { border-radius: var(--radius); margin-bottom: 20px; min-height: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .file-item { background: var(--bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: box-shadow 0.2s, border-color 0.2s; user-select: none; }
-        .file-item.dragging { opacity: 0.5; border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,0,0,0.12); cursor: grabbing; }
-        .file-item.drag-over { border-color: var(--accent); background: rgba(203,160,82,0.07); }
+        /* ── File list ── */
+        .file-list { margin-bottom: 16px; min-height: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .file-item { background: var(--bg); padding: 11px 13px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: box-shadow 0.2s, border-color 0.2s; user-select: none; }
+        .file-item.dragging { opacity: 0.45; border-color: var(--primary); box-shadow: 0 4px 14px rgba(0,0,0,0.10); cursor: grabbing; }
+        .file-item.drag-over { border-color: var(--accent); background: rgba(203,160,82,0.06); }
         .file-info { display: flex; flex-direction: column; gap: 3px; overflow: hidden; flex: 1; min-width: 0; }
-        .file-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .file-name { font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
         .file-size { font-size: 11px; color: var(--text-muted); }
         .file-pages { font-size: 11px; color: var(--text-muted); background: var(--border); padding: 1px 6px; border-radius: 3px; }
-        .file-error { font-size: 11px; color: #D9534F; font-weight: 500; }
-        .file-progress { height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; display: none; }
+        .file-error { font-size: 11px; color: #C0392B; font-weight: 500; }
+        .file-progress { height: 2px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; display: none; }
         .file-progress-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.25s ease; }
-        .file-controls { display: flex; gap: 4px; margin-left: 10px; flex-shrink: 0; }
-        .icon-btn { background: transparent; border: none; color: var(--text-muted); border-radius: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .icon-btn:hover { background: var(--border); color: var(--text-main); }
-        .icon-btn.delete:hover { color: #D9534F; }
-        .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; font-weight: 300; border: 1px dashed var(--border); border-radius: 8px; }
+        .file-controls { display: flex; gap: 4px; margin-left: 8px; flex-shrink: 0; }
+        .icon-btn { background: transparent; border: none; color: var(--text-muted); border-radius: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .icon-btn:hover { background: var(--border); }
+        .icon-btn.delete:hover { color: #C0392B; }
+        .empty-state { text-align: center; padding: 22px 0 20px; border: 1px dashed var(--border); border-radius: 8px; }
+        .empty-state-primary { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+        .empty-state-hint { font-size: 11px; color: var(--border); margin-top: 4px; font-weight: 300; }
 
-        /* Status */
-        .status-box { font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 16px; min-height: 20px; font-weight: 500; }
+        /* ── Status ── */
+        .status-box { font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 14px; min-height: 18px; font-weight: 500; transition: color 0.3s; }
 
-        /* Options row */
-        .options-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
-        .input-group { flex: 1; }
-        .input-group label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-group input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; transition: 0.3s; }
-        .input-group input:focus { outline: none; border-color: var(--primary); background: var(--card); }
+        /* ── Filename ── */
+        .field-label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .text-input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; transition: 0.3s; }
+        .text-input:focus { outline: none; border-color: var(--primary); background: var(--card); }
+        .filename-wrap { margin-bottom: 10px; }
 
-        /* PIN toggle */
-        .pin-toggle { display: flex; flex-direction: column; gap: 6px; }
-        .pin-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
-        .toggle-row { display: flex; align-items: center; height: 44px; }
-        .toggle { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+        /* ── PIN row ── */
+        .pin-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s; }
+        .pin-row:hover { border-color: var(--text-muted); }
+        .pin-row-left { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
+        .pin-row-left svg { flex-shrink: 0; }
+        .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
         .toggle input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: 0.3s; }
-        .toggle-slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: 0.3s; }
+        .toggle-slider:before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
         .toggle input:checked + .toggle-slider { background: var(--primary); }
         body.dark-mode .toggle input:checked + .toggle-slider { background: var(--accent); }
         .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
         .pin-input-wrap { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
-        .pin-input-wrap.open { max-height: 60px; margin-bottom: 12px; }
-        .pin-input-wrap input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 18px; letter-spacing: 6px; text-align: center; transition: 0.3s; }
+        .pin-input-wrap.open { max-height: 56px; margin-bottom: 10px; }
+        .pin-input-wrap input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 20px; letter-spacing: 8px; text-align: center; transition: border-color 0.3s; }
         .pin-input-wrap input:focus { outline: none; border-color: var(--primary); }
 
-        /* Action buttons */
-        .primary-btn { width: 100%; padding: 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; margin-bottom: 10px; display: block; box-sizing: border-box; }
+        /* ── Action buttons ── */
+        .primary-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.25s; font-family: 'Inter', sans-serif; letter-spacing: 0.3px; margin-bottom: 9px; display: block; box-sizing: border-box; }
         body.dark-mode .primary-btn { color: #141615; font-weight: 600; }
         .primary-btn:hover:not(:disabled) { background: var(--primary-hover); }
-        .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .primary-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .share-btn { background: var(--accent) !important; }
         body.dark-mode .share-btn { color: #141615 !important; }
 
-        /* Recent exports */
-        .recent-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+        /* ── Recent exports ── */
+        .recent-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
         .recent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .recent-header span { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .recent-clear { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; font-family: 'Inter', sans-serif; }
-        .recent-clear:hover { color: #D9534F; }
-        .recent-list { display: flex; flex-direction: column; gap: 8px; }
-        .recent-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+        .recent-clear:hover { color: #C0392B; }
+        .recent-list { display: flex; flex-direction: column; gap: 7px; }
+        .recent-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; }
         .recent-item-info { overflow: hidden; flex: 1; min-width: 0; }
         .recent-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 500; }
         .recent-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
     </style>
 </head>
 <body>
 <div class="app-container">
 
+    <!-- Header -->
     <div class="header">
         <div class="title-group">
-            <h1>eFiling DocReady</h1>
-            <p>Max Quality Engine &bull; SARS Ready</p>
+            <h1>Combine Documents</h1>
+            <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
         </div>
         <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Switch to dark mode">
             <span class="theme-icon">&#9789;</span><span id="themeBtnLabel">Dark mode</span>
         </button>
     </div>
 
+    <!-- Preset strip -->
     <div class="preset-strip">
-        <button class="preset-btn active" data-limit="5242880" onclick="setPreset(this)">SARS eFiling<br><strong>&lt; 5 MB</strong></button>
-        <button class="preset-btn" data-limit="2097152" onclick="setPreset(this)">Email<br><strong>&lt; 2 MB</strong></button>
-        <button class="preset-btn" data-limit="16777216" onclick="setPreset(this)">WhatsApp<br><strong>&lt; 16 MB</strong></button>
+        <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" onclick="setPreset(this)">
+            SARS eFiling<br><strong>&lt; 5 MB</strong>
+        </button>
+        <button class="preset-btn" data-limit="10485760" data-label="Email" data-email="true" onclick="setPreset(this)">
+            Email<br><strong id="emailStrong">&lt; 10 MB</strong>
+        </button>
+        <button class="preset-btn" data-limit="16777216" data-label="WhatsApp" onclick="setPreset(this)">
+            WhatsApp<br><strong>&lt; 16 MB</strong>
+        </button>
     </div>
 
+    <!-- Email size adjuster (shown only when Email preset active) -->
+    <div class="email-adjuster" id="emailAdjuster">
+        <span>Max size</span>
+        <div class="stepper">
+            <button class="step-btn" onclick="adjustEmail(-1)">&#8722;</button>
+            <div class="step-val"><span id="emailMBVal">10</span> MB</div>
+            <button class="step-btn" onclick="adjustEmail(1)">&#43;</button>
+        </div>
+    </div>
+
+    <div class="section-gap"></div>
+
+    <!-- File inputs -->
     <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/*" style="display:none">
     <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none">
 
+    <!-- Add buttons -->
     <div class="btn-row">
-        <button class="btn-action" onclick="document.getElementById('fileInput').click()">Add Documents</button>
-        <button class="btn-action" onclick="document.getElementById('cameraInput').click()">Scan Photo</button>
+        <button class="btn-action" onclick="document.getElementById('fileInput').click()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            Add Documents
+        </button>
+        <button class="btn-action" onclick="document.getElementById('cameraInput').click()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Scan Photo
+        </button>
     </div>
 
+    <!-- File list -->
     <div class="file-list" id="fileList">
-        <div class="empty-state" id="emptyState">No documents selected</div>
+        <div class="empty-state" id="emptyState">
+            <div class="empty-state-primary">No documents yet</div>
+            <div class="empty-state-hint">Tap above to add &middot; drag to reorder</div>
+        </div>
     </div>
 
     <div class="status-box" id="statusBox"></div>
 
-    <div class="options-row">
-        <div class="input-group">
-            <label>Save As</label>
-            <input type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
-        </div>
-        <div class="pin-toggle">
-            <span class="pin-label">PIN Lock</span>
-            <div class="toggle-row">
-                <label class="toggle">
-                    <input type="checkbox" id="pinToggle" onchange="togglePin()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-        </div>
+    <!-- Filename -->
+    <div class="filename-wrap">
+        <label class="field-label" for="filenameInput">File name</label>
+        <input class="text-input" type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
     </div>
 
+    <!-- PIN lock row -->
+    <div class="pin-row" onclick="togglePin()">
+        <div class="pin-row-left">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Password-protect PDF
+        </div>
+        <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="pinToggle" onchange="onPinToggleChange()">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
     <div class="pin-input-wrap" id="pinWrap">
-        <input type="password" id="pinInput" maxlength="8" inputmode="numeric" placeholder="&#8226;&#8226;&#8226;&#8226;">
+        <input class="text-input" type="password" id="pinInput" maxlength="8" inputmode="numeric" placeholder="Enter PIN (4&#8211;8 digits)">
     </div>
 
-    <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Generate PDF</button>
-    <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share / Save File</button>
+    <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
+    <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
 
+    <!-- Recent exports -->
     <div class="recent-section" id="recentSection" style="display:none">
         <div class="recent-header">
-            <span>Recent Exports</span>
-            <button class="recent-clear" onclick="clearRecent()">Clear all</button>
+            <span>Previous exports</span>
+            <button class="recent-clear" onclick="clearRecent()">Clear</button>
         </div>
         <div class="recent-list" id="recentList"></div>
     </div>
 
 </div>
 <script>
-var files = [];
+// ── State ─────────────────────────────────────────────────────────────────────
+var files        = [];
 var finalPdfBytes = null;
-var TARGET_SIZE = 5242880;
+var TARGET_SIZE  = 5242880;   // default: 5 MB
+var emailMB      = 10;        // user-adjustable email limit
 var A4_W = 595.28, A4_H = 841.89;
 var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
 
+// ── Theme ─────────────────────────────────────────────────────────────────────
 function toggleTheme() {
     var dark = document.body.classList.toggle('dark-mode');
     document.querySelector('#themeBtn .theme-icon').textContent = dark ? '\u2600' : '\u263D';
-    document.getElementById('themeBtnLabel').textContent        = dark ? 'Light mode' : 'Dark mode';
+    document.getElementById('themeBtnLabel').textContent = dark ? 'Light mode' : 'Dark mode';
     document.getElementById('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
+}
+
+// ── Presets ───────────────────────────────────────────────────────────────────
+function updateSubtitle() {
+    var btn = document.querySelector('.preset-btn.active');
+    if (!btn) return;
+    var label = btn.dataset.label;
+    var mb = Math.round(TARGET_SIZE / 1024 / 1024);
+    document.getElementById('subtitle').textContent = 'For ' + label + ' \u00B7 under ' + mb + ' MB';
 }
 
 function setPreset(btn) {
     document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    TARGET_SIZE = parseInt(btn.dataset.limit);
+    var isEmail = btn.dataset.email === 'true';
+    var adjuster = document.getElementById('emailAdjuster');
+    adjuster.style.display = isEmail ? 'flex' : 'none';
+    TARGET_SIZE = isEmail ? emailMB * 1024 * 1024 : parseInt(btn.dataset.limit);
+    updateSubtitle();
 }
 
+function adjustEmail(delta) {
+    emailMB = Math.max(1, Math.min(25, emailMB + delta));
+    document.getElementById('emailMBVal').textContent = emailMB;
+    document.getElementById('emailStrong').textContent = '< ' + emailMB + ' MB';
+    TARGET_SIZE = emailMB * 1024 * 1024;
+    updateSubtitle();
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
 function togglePin() {
+    var cb = document.getElementById('pinToggle');
+    cb.checked = !cb.checked;
+    onPinToggleChange();
+}
+function onPinToggleChange() {
     var on = document.getElementById('pinToggle').checked;
     document.getElementById('pinWrap').classList.toggle('open', on);
     if (!on) document.getElementById('pinInput').value = '';
 }
 
+// ── Filename auto-suggest ─────────────────────────────────────────────────────
 function suggestFilename() {
     var el = document.getElementById('filenameInput');
     if (el.dataset.userEdited) return;
@@ -222,6 +317,7 @@ document.getElementById('filenameInput').addEventListener('input', function() {
     else delete this.dataset.userEdited;
 });
 
+// ── Page count probe ──────────────────────────────────────────────────────────
 async function getPageCount(file) {
     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
         try {
@@ -233,6 +329,7 @@ async function getPageCount(file) {
     return 1;
 }
 
+// ── Render file list ──────────────────────────────────────────────────────────
 function renderFileList() {
     var list  = document.getElementById('fileList');
     var empty = document.getElementById('emptyState');
@@ -284,6 +381,7 @@ function renderFileList() {
     });
 }
 
+// ── Drag-to-reorder ───────────────────────────────────────────────────────────
 var dragSrcIndex = null;
 function onDragStart(e) { dragSrcIndex = parseInt(this.dataset.index); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
 function onDragOver(e)  { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over'); }
@@ -301,6 +399,7 @@ function onDragEnd() {
     dragSrcIndex = null;
 }
 
+// ── File handling ─────────────────────────────────────────────────────────────
 async function handleFiles(newFiles) {
     for (var i = 0; i < newFiles.length; i++) files.push({ file: newFiles[i], pageCount: null, error: null });
     renderFileList();
@@ -314,14 +413,15 @@ async function handleFiles(newFiles) {
 }
 document.getElementById('fileInput').addEventListener('change',  function(e) { handleFiles(e.target.files); });
 document.getElementById('cameraInput').addEventListener('change', function(e) { handleFiles(e.target.files); });
-
 function removeFile(index) { files.splice(index, 1); renderFileList(); suggestFilename(); }
 
+// ── Per-file progress ─────────────────────────────────────────────────────────
 function showFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='block'; }
 function setFileProgress(i, pct) { var el = document.getElementById('progbar-'+i); if(el) el.style.width=pct+'%'; }
-function hideFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='none';  }
+function hideFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='none'; }
 function markFileError(i, msg)   { files[i].error = msg; renderFileList(); }
 
+// ── Generation ────────────────────────────────────────────────────────────────
 async function startGeneration() {
     var btn    = document.getElementById('makePdfBtn');
     var status = document.getElementById('statusBox');
@@ -330,7 +430,7 @@ async function startGeneration() {
     files.forEach(function(f) { f.error = null; });
     renderFileList();
 
-    status.textContent = 'Checking native merge size\u2026';
+    status.textContent = 'Preparing your document\u2026';
     await delay(80);
     var pdfBytes = await generatePurePDF();
     if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); return; }
@@ -341,7 +441,7 @@ async function startGeneration() {
     ];
     var success = false;
     for (var i = 0; i < passes.length; i++) {
-        status.textContent = 'Optimizing quality (Pass ' + (i+1) + '/' + passes.length + ')\u2026';
+        status.textContent = 'Compressing, pass ' + (i+1) + ' of ' + passes.length + '\u2026';
         await delay(80);
         pdfBytes = await generateRasterPDF(passes[i].s, passes[i].q);
         if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; success = true; break; }
@@ -349,21 +449,22 @@ async function startGeneration() {
 
     if (success) { finishSuccess(status, btn); }
     else {
-        status.textContent = 'Error: Files cannot fit under the target size. Remove some and try again.';
-        status.style.color = '#D9534F';
-        btn.disabled = false; btn.textContent = 'Generate PDF';
+        status.textContent = 'Too large to compress further. Try removing a file.';
+        status.style.color = '#C0392B';
+        btn.disabled = false; btn.textContent = 'Create PDF';
     }
 }
 
 function finishSuccess(status, btn) {
     var sizeMB = (finalPdfBytes.byteLength / 1024 / 1024).toFixed(2);
-    status.textContent = 'Success. Final size: ' + sizeMB + ' MB';
+    status.textContent = '\u2713 Ready \u00B7 ' + sizeMB + ' MB';
     status.style.color = 'var(--primary)';
-    btn.textContent = 'PDF Generated';
+    btn.textContent = 'PDF ready';
     document.getElementById('shareBtn').style.display = 'block';
     saveToRecent(sizeMB);
 }
 
+// ── A4 embed helper ───────────────────────────────────────────────────────────
 function embedOnA4(pdfDoc, img) {
     var page = pdfDoc.addPage([A4_W, A4_H]);
     var r = Math.min(A4_W / img.width, A4_H / img.height);
@@ -371,6 +472,7 @@ function embedOnA4(pdfDoc, img) {
     page.drawImage(img, { x: (A4_W-w)/2, y: (A4_H-h)/2, width: w, height: h });
 }
 
+// ── Phase 1: native merge ─────────────────────────────────────────────────────
 async function generatePurePDF() {
     try {
         var PDFDocument = PDFLib.PDFDocument;
@@ -393,13 +495,14 @@ async function generatePurePDF() {
                     embedOnA4(out, await out.embedJpg(bytes));
                 }
                 setFileProgress(i, 90);
-            } catch(err) { console.error('Pure merge error', file.name, err); markFileError(i, 'Could not read file'); }
+            } catch(err) { console.error('Merge error', file.name, err); markFileError(i, 'Could not read file'); }
             setFileProgress(i, 100); await delay(60); hideFileProgress(i);
         }
         return await out.save();
     } catch(err) { console.error('generatePurePDF failed', err); return null; }
 }
 
+// ── Phase 2: rasterise ────────────────────────────────────────────────────────
 async function generateRasterPDF(scale, quality) {
     try {
         var PDFDocument = PDFLib.PDFDocument;
@@ -433,14 +536,13 @@ async function generateRasterPDF(scale, quality) {
     } catch(err) { console.error('generateRasterPDF failed', err); return null; }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function canvasToJpeg(canvas, quality) {
     var b64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
-    var bin = atob(b64);
-    var out = new Uint8Array(bin.length);
+    var bin = atob(b64); var out = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
     return out;
 }
-
 function compressImage(file, maxDim, quality) {
     return new Promise(function(resolve, reject) {
         var reader = new FileReader();
@@ -467,14 +569,15 @@ function compressImage(file, maxDim, quality) {
     });
 }
 
+// ── Share / download ──────────────────────────────────────────────────────────
 async function sharePDF() {
-    var name = document.getElementById('filenameInput').value.trim() || 'SARS_Supporting_Docs';
+    var name = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
     if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
     var bytesToShare = finalPdfBytes;
 
     if (document.getElementById('pinToggle').checked) {
         var pin = document.getElementById('pinInput').value.trim();
-        if (!pin) { alert('Please enter a PIN before sharing.'); return; }
+        if (!pin) { alert('Enter a PIN before sharing.'); return; }
         if (!/^\d{4,8}$/.test(pin)) { alert('PIN must be 4 to 8 digits.'); return; }
         try {
             var pdfDoc = await PDFLib.PDFDocument.load(finalPdfBytes);
@@ -482,7 +585,7 @@ async function sharePDF() {
                 userPassword: pin, ownerPassword: pin + '_o',
                 permissions: { printing: 'highResolution', copying: false, modifying: false }
             });
-        } catch(err) { console.warn('PIN encrypt not supported in this build:', err); }
+        } catch(err) { console.warn('PIN encrypt not supported:', err); }
     }
 
     var file = new File([bytesToShare], name, { type: 'application/pdf' });
@@ -497,10 +600,10 @@ async function sharePDF() {
     }
 }
 
+// ── Recent exports ────────────────────────────────────────────────────────────
 var RECENT_KEY = 'sars_recent_v1';
-
 function saveToRecent(sizeMB) {
-    var raw   = document.getElementById('filenameInput').value.trim() || 'SARS_Supporting_Docs';
+    var raw   = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
     var fname = raw.endsWith('.pdf') ? raw : raw + '.pdf';
     var list  = getRecent();
     list.unshift({ name: fname, sizeMB: sizeMB, date: new Date().toLocaleDateString('en-ZA'), bytes: Array.from(finalPdfBytes) });
@@ -510,11 +613,10 @@ function saveToRecent(sizeMB) {
 }
 function getRecent() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch(e) { return []; } }
 function clearRecent() { localStorage.removeItem(RECENT_KEY); renderRecent(); }
-
 function renderRecent() {
-    var list    = getRecent();
+    var list = getRecent();
     var section = document.getElementById('recentSection');
-    var ul      = document.getElementById('recentList');
+    var ul = document.getElementById('recentList');
     ul.innerHTML = '';
     if (!list.length) { section.style.display = 'none'; return; }
     section.style.display = 'block';
@@ -524,13 +626,12 @@ function renderRecent() {
         div.innerHTML =
             '<div class="recent-item-info">' +
                 '<div class="recent-item-name">' + exp.name + '</div>' +
-                '<div class="recent-item-meta">' + exp.sizeMB + ' MB &bull; ' + exp.date + '</div>' +
+                '<div class="recent-item-meta">' + exp.sizeMB + ' MB \u00B7 ' + exp.date + '</div>' +
             '</div>' +
             '<button class="recent-share-btn" onclick="reshareRecent(' + idx + ')">Re-share</button>';
         ul.appendChild(div);
     });
 }
-
 async function reshareRecent(idx) {
     var exp = getRecent()[idx];
     if (!exp || !exp.bytes) return;
@@ -546,9 +647,46 @@ async function reshareRecent(idx) {
     }
 }
 
-renderRecent();
+// ── Share Target: pick up files shared from Android share sheet ───────────────
+async function checkSharedFiles() {
+    if (!location.search.includes('shared=1')) return;
+    history.replaceState({}, '', './index.html');
+    try {
+        var cache = await caches.open('sars-share-v1');
+        var listResp = await cache.match('file-list');
+        if (!listResp) return;
+        var fileList = await listResp.json();
+        var newFiles = [];
+        for (var i = 0; i < fileList.length; i++) {
+            var entry = fileList[i];
+            var resp = await cache.match(entry.key);
+            if (resp) {
+                var ab = await resp.arrayBuffer();
+                var fname = decodeURIComponent(resp.headers.get('X-Filename') || entry.name);
+                newFiles.push(new File([ab], fname, { type: entry.type }));
+                await cache.delete(entry.key);
+            }
+        }
+        await cache.delete('file-list');
+        if (newFiles.length) await handleFiles(newFiles);
+    } catch(err) { console.warn('Share target load failed:', err); }
+}
 
-// Register service worker for PWA / offline support
+// ── File Handlers: open PDFs/images directly from Files app ──────────────────
+if ('launchQueue' in window) {
+    window.launchQueue.setConsumer(function(launchParams) {
+        if (launchParams.files && launchParams.files.length) {
+            Promise.all(launchParams.files.map(function(fh) { return fh.getFile(); }))
+                .then(function(newFiles) { handleFiles(newFiles); })
+                .catch(function(err) { console.warn('File handler failed:', err); });
+        }
+    });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderRecent();
+checkSharedFiles();
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js').catch(function(err) {

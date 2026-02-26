@@ -1,12 +1,17 @@
 {
+  "id": "./index.html",
   "name": "eFiling DocReady",
   "short_name": "DocReady",
   "description": "Merge, compress and export documents ready for SARS eFiling in seconds.",
+  "lang": "en-ZA",
+  "dir": "ltr",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#154734",
   "theme_color": "#154734",
   "orientation": "portrait",
+  "categories": ["utilities", "productivity"],
   "icons": [
     {
       "src": "icon-192.svg",
@@ -25,6 +30,31 @@
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
+    }
+  ],
+  "share_target": {
+    "action": "./index.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "files": [
+        {
+          "name": "documents",
+          "accept": ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/*"]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"],
+        "image/webp": [".webp"]
+      }
     }
   ]
 }
