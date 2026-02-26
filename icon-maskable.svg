@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full bleed background (maskable: safe zone is centre 80%) -->
+  <rect width="512" height="512" fill="#154734"/>
+  <!-- Document body — inset more to stay inside safe zone -->
+  <rect x="154" y="106" width="204" height="264" rx="18" fill="#ffffff"/>
+  <!-- Folded corner -->
+  <polygon points="310,106 358,154 310,154" fill="#CBA052"/>
+  <!-- Text lines -->
+  <rect x="184" y="192" width="144" height="14" rx="7" fill="#154734" opacity="0.35"/>
+  <rect x="184" y="222" width="116" height="14" rx="7" fill="#154734" opacity="0.35"/>
+  <rect x="184" y="252" width="130" height="14" rx="7" fill="#154734" opacity="0.35"/>
+  <rect x="184" y="282" width="88" height="14" rx="7" fill="#154734" opacity="0.35"/>
+  <!-- Gold bar -->
+  <rect x="154" y="372" width="204" height="22" rx="11" fill="#CBA052"/>
+</svg>

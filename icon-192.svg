@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="36" fill="#154734"/>
+  <!-- Document body -->
+  <rect x="48" y="30" width="84" height="108" rx="8" fill="#ffffff"/>
+  <!-- Folded corner -->
+  <polygon points="108,30 132,54 108,54" fill="#CBA052"/>
+  <!-- Lines representing text -->
+  <rect x="60" y="72" width="60" height="6" rx="3" fill="#154734" opacity="0.35"/>
+  <rect x="60" y="86" width="48" height="6" rx="3" fill="#154734" opacity="0.35"/>
+  <rect x="60" y="100" width="54" height="6" rx="3" fill="#154734" opacity="0.35"/>
+  <!-- Gold accent bar at bottom -->
+  <rect x="48" y="152" width="96" height="10" rx="5" fill="#CBA052"/>
+</svg>

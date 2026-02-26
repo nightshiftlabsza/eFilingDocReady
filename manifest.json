@@ -1,0 +1,30 @@
+{
+  "name": "SARS Doc Compiler",
+  "short_name": "Doc Compiler",
+  "description": "Merge, compress and export documents ready for SARS eFiling.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#154734",
+  "theme_color": "#154734",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

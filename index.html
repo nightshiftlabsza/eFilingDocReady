@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARS Doc Compiler | Premium</title>
+    <meta name="theme-color" content="#154734" id="themeColorMeta">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Doc Compiler">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+    <style>
+        :root {
+            --bg: #F4F5F2; --card: #FFFFFF; --text-main: #1F2421; --text-muted: #7A807C;
+            --primary: #154734; --primary-hover: #0E3324; --accent: #CBA052; --border: #E6E8E3; --radius: 10px;
+        }
+        body.dark-mode {
+            --bg: #141615; --card: #1F2220; --text-main: #EFEFEF; --text-muted: #8F9491;
+            --primary: #CBA052; --primary-hover: #B38B42; --accent: #154734; --border: #303431;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 30px 15px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
+        .app-container { background: var(--card); max-width: 480px; width: 100%; border-radius: var(--radius); padding: 32px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); border: 1px solid var(--border); border-top: 6px solid var(--accent); transition: all 0.4s ease; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .title-group h1 { margin: 0; font-size: 22px; font-weight: 600; color: var(--text-main); letter-spacing: -0.5px; }
+        .title-group p { margin: 6px 0 0 0; font-size: 13px; color: var(--text-muted); font-weight: 300; }
+        .theme-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 0 10px; height: 34px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-muted); transition: 0.3s; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; white-space: nowrap; flex-shrink: 0; }
+        .theme-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+        .theme-btn .theme-icon { font-size: 13px; }
+
+        /* Preset strip */
+        .preset-strip { display: flex; gap: 8px; margin-bottom: 20px; }
+        .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
+        .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.06); }
+        body.dark-mode .preset-btn.active { background: rgba(203,160,82,0.08); }
+        .preset-btn:hover:not(.active) { border-color: var(--text-muted); }
+
+        /* Add buttons */
+        .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
+        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 18px; border-radius: var(--radius); font-weight: 500; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn-action:hover { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.03); }
+        body.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
+
+        /* File list */
+        .file-list { border-radius: var(--radius); margin-bottom: 20px; min-height: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .file-item { background: var(--bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: box-shadow 0.2s, border-color 0.2s; user-select: none; }
+        .file-item.dragging { opacity: 0.5; border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,0,0,0.12); cursor: grabbing; }
+        .file-item.drag-over { border-color: var(--accent); background: rgba(203,160,82,0.07); }
+        .file-info { display: flex; flex-direction: column; gap: 3px; overflow: hidden; flex: 1; min-width: 0; }
+        .file-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .file-size { font-size: 11px; color: var(--text-muted); }
+        .file-pages { font-size: 11px; color: var(--text-muted); background: var(--border); padding: 1px 6px; border-radius: 3px; }
+        .file-error { font-size: 11px; color: #D9534F; font-weight: 500; }
+        .file-progress { height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; display: none; }
+        .file-progress-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.25s ease; }
+        .file-controls { display: flex; gap: 4px; margin-left: 10px; flex-shrink: 0; }
+        .icon-btn { background: transparent; border: none; color: var(--text-muted); border-radius: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .icon-btn:hover { background: var(--border); color: var(--text-main); }
+        .icon-btn.delete:hover { color: #D9534F; }
+        .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; font-weight: 300; border: 1px dashed var(--border); border-radius: 8px; }
+
+        /* Status */
+        .status-box { font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 16px; min-height: 20px; font-weight: 500; }
+
+        /* Options row */
+        .options-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
+        .input-group { flex: 1; }
+        .input-group label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; transition: 0.3s; }
+        .input-group input:focus { outline: none; border-color: var(--primary); background: var(--card); }
+
+        /* PIN toggle */
+        .pin-toggle { display: flex; flex-direction: column; gap: 6px; }
+        .pin-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+        .toggle-row { display: flex; align-items: center; height: 44px; }
+        .toggle { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: 0.3s; }
+        .toggle-slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle input:checked + .toggle-slider { background: var(--primary); }
+        body.dark-mode .toggle input:checked + .toggle-slider { background: var(--accent); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+        .pin-input-wrap { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+        .pin-input-wrap.open { max-height: 60px; margin-bottom: 12px; }
+        .pin-input-wrap input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 18px; letter-spacing: 6px; text-align: center; transition: 0.3s; }
+        .pin-input-wrap input:focus { outline: none; border-color: var(--primary); }
+
+        /* Action buttons */
+        .primary-btn { width: 100%; padding: 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; margin-bottom: 10px; display: block; box-sizing: border-box; }
+        body.dark-mode .primary-btn { color: #141615; font-weight: 600; }
+        .primary-btn:hover:not(:disabled) { background: var(--primary-hover); }
+        .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .share-btn { background: var(--accent) !important; }
+        body.dark-mode .share-btn { color: #141615 !important; }
+
+        /* Recent exports */
+        .recent-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+        .recent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .recent-header span { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .recent-clear { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; font-family: 'Inter', sans-serif; }
+        .recent-clear:hover { color: #D9534F; }
+        .recent-list { display: flex; flex-direction: column; gap: 8px; }
+        .recent-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+        .recent-item-info { overflow: hidden; flex: 1; min-width: 0; }
+        .recent-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 500; }
+        .recent-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+        .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <div class="header">
+        <div class="title-group">
+            <h1>Document Compiler</h1>
+            <p>Max Quality Engine &bull; SARS Ready</p>
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Switch to dark mode">
+            <span class="theme-icon">&#9789;</span><span id="themeBtnLabel">Dark mode</span>
+        </button>
+    </div>
+
+    <div class="preset-strip">
+        <button class="preset-btn active" data-limit="5242880" onclick="setPreset(this)">SARS eFiling<br><strong>&lt; 5 MB</strong></button>
+        <button class="preset-btn" data-limit="2097152" onclick="setPreset(this)">Email<br><strong>&lt; 2 MB</strong></button>
+        <button class="preset-btn" data-limit="16777216" onclick="setPreset(this)">WhatsApp<br><strong>&lt; 16 MB</strong></button>
+    </div>
+
+    <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/*" style="display:none">
+    <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none">
+
+    <div class="btn-row">
+        <button class="btn-action" onclick="document.getElementById('fileInput').click()">Add Documents</button>
+        <button class="btn-action" onclick="document.getElementById('cameraInput').click()">Scan Photo</button>
+    </div>
+
+    <div class="file-list" id="fileList">
+        <div class="empty-state" id="emptyState">No documents selected</div>
+    </div>
+
+    <div class="status-box" id="statusBox"></div>
+
+    <div class="options-row">
+        <div class="input-group">
+            <label>Save As</label>
+            <input type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
+        </div>
+        <div class="pin-toggle">
+            <span class="pin-label">PIN Lock</span>
+            <div class="toggle-row">
+                <label class="toggle">
+                    <input type="checkbox" id="pinToggle" onchange="togglePin()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="pin-input-wrap" id="pinWrap">
+        <input type="password" id="pinInput" maxlength="8" inputmode="numeric" placeholder="&#8226;&#8226;&#8226;&#8226;">
+    </div>
+
+    <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Generate PDF</button>
+    <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share / Save File</button>
+
+    <div class="recent-section" id="recentSection" style="display:none">
+        <div class="recent-header">
+            <span>Recent Exports</span>
+            <button class="recent-clear" onclick="clearRecent()">Clear all</button>
+        </div>
+        <div class="recent-list" id="recentList"></div>
+    </div>
+
+</div>
+<script>
+var files = [];
+var finalPdfBytes = null;
+var TARGET_SIZE = 5242880;
+var A4_W = 595.28, A4_H = 841.89;
+var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
+
+function toggleTheme() {
+    var dark = document.body.classList.toggle('dark-mode');
+    document.querySelector('#themeBtn .theme-icon').textContent = dark ? '\u2600' : '\u263D';
+    document.getElementById('themeBtnLabel').textContent        = dark ? 'Light mode' : 'Dark mode';
+    document.getElementById('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
+}
+
+function setPreset(btn) {
+    document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    TARGET_SIZE = parseInt(btn.dataset.limit);
+}
+
+function togglePin() {
+    var on = document.getElementById('pinToggle').checked;
+    document.getElementById('pinWrap').classList.toggle('open', on);
+    if (!on) document.getElementById('pinInput').value = '';
+}
+
+function suggestFilename() {
+    var el = document.getElementById('filenameInput');
+    if (el.dataset.userEdited) return;
+    if (!files.length) return;
+    var today = new Date().toISOString().slice(0, 10);
+    var first = files[0].file.name.replace(/\.[^.]+$/, '');
+    el.value = today + '_' + first;
+}
+document.getElementById('filenameInput').addEventListener('input', function() {
+    if (this.value) this.dataset.userEdited = '1';
+    else delete this.dataset.userEdited;
+});
+
+async function getPageCount(file) {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        try {
+            var buf = await file.arrayBuffer();
+            var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+            return pdf.numPages;
+        } catch(e) { return null; }
+    }
+    return 1;
+}
+
+function renderFileList() {
+    var list  = document.getElementById('fileList');
+    var empty = document.getElementById('emptyState');
+    list.querySelectorAll('.file-item').forEach(function(e) { e.remove(); });
+
+    if (!files.length) {
+        empty.style.display = 'block';
+        document.getElementById('makePdfBtn').disabled = true;
+        return;
+    }
+    empty.style.display = 'none';
+    document.getElementById('makePdfBtn').disabled = false;
+    document.getElementById('shareBtn').style.display = 'none';
+    document.getElementById('statusBox').textContent = '';
+
+    files.forEach(function(fileObj, index) {
+        var div = document.createElement('div');
+        div.className = 'file-item';
+        div.dataset.index = index;
+        div.draggable = true;
+
+        var sizeMB    = (fileObj.file.size / 1024 / 1024).toFixed(2) + ' MB';
+        var pagesHtml = fileObj.pageCount != null
+            ? '<span class="file-pages">' + fileObj.pageCount + (fileObj.pageCount === 1 ? ' pg' : ' pgs') + '</span>'
+            : '';
+        var errorHtml = fileObj.error
+            ? '<span class="file-error">\u26A0 ' + fileObj.error + '</span>'
+            : '';
+
+        div.innerHTML =
+            '<div class="file-info">' +
+                '<span class="file-name">' + fileObj.file.name + '</span>' +
+                '<div class="file-meta"><span class="file-size">' + sizeMB + '</span>' + pagesHtml + '</div>' +
+                errorHtml +
+                '<div class="file-progress" id="prog-' + index + '">' +
+                    '<div class="file-progress-bar" id="progbar-' + index + '"></div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="file-controls">' +
+                '<button class="icon-btn delete" onclick="removeFile(' + index + ')">&times;</button>' +
+            '</div>';
+
+        div.addEventListener('dragstart', onDragStart);
+        div.addEventListener('dragover',  onDragOver);
+        div.addEventListener('dragleave', onDragLeave);
+        div.addEventListener('drop',      onDrop);
+        div.addEventListener('dragend',   onDragEnd);
+        list.appendChild(div);
+    });
+}
+
+var dragSrcIndex = null;
+function onDragStart(e) { dragSrcIndex = parseInt(this.dataset.index); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function onDragOver(e)  { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over'); }
+function onDragLeave()  { this.classList.remove('drag-over'); }
+function onDrop(e) {
+    e.preventDefault();
+    var target = parseInt(this.dataset.index);
+    if (dragSrcIndex !== null && dragSrcIndex !== target) {
+        files.splice(target, 0, files.splice(dragSrcIndex, 1)[0]);
+        renderFileList(); suggestFilename();
+    }
+}
+function onDragEnd() {
+    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('dragging','drag-over'); });
+    dragSrcIndex = null;
+}
+
+async function handleFiles(newFiles) {
+    for (var i = 0; i < newFiles.length; i++) files.push({ file: newFiles[i], pageCount: null, error: null });
+    renderFileList();
+    suggestFilename();
+    for (var j = 0; j < files.length; j++) {
+        if (files[j].pageCount === null && !files[j].error) {
+            files[j].pageCount = await getPageCount(files[j].file);
+            renderFileList();
+        }
+    }
+}
+document.getElementById('fileInput').addEventListener('change',  function(e) { handleFiles(e.target.files); });
+document.getElementById('cameraInput').addEventListener('change', function(e) { handleFiles(e.target.files); });
+
+function removeFile(index) { files.splice(index, 1); renderFileList(); suggestFilename(); }
+
+function showFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='block'; }
+function setFileProgress(i, pct) { var el = document.getElementById('progbar-'+i); if(el) el.style.width=pct+'%'; }
+function hideFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='none';  }
+function markFileError(i, msg)   { files[i].error = msg; renderFileList(); }
+
+async function startGeneration() {
+    var btn    = document.getElementById('makePdfBtn');
+    var status = document.getElementById('statusBox');
+    btn.disabled = true;
+    status.style.color = 'var(--accent)';
+    files.forEach(function(f) { f.error = null; });
+    renderFileList();
+
+    status.textContent = 'Checking native merge size\u2026';
+    await delay(80);
+    var pdfBytes = await generatePurePDF();
+    if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); return; }
+
+    var passes = [
+        {s:2.0,q:0.85},{s:1.8,q:0.75},{s:1.6,q:0.65},
+        {s:1.4,q:0.55},{s:1.2,q:0.45},{s:1.0,q:0.35}
+    ];
+    var success = false;
+    for (var i = 0; i < passes.length; i++) {
+        status.textContent = 'Optimizing quality (Pass ' + (i+1) + '/' + passes.length + ')\u2026';
+        await delay(80);
+        pdfBytes = await generateRasterPDF(passes[i].s, passes[i].q);
+        if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; success = true; break; }
+    }
+
+    if (success) { finishSuccess(status, btn); }
+    else {
+        status.textContent = 'Error: Files cannot fit under the target size. Remove some and try again.';
+        status.style.color = '#D9534F';
+        btn.disabled = false; btn.textContent = 'Generate PDF';
+    }
+}
+
+function finishSuccess(status, btn) {
+    var sizeMB = (finalPdfBytes.byteLength / 1024 / 1024).toFixed(2);
+    status.textContent = 'Success. Final size: ' + sizeMB + ' MB';
+    status.style.color = 'var(--primary)';
+    btn.textContent = 'PDF Generated';
+    document.getElementById('shareBtn').style.display = 'block';
+    saveToRecent(sizeMB);
+}
+
+function embedOnA4(pdfDoc, img) {
+    var page = pdfDoc.addPage([A4_W, A4_H]);
+    var r = Math.min(A4_W / img.width, A4_H / img.height);
+    var w = img.width * r, h = img.height * r;
+    page.drawImage(img, { x: (A4_W-w)/2, y: (A4_H-h)/2, width: w, height: h });
+}
+
+async function generatePurePDF() {
+    try {
+        var PDFDocument = PDFLib.PDFDocument;
+        var out = await PDFDocument.create();
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i].file;
+            showFileProgress(i); setFileProgress(i, 10);
+            try {
+                var ab = await file.arrayBuffer(); setFileProgress(i, 40);
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    var src = await PDFDocument.load(ab);
+                    var pages = await out.copyPages(src, src.getPageIndices());
+                    pages.forEach(function(p) {
+                        var sz = p.getSize();
+                        var r  = Math.min(A4_W / sz.width, A4_H / sz.height);
+                        p.scale(r, r); p.setSize(A4_W, A4_H); out.addPage(p);
+                    });
+                } else {
+                    var bytes = await compressImage(file, 1600, 0.82);
+                    embedOnA4(out, await out.embedJpg(bytes));
+                }
+                setFileProgress(i, 90);
+            } catch(err) { console.error('Pure merge error', file.name, err); markFileError(i, 'Could not read file'); }
+            setFileProgress(i, 100); await delay(60); hideFileProgress(i);
+        }
+        return await out.save();
+    } catch(err) { console.error('generatePurePDF failed', err); return null; }
+}
+
+async function generateRasterPDF(scale, quality) {
+    try {
+        var PDFDocument = PDFLib.PDFDocument;
+        var out = await PDFDocument.create();
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].error) continue;
+            var file = files[i].file;
+            showFileProgress(i);
+            try {
+                var ab = await file.arrayBuffer();
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    var src = await pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
+                    var total = src.numPages;
+                    for (var p = 1; p <= total; p++) {
+                        setFileProgress(i, Math.round((p/total)*90));
+                        var pg = await src.getPage(p);
+                        var vp = pg.getViewport({ scale: scale });
+                        var canvas = document.createElement('canvas');
+                        canvas.width = vp.width; canvas.height = vp.height;
+                        await pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+                        embedOnA4(out, await out.embedJpg(canvasToJpeg(canvas, quality)));
+                    }
+                } else {
+                    setFileProgress(i, 40);
+                    embedOnA4(out, await out.embedJpg(await compressImage(file, scale*800, quality)));
+                }
+            } catch(err) { console.error('Raster error', file.name, err); markFileError(i, 'Processing error'); }
+            setFileProgress(i, 100); await delay(60); hideFileProgress(i);
+        }
+        return await out.save();
+    } catch(err) { console.error('generateRasterPDF failed', err); return null; }
+}
+
+function canvasToJpeg(canvas, quality) {
+    var b64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
+    var bin = atob(b64);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+}
+
+function compressImage(file, maxDim, quality) {
+    return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function() { reject(new Error('Read failed: ' + file.name)); };
+        reader.onload = function(e) {
+            var img = new Image();
+            img.onerror = function() { reject(new Error('Decode failed: ' + file.name)); };
+            img.onload = function() {
+                try {
+                    var canvas = document.createElement('canvas');
+                    var w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round(h*maxDim/w); w = maxDim; }
+                        else       { w = Math.round(w*maxDim/h); h = maxDim; }
+                    }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(canvasToJpeg(canvas, quality));
+                } catch(err) { reject(err); }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function sharePDF() {
+    var name = document.getElementById('filenameInput').value.trim() || 'SARS_Supporting_Docs';
+    if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
+    var bytesToShare = finalPdfBytes;
+
+    if (document.getElementById('pinToggle').checked) {
+        var pin = document.getElementById('pinInput').value.trim();
+        if (!pin) { alert('Please enter a PIN before sharing.'); return; }
+        if (!/^\d{4,8}$/.test(pin)) { alert('PIN must be 4 to 8 digits.'); return; }
+        try {
+            var pdfDoc = await PDFLib.PDFDocument.load(finalPdfBytes);
+            bytesToShare = await pdfDoc.save({
+                userPassword: pin, ownerPassword: pin + '_o',
+                permissions: { printing: 'highResolution', copying: false, modifying: false }
+            });
+        } catch(err) { console.warn('PIN encrypt not supported in this build:', err); }
+    }
+
+    var file = new File([bytesToShare], name, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: name }); } catch(e) {}
+    } else {
+        var url = URL.createObjectURL(file);
+        var a = document.createElement('a');
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+
+var RECENT_KEY = 'sars_recent_v1';
+
+function saveToRecent(sizeMB) {
+    var raw   = document.getElementById('filenameInput').value.trim() || 'SARS_Supporting_Docs';
+    var fname = raw.endsWith('.pdf') ? raw : raw + '.pdf';
+    var list  = getRecent();
+    list.unshift({ name: fname, sizeMB: sizeMB, date: new Date().toLocaleDateString('en-ZA'), bytes: Array.from(finalPdfBytes) });
+    if (list.length > 5) list.length = 5;
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch(e) {}
+    renderRecent();
+}
+function getRecent() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch(e) { return []; } }
+function clearRecent() { localStorage.removeItem(RECENT_KEY); renderRecent(); }
+
+function renderRecent() {
+    var list    = getRecent();
+    var section = document.getElementById('recentSection');
+    var ul      = document.getElementById('recentList');
+    ul.innerHTML = '';
+    if (!list.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.forEach(function(exp, idx) {
+        var div = document.createElement('div');
+        div.className = 'recent-item';
+        div.innerHTML =
+            '<div class="recent-item-info">' +
+                '<div class="recent-item-name">' + exp.name + '</div>' +
+                '<div class="recent-item-meta">' + exp.sizeMB + ' MB &bull; ' + exp.date + '</div>' +
+            '</div>' +
+            '<button class="recent-share-btn" onclick="reshareRecent(' + idx + ')">Re-share</button>';
+        ul.appendChild(div);
+    });
+}
+
+async function reshareRecent(idx) {
+    var exp = getRecent()[idx];
+    if (!exp || !exp.bytes) return;
+    var file = new File([new Uint8Array(exp.bytes)], exp.name, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: exp.name }); } catch(e) {}
+    } else {
+        var url = URL.createObjectURL(file);
+        var a = document.createElement('a');
+        a.href = url; a.download = exp.name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+
+renderRecent();
+
+// Register service worker for PWA / offline support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+            console.warn('SW registration failed:', err);
+        });
+    });
+}
+</script>
+</body>
+</html>
