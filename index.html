@@ -152,6 +152,31 @@
         .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Outfit', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+        /* ── Premium badge ── */
+        .premium-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.3px; flex-shrink: 0; }
+        .badge-free { background: var(--border); color: var(--text-muted); }
+        .badge-premium { background: var(--accent); color: #1F2421; }
+        html.dark-mode .badge-premium { color: #141615; }
+
+        /* ── Preset lock icon ── */
+        .preset-lock { font-size: 9px; opacity: 0.55; display: inline; }
+
+        /* ── Upgrade modal ── */
+        .upgrade-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; box-sizing: border-box; }
+        .upgrade-overlay.open { opacity: 1; pointer-events: auto; }
+        .upgrade-card { background: var(--card); border-radius: 14px; padding: 28px 24px 22px; max-width: 360px; width: 100%; border: 1px solid var(--border); border-top: 4px solid var(--accent); box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .upgrade-title { font-size: 18px; font-weight: 600; margin: 0 0 6px; color: var(--text-main); }
+        .upgrade-sub { font-size: 12.5px; color: var(--text-muted); margin: 0 0 18px; line-height: 1.55; }
+        .upgrade-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; }
+        .upgrade-features li { font-size: 12.5px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .upgrade-features li::before { content: '✓'; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+        html.dark-mode .upgrade-features li::before { color: var(--accent); }
+        .upgrade-price-row { margin-bottom: 18px; }
+        .upgrade-price { font-size: 28px; font-weight: 700; color: var(--text-main); line-height: 1; }
+        .upgrade-price-note { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        .upgrade-close-link { display: block; text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 10px; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; width: 100%; padding: 4px; }
+        .upgrade-close-link:hover { color: var(--text-main); }
+
         /* ── Desktop two-column layout ── */
         .main-cols { display: flex; flex-direction: column; }
         .col-right { flex: 1; min-width: 0; }
@@ -180,11 +205,15 @@
             <h1>DocReady</h1>
             <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
         </div>
-        <button class="menu-btn" onclick="openMenu()" aria-label="Open settings">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-        </button>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span class="premium-badge badge-free" id="freeBadge">Free</span>
+            <span class="premium-badge badge-premium" id="premiumBadge" style="display:none">Premium ✓</span>
+            <button class="menu-btn" onclick="openMenu()" aria-label="Open settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="main-cols">
@@ -194,11 +223,11 @@
 
             <!-- Preset strip -->
             <div class="preset-strip">
-                <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" onclick="setPreset(this)">
-                    SARS eFiling<br><strong>&lt; 5 MB</strong>
+                <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" data-premium="true" onclick="setPreset(this)">
+                    SARS eFiling<br><strong>&lt; 5 MB</strong> <span class="preset-lock">🔒</span>
                 </button>
-                <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
-                    Custom<br><strong id="emailStrong">Adjustable</strong>
+                <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" data-premium="true" onclick="setPreset(this)">
+                    Custom<br><strong id="emailStrong">Adjustable</strong> <span class="preset-lock">🔒</span>
                 </button>
                 <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
                     Merge only<br><strong>No limit</strong>
@@ -269,6 +298,37 @@
 
     </div><!-- /main-cols -->
 
+</div>
+
+<!-- Upgrade modal -->
+<div class="upgrade-overlay" id="upgradeOverlay" onclick="closeUpgradeModal()">
+    <div class="upgrade-card" onclick="event.stopPropagation()">
+        <div class="upgrade-title">Unlock DocReady Premium</div>
+        <div class="upgrade-sub">Automatically compress and resize your documents to meet SARS eFiling's strict 5 MB limit.</div>
+        <ul class="upgrade-features">
+            <li>Smart compression to under 5 MB</li>
+            <li>Adjustable size limit for any upload</li>
+            <li>Works on all your devices</li>
+            <li>Once-off payment — no subscription ever</li>
+        </ul>
+        <div class="upgrade-price-row">
+            <div class="upgrade-price">R69</div>
+            <div class="upgrade-price-note">Once-off &middot; No subscription &middot; No account needed</div>
+        </div>
+        <!-- PayFast hosted payment form -->
+        <!-- Replace YOUR_MERCHANT_ID and YOUR_MERCHANT_KEY after signing up at payfast.io -->
+        <form action="https://www.payfast.co.za/eng/process" method="post" id="payfastForm">
+            <input type="hidden" name="merchant_id"      value="YOUR_MERCHANT_ID">
+            <input type="hidden" name="merchant_key"     value="YOUR_MERCHANT_KEY">
+            <input type="hidden" name="return_url"       id="pfReturnUrl"  value="">
+            <input type="hidden" name="cancel_url"       id="pfCancelUrl"  value="">
+            <input type="hidden" name="amount"           value="69.00">
+            <input type="hidden" name="item_name"        value="DocReady Premium">
+            <input type="hidden" name="item_description" value="Unlimited document compression for SARS eFiling">
+            <button type="submit" class="primary-btn" style="margin-bottom:0">Pay R69 with PayFast</button>
+        </form>
+        <button class="upgrade-close-link" onclick="closeUpgradeModal()">Continue with free (merge only)</button>
+    </div>
 </div>
 
 <!-- Drawer -->
@@ -363,7 +423,7 @@ function closeMenu() {
     document.getElementById('drawer').classList.remove('open');
     document.body.style.overflow = '';
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeMenu(); closeUpgradeModal(); } });
 
 // ── Presets ───────────────────────────────────────────────────────────────────
 function updateSubtitle() {
@@ -379,6 +439,7 @@ function updateSubtitle() {
 }
 
 function setPreset(btn) {
+    if (btn.dataset.premium === 'true' && !isPremium) { showUpgradeModal(); return; }
     document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     var isEmail = btn.dataset.email === 'true';
@@ -850,6 +911,56 @@ if ('launchQueue' in window) {
     });
 }
 
+// ── Premium / PayFast unlock ───────────────────────────────────────────────────
+var isPremium = false;
+
+function initPremium() {
+    // PayFast returns to this page with ?premium=granted after successful payment
+    if (location.search.includes('premium=granted')) {
+        try { localStorage.setItem('docready-premium', '1'); } catch(e) {}
+        history.replaceState({}, '', location.pathname);
+    }
+    try { isPremium = localStorage.getItem('docready-premium') === '1'; } catch(e) {}
+
+    // Set PayFast return/cancel URLs dynamically so they work on any domain
+    var base = location.origin + location.pathname;
+    var retEl = document.getElementById('pfReturnUrl');
+    var canEl = document.getElementById('pfCancelUrl');
+    if (retEl) retEl.value = base + '?premium=granted';
+    if (canEl) canEl.value = base;
+
+    updatePremiumUI();
+}
+
+function updatePremiumUI() {
+    document.getElementById('freeBadge').style.display    = isPremium ? 'none'   : 'inline';
+    document.getElementById('premiumBadge').style.display = isPremium ? 'inline' : 'none';
+    document.querySelectorAll('.preset-lock').forEach(function(el) {
+        el.style.display = isPremium ? 'none' : 'inline';
+    });
+    // Non-premium: force Merge only as the active preset
+    if (!isPremium) {
+        var mergeBtn = document.querySelector('.preset-btn[data-limit="0"]');
+        if (mergeBtn) {
+            document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+            mergeBtn.classList.add('active');
+            document.getElementById('emailAdjuster').style.display = 'none';
+            TARGET_SIZE = Infinity;
+            updateSubtitle();
+        }
+    }
+}
+
+function showUpgradeModal() {
+    document.getElementById('upgradeOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUpgradeModal() {
+    document.getElementById('upgradeOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
 // ── OS file drop (drag from Explorer/Finder onto the app) ─────────────────────
 document.body.addEventListener('dragover', function(e) {
     // Only handle external file drags, not internal item reorders
@@ -874,6 +985,7 @@ document.body.addEventListener('drop', function(e) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 initTheme();
+initPremium();
 renderRecent();
 checkSharedFiles();
 
