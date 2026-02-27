@@ -12,6 +12,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -315,18 +316,9 @@
             <div class="upgrade-price">R69</div>
             <div class="upgrade-price-note">Once-off &middot; No subscription &middot; No account needed</div>
         </div>
-        <!-- PayFast hosted payment form -->
-        <!-- Replace YOUR_MERCHANT_ID and YOUR_MERCHANT_KEY after signing up at payfast.io -->
-        <form action="https://www.payfast.co.za/eng/process" method="post" id="payfastForm">
-            <input type="hidden" name="merchant_id"      value="YOUR_MERCHANT_ID">
-            <input type="hidden" name="merchant_key"     value="YOUR_MERCHANT_KEY">
-            <input type="hidden" name="return_url"       id="pfReturnUrl"  value="">
-            <input type="hidden" name="cancel_url"       id="pfCancelUrl"  value="">
-            <input type="hidden" name="amount"           value="69.00">
-            <input type="hidden" name="item_name"        value="DocReady Premium">
-            <input type="hidden" name="item_description" value="Unlimited document compression for SARS eFiling">
-            <button type="submit" class="primary-btn" style="margin-bottom:0">Pay R69 with PayFast</button>
-        </form>
+        <input class="text-input" type="email" id="payEmail" placeholder="your@email.com" style="margin-bottom:6px;" autocomplete="email">
+        <div id="payEmailError" style="display:none;font-size:11px;color:#C0392B;margin-bottom:6px;">Please enter a valid email address.</div>
+        <button type="button" class="primary-btn" onclick="payWithPaystack()" style="margin-bottom:0">Pay R69 with Paystack</button>
         <button class="upgrade-close-link" onclick="closeUpgradeModal()">Continue with free (merge only)</button>
     </div>
 </div>
@@ -915,21 +907,45 @@ if ('launchQueue' in window) {
 var isPremium = false;
 
 function initPremium() {
-    // PayFast returns to this page with ?premium=granted after successful payment
-    if (location.search.includes('premium=granted')) {
-        try { localStorage.setItem('docready-premium', '1'); } catch(e) {}
-        history.replaceState({}, '', location.pathname);
-    }
     try { isPremium = localStorage.getItem('docready-premium') === '1'; } catch(e) {}
-
-    // Set PayFast return/cancel URLs dynamically so they work on any domain
-    var base = location.origin + location.pathname;
-    var retEl = document.getElementById('pfReturnUrl');
-    var canEl = document.getElementById('pfCancelUrl');
-    if (retEl) retEl.value = base + '?premium=granted';
-    if (canEl) canEl.value = base;
-
     updatePremiumUI();
+}
+
+function payWithPaystack() {
+    var email = document.getElementById('payEmail').value.trim();
+    var errEl = document.getElementById('payEmailError');
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+        errEl.style.display = 'block';
+        document.getElementById('payEmail').focus();
+        return;
+    }
+    errEl.style.display = 'none';
+
+    var handler = PaystackPop.setup({
+        key: 'pk_test_3520c14017518f98180b12907a3069d4916eac7c',
+        email: email,
+        amount: 6900,        // R69 in cents (ZAR)
+        currency: 'ZAR',
+        ref: 'DOCR-' + Date.now() + '-' + Math.floor(Math.random() * 9999),
+        label: 'DocReady Premium',
+        metadata: { custom_fields: [{ display_name: 'Product', value: 'DocReady Premium' }] },
+        onClose: function() { /* user closed popup — do nothing */ },
+        callback: function(response) {
+            // Payment confirmed by Paystack
+            try {
+                localStorage.setItem('docready-premium', '1');
+                localStorage.setItem('docready-ref', response.reference);
+            } catch(e) {}
+            isPremium = true;
+            updatePremiumUI();
+            closeUpgradeModal();
+            var sb = document.getElementById('statusBox');
+            sb.textContent = '\u2713 Premium unlocked \u00B7 Thank you!';
+            sb.style.color = 'var(--primary)';
+            setTimeout(function() { if (sb.textContent.includes('Premium')) sb.textContent = ''; }, 5000);
+        }
+    });
+    handler.openIframe();
 }
 
 function updatePremiumUI() {
