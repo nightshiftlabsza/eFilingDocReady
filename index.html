@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="DocReady">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -26,12 +26,12 @@
             --primary: #CBA052; --primary-hover: #B38B42; --accent: #154734; --border: #303431;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 24px 15px 40px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 24px 15px 40px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
         .app-container { background: var(--card); max-width: 480px; width: 100%; border-radius: var(--radius); padding: 28px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.07); border: 1px solid var(--border); border-top: 5px solid var(--accent); transition: all 0.4s ease; }
 
         /* ── Header ── */
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
-        .title-group h1 { margin: 0; font-size: 21px; font-weight: 600; color: var(--text-main); letter-spacing: -0.4px; }
+        .title-group h1 { margin: 0; font-size: 22px; font-weight: 600; color: var(--text-main); letter-spacing: -0.5px; }
         .title-group p { margin: 5px 0 0; font-size: 12.5px; color: var(--text-muted); font-weight: 400; }
         .menu-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; flex-shrink: 0; margin-top: 2px; }
         .menu-btn:hover { border-color: var(--text-main); color: var(--text-main); }
@@ -53,7 +53,7 @@
 
         /* ── Appearance selector ── */
         .appearance-selector { display: flex; gap: 6px; }
-        .appear-btn { flex: 1; padding: 10px 4px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.5; }
+        .appear-btn { flex: 1; padding: 10px 4px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.5; }
         .appear-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.06); }
         html.dark-mode .appear-btn.active { background: rgba(203,160,82,0.08); }
         .appear-btn:hover:not(.active) { border-color: var(--text-muted); color: var(--text-main); }
@@ -71,7 +71,7 @@
 
         /* ── Preset strip ── */
         .preset-strip { display: flex; gap: 8px; margin-bottom: 0; }
-        .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
+        .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
         .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.05); }
         html.dark-mode .preset-btn.active { background: rgba(203,160,82,0.07); }
         .preset-btn:hover:not(.active) { border-color: var(--text-muted); }
@@ -82,7 +82,7 @@
         .email-adjuster-val { font-size: 13px; font-weight: 600; color: var(--primary); min-width: 60px; text-align: center; }
         html.dark-mode .email-adjuster-val { color: var(--primary); }
         .stepper { display: flex; align-items: center; gap: 0; }
-        .step-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Inter', sans-serif; }
+        .step-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Outfit', sans-serif; }
         .step-btn:hover { border-color: var(--primary); color: var(--primary); }
         .step-btn:first-child { border-radius: 6px 0 0 6px; }
         .step-btn:last-child  { border-radius: 0 6px 6px 0; }
@@ -93,7 +93,7 @@
 
         /* ── Add buttons ── */
         .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
-        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 16px 10px; border-radius: var(--radius); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; }
+        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 16px 10px; border-radius: var(--radius); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Outfit', sans-serif; }
         .btn-action:hover { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.03); }
         html.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
         .btn-action svg { transition: 0.2s; }
@@ -124,14 +124,14 @@
 
         /* ── Filename ── */
         .field-label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .text-input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; transition: 0.3s; }
+        .text-input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 14px; transition: 0.3s; }
         .text-input:focus { outline: none; border-color: var(--primary); background: var(--card); }
         .filename-wrap { margin-bottom: 10px; }
 
 
 
         /* ── Action buttons ── */
-        .primary-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.25s; font-family: 'Inter', sans-serif; letter-spacing: 0.3px; margin-bottom: 9px; display: block; box-sizing: border-box; }
+        .primary-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.25s; font-family: 'Outfit', sans-serif; letter-spacing: 0.3px; margin-bottom: 9px; display: block; box-sizing: border-box; }
         html.dark-mode .primary-btn { color: #141615; font-weight: 600; }
         .primary-btn:hover:not(:disabled) { background: var(--primary-hover); }
         .primary-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -142,14 +142,14 @@
         .recent-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
         .recent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .recent-header span { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .recent-clear { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; font-family: 'Inter', sans-serif; }
+        .recent-clear { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; font-family: 'Outfit', sans-serif; }
         .recent-clear:hover { color: #C0392B; }
         .recent-list { display: flex; flex-direction: column; gap: 7px; }
         .recent-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; }
         .recent-item-info { overflow: hidden; flex: 1; min-width: 0; }
         .recent-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 500; }
         .recent-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Outfit', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
     </style>
     <script>/* block theme before first paint to prevent FOUC */
@@ -162,7 +162,7 @@
     <!-- Header -->
     <div class="header">
         <div class="title-group">
-            <h1>Combine Documents</h1>
+            <h1>DocReady</h1>
             <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
         </div>
         <button class="menu-btn" onclick="openMenu()" aria-label="Open settings">
@@ -178,7 +178,7 @@
             SARS eFiling<br><strong>&lt; 5 MB</strong>
         </button>
         <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
-            Custom<br><strong id="emailStrong">&lt; 10 MB</strong>
+            Custom<br><strong id="emailStrong">10 MB</strong>
         </button>
         <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
             Merge only<br><strong>No limit</strong>
@@ -364,7 +364,7 @@ function setPreset(btn) {
 function adjustEmail(delta) {
     emailMB = Math.max(1, Math.min(200, emailMB + delta));
     document.getElementById('emailMBVal').textContent = emailMB;
-    document.getElementById('emailStrong').textContent = '< ' + emailMB + ' MB';
+    document.getElementById('emailStrong').textContent = emailMB + ' MB';
     TARGET_SIZE = emailMB * 1024 * 1024;
     updateSubtitle();
 }
