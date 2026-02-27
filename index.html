@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="DocReady">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
@@ -21,7 +21,7 @@
             --bg: #F4F5F2; --card: #FFFFFF; --text-main: #1F2421; --text-muted: #7A807C;
             --primary: #154734; --primary-hover: #0E3324; --accent: #CBA052; --border: #E6E8E3; --radius: 10px;
         }
-        body.dark-mode {
+        html.dark-mode {
             --bg: #141615; --card: #1F2220; --text-main: #EFEFEF; --text-muted: #8F9491;
             --primary: #CBA052; --primary-hover: #B38B42; --accent: #154734; --border: #303431;
         }
@@ -41,14 +41,14 @@
         .preset-strip { display: flex; gap: 8px; margin-bottom: 0; }
         .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
         .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.05); }
-        body.dark-mode .preset-btn.active { background: rgba(203,160,82,0.07); }
+        html.dark-mode .preset-btn.active { background: rgba(203,160,82,0.07); }
         .preset-btn:hover:not(.active) { border-color: var(--text-muted); }
 
         /* ── Email adjuster ── */
         .email-adjuster { display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
         .email-adjuster span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
         .email-adjuster-val { font-size: 13px; font-weight: 600; color: var(--primary); min-width: 60px; text-align: center; }
-        body.dark-mode .email-adjuster-val { color: var(--primary); }
+        html.dark-mode .email-adjuster-val { color: var(--primary); }
         .stepper { display: flex; align-items: center; gap: 0; }
         .step-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Inter', sans-serif; }
         .step-btn:hover { border-color: var(--primary); color: var(--primary); }
@@ -63,7 +63,7 @@
         .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
         .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 16px 10px; border-radius: var(--radius); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; }
         .btn-action:hover { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.03); }
-        body.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
+        html.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
         .btn-action svg { transition: 0.2s; }
 
         /* ── File list ── */
@@ -96,30 +96,15 @@
         .text-input:focus { outline: none; border-color: var(--primary); background: var(--card); }
         .filename-wrap { margin-bottom: 10px; }
 
-        /* ── PIN row ── */
-        .pin-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s; }
-        .pin-row:hover { border-color: var(--text-muted); }
-        .pin-row-left { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
-        .pin-row-left svg { flex-shrink: 0; }
-        .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
-        .toggle input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: 0.3s; }
-        .toggle-slider:before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
-        .toggle input:checked + .toggle-slider { background: var(--primary); }
-        body.dark-mode .toggle input:checked + .toggle-slider { background: var(--accent); }
-        .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
-        .pin-input-wrap { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
-        .pin-input-wrap.open { max-height: 56px; margin-bottom: 10px; }
-        .pin-input-wrap input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 20px; letter-spacing: 8px; text-align: center; transition: border-color 0.3s; }
-        .pin-input-wrap input:focus { outline: none; border-color: var(--primary); }
+
 
         /* ── Action buttons ── */
         .primary-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.25s; font-family: 'Inter', sans-serif; letter-spacing: 0.3px; margin-bottom: 9px; display: block; box-sizing: border-box; }
-        body.dark-mode .primary-btn { color: #141615; font-weight: 600; }
+        html.dark-mode .primary-btn { color: #141615; font-weight: 600; }
         .primary-btn:hover:not(:disabled) { background: var(--primary-hover); }
         .primary-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .share-btn { background: var(--accent) !important; }
-        body.dark-mode .share-btn { color: #141615 !important; }
+        html.dark-mode .share-btn { color: #141615 !important; }
 
         /* ── Recent exports ── */
         .recent-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
@@ -135,6 +120,9 @@
         .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
     </style>
+    <script>/* block theme before first paint to prevent FOUC */
+        (function(){var s=null;try{s=localStorage.getItem('docready-theme');}catch(e){}var dark=s?s==='dark':(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.documentElement.classList.add('dark-mode');})();
+    </script>
 </head>
 <body>
 <div class="app-container">
@@ -155,11 +143,11 @@
         <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" onclick="setPreset(this)">
             SARS eFiling<br><strong>&lt; 5 MB</strong>
         </button>
-        <button class="preset-btn" data-limit="10485760" data-label="Email" data-email="true" onclick="setPreset(this)">
-            Email<br><strong id="emailStrong">&lt; 10 MB</strong>
+        <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
+            Custom<br><strong id="emailStrong">&lt; 10 MB</strong>
         </button>
-        <button class="preset-btn" data-limit="16777216" data-label="WhatsApp" onclick="setPreset(this)">
-            WhatsApp<br><strong>&lt; 16 MB</strong>
+        <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
+            Merge only<br><strong>No limit</strong>
         </button>
     </div>
 
@@ -215,24 +203,6 @@
         <input class="text-input" type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
     </div>
 
-    <!-- PIN lock row -->
-    <div class="pin-row" onclick="togglePin()">
-        <div class="pin-row-left">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            Password-protect PDF
-        </div>
-        <label class="toggle" onclick="event.stopPropagation()">
-            <input type="checkbox" id="pinToggle" onchange="onPinToggleChange()">
-            <span class="toggle-slider"></span>
-        </label>
-    </div>
-    <div class="pin-input-wrap" id="pinWrap">
-        <input class="text-input" type="password" id="pinInput" maxlength="8" inputmode="numeric" placeholder="Enter PIN (4&#8211;8 digits)">
-    </div>
-
     <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
     <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
 
@@ -256,12 +226,37 @@ var A4_W = 595.28, A4_H = 841.89;
 var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
-function toggleTheme() {
-    var dark = document.body.classList.toggle('dark-mode');
+var _userSetTheme = false;
+
+function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark-mode', dark);
     document.querySelector('#themeBtn .theme-icon').textContent = dark ? '\u2600' : '\u263D';
     document.getElementById('themeBtnLabel').textContent = dark ? 'Light mode' : 'Dark mode';
     document.getElementById('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
+}
+
+function toggleTheme() {
+    var dark = !document.documentElement.classList.contains('dark-mode');
+    _userSetTheme = true;
+    try { localStorage.setItem('docready-theme', dark ? 'dark' : 'light'); } catch(e) {}
+    applyTheme(dark);
+}
+
+function initTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem('docready-theme'); } catch(e) {}
+    if (saved) {
+        _userSetTheme = true;
+        applyTheme(saved === 'dark');
+    } else {
+        applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!_userSetTheme) applyTheme(e.matches);
+        });
+    }
 }
 
 // ── Presets ───────────────────────────────────────────────────────────────────
@@ -269,8 +264,12 @@ function updateSubtitle() {
     var btn = document.querySelector('.preset-btn.active');
     if (!btn) return;
     var label = btn.dataset.label;
-    var mb = Math.round(TARGET_SIZE / 1024 / 1024);
-    document.getElementById('subtitle').textContent = 'For ' + label + ' \u00B7 under ' + mb + ' MB';
+    if (TARGET_SIZE === Infinity) {
+        document.getElementById('subtitle').textContent = label + ' \u00B7 no size limit';
+    } else {
+        var mb = Math.round(TARGET_SIZE / 1024 / 1024);
+        document.getElementById('subtitle').textContent = 'For ' + label + ' \u00B7 under ' + mb + ' MB';
+    }
 }
 
 function setPreset(btn) {
@@ -279,29 +278,19 @@ function setPreset(btn) {
     var isEmail = btn.dataset.email === 'true';
     var adjuster = document.getElementById('emailAdjuster');
     adjuster.style.display = isEmail ? 'flex' : 'none';
-    TARGET_SIZE = isEmail ? emailMB * 1024 * 1024 : parseInt(btn.dataset.limit);
+    var limitVal = parseInt(btn.dataset.limit);
+    TARGET_SIZE = isEmail ? emailMB * 1024 * 1024 : (limitVal === 0 ? Infinity : limitVal);
     updateSubtitle();
 }
 
 function adjustEmail(delta) {
-    emailMB = Math.max(1, Math.min(25, emailMB + delta));
+    emailMB = Math.max(1, Math.min(200, emailMB + delta));
     document.getElementById('emailMBVal').textContent = emailMB;
     document.getElementById('emailStrong').textContent = '< ' + emailMB + ' MB';
     TARGET_SIZE = emailMB * 1024 * 1024;
     updateSubtitle();
 }
 
-// ── PIN ───────────────────────────────────────────────────────────────────────
-function togglePin() {
-    var cb = document.getElementById('pinToggle');
-    cb.checked = !cb.checked;
-    onPinToggleChange();
-}
-function onPinToggleChange() {
-    var on = document.getElementById('pinToggle').checked;
-    document.getElementById('pinWrap').classList.toggle('open', on);
-    if (!on) document.getElementById('pinInput').value = '';
-}
 
 // ── Filename auto-suggest ─────────────────────────────────────────────────────
 function suggestFilename() {
@@ -377,6 +366,9 @@ function renderFileList() {
         div.addEventListener('dragleave', onDragLeave);
         div.addEventListener('drop',      onDrop);
         div.addEventListener('dragend',   onDragEnd);
+        div.addEventListener('touchstart', onTouchStart, { passive: true });
+        div.addEventListener('touchmove',  onTouchMove,  { passive: false });
+        div.addEventListener('touchend',   onTouchEnd);
         list.appendChild(div);
     });
 }
@@ -397,6 +389,51 @@ function onDrop(e) {
 function onDragEnd() {
     document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('dragging','drag-over'); });
     dragSrcIndex = null;
+}
+
+// ── Touch drag-to-reorder ─────────────────────────────────────────────────────
+var touchSrcIndex = null;
+var touchGhost    = null;
+
+function onTouchStart(e) {
+    touchSrcIndex = parseInt(this.dataset.index);
+    this.classList.add('dragging');
+}
+
+function onTouchMove(e) {
+    if (touchSrcIndex === null) return;
+    e.preventDefault(); // prevent page scroll while dragging
+    var touch   = e.touches[0];
+    var target  = document.elementFromPoint(touch.clientX, touch.clientY);
+    var item    = target && target.closest('.file-item');
+    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('drag-over'); });
+    if (item && item !== e.currentTarget) item.classList.add('drag-over');
+}
+
+function onTouchEnd(e) {
+    if (touchSrcIndex === null) return;
+    var touch   = e.changedTouches[0];
+    var target  = document.elementFromPoint(touch.clientX, touch.clientY);
+    var item    = target && target.closest('.file-item');
+    // Fallback: finger lifted in a gap between items — find nearest by Y
+    if (!item) {
+        var closest = null, closestDist = Infinity;
+        document.querySelectorAll('.file-item').forEach(function(el) {
+            var rect = el.getBoundingClientRect();
+            var dist = Math.abs(touch.clientY - (rect.top + rect.height / 2));
+            if (dist < closestDist) { closestDist = dist; closest = el; }
+        });
+        item = closest;
+    }
+    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('dragging','drag-over'); });
+    if (item) {
+        var destIndex = parseInt(item.dataset.index);
+        if (!isNaN(destIndex) && destIndex !== touchSrcIndex) {
+            files.splice(destIndex, 0, files.splice(touchSrcIndex, 1)[0]);
+            renderFileList(); suggestFilename();
+        }
+    }
+    touchSrcIndex = null;
 }
 
 // ── File handling ─────────────────────────────────────────────────────────────
@@ -433,23 +470,49 @@ async function startGeneration() {
     status.textContent = 'Preparing your document\u2026';
     await delay(80);
     var pdfBytes = await generatePurePDF();
+
+    // No-limit mode: skip compression entirely after the pure merge
+    if (TARGET_SIZE === Infinity) {
+        if (pdfBytes) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); }
+        else { status.textContent = 'Could not process these files.'; status.style.color = '#C0392B'; btn.disabled = false; btn.textContent = 'Create PDF'; }
+        return;
+    }
+
     if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); return; }
 
+    // Quality-first compression: exhaust quality options before reducing resolution.
+    // Scale is DPI multiplier vs 72dpi base (s=2 ≈ 144dpi, s=1 ≈ 72dpi).
+    // Never go below s=1.0 — text becomes unreadable below ~72dpi.
     var passes = [
-        {s:2.0,q:0.85},{s:1.8,q:0.75},{s:1.6,q:0.65},
-        {s:1.4,q:0.55},{s:1.2,q:0.45},{s:1.0,q:0.35}
+        {s:2.0,q:0.80},{s:2.0,q:0.65},{s:2.0,q:0.50},
+        {s:1.5,q:0.75},{s:1.5,q:0.55},{s:1.5,q:0.40},
+        {s:1.2,q:0.65},{s:1.2,q:0.45},
+        {s:1.0,q:0.60},{s:1.0,q:0.40},{s:1.0,q:0.28}
     ];
+    var bestBytes = pdfBytes; // start with the pure merge as baseline
     var success = false;
     for (var i = 0; i < passes.length; i++) {
-        status.textContent = 'Compressing, pass ' + (i+1) + ' of ' + passes.length + '\u2026';
+        status.textContent = 'Compressing\u2026 pass ' + (i + 1) + ' of ' + passes.length;
         await delay(80);
         pdfBytes = await generateRasterPDF(passes[i].s, passes[i].q);
+        if (pdfBytes && (!bestBytes || pdfBytes.byteLength < bestBytes.byteLength)) bestBytes = pdfBytes;
         if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; success = true; break; }
     }
 
-    if (success) { finishSuccess(status, btn); }
-    else {
-        status.textContent = 'Too large to compress further. Try removing a file.';
+    if (success) {
+        finishSuccess(status, btn);
+    } else if (bestBytes) {
+        // Always give the user something — output best result with honest warning
+        finalPdfBytes = bestBytes;
+        var sizeMB   = (bestBytes.byteLength / 1024 / 1024).toFixed(2);
+        var targetMB = Math.round(TARGET_SIZE / 1024 / 1024);
+        status.textContent = '\u26A0\uFE0F ' + sizeMB + ' MB \u2014 couldn\u2019t reach ' + targetMB + ' MB target. You can still share it.';
+        status.style.color = 'var(--accent)';
+        btn.textContent = 'PDF ready'; btn.disabled = false;
+        document.getElementById('shareBtn').style.display = 'block';
+        saveToRecent(sizeMB);
+    } else {
+        status.textContent = 'Could not process these files. Try removing one.';
         status.style.color = '#C0392B';
         btn.disabled = false; btn.textContent = 'Create PDF';
     }
@@ -467,6 +530,7 @@ function finishSuccess(status, btn) {
 // ── A4 embed helper ───────────────────────────────────────────────────────────
 function embedOnA4(pdfDoc, img) {
     var page = pdfDoc.addPage([A4_W, A4_H]);
+    page.drawRectangle({ x: 0, y: 0, width: A4_W, height: A4_H, color: PDFLib.rgb(1, 1, 1) });
     var r = Math.min(A4_W / img.width, A4_H / img.height);
     var w = img.width * r, h = img.height * r;
     page.drawImage(img, { x: (A4_W-w)/2, y: (A4_H-h)/2, width: w, height: h });
@@ -488,7 +552,10 @@ async function generatePurePDF() {
                     pages.forEach(function(p) {
                         var sz = p.getSize();
                         var r  = Math.min(A4_W / sz.width, A4_H / sz.height);
-                        p.scale(r, r); p.setSize(A4_W, A4_H); out.addPage(p);
+                        p.scale(r, r);
+                        p.translateContent((A4_W - sz.width * r) / 2, (A4_H - sz.height * r) / 2);
+                        p.setSize(A4_W, A4_H);
+                        out.addPage(p);
                     });
                 } else {
                     var bytes = await compressImage(file, 1600, 0.82);
@@ -523,7 +590,7 @@ async function generateRasterPDF(scale, quality) {
                         var canvas = document.createElement('canvas');
                         canvas.width = vp.width; canvas.height = vp.height;
                         await pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-                        embedOnA4(out, await out.embedJpg(canvasToJpeg(canvas, quality)));
+                        embedOnA4(out, await out.embedJpg(await canvasToJpeg(canvas, quality)));
                     }
                 } else {
                     setFileProgress(i, 40);
@@ -538,10 +605,12 @@ async function generateRasterPDF(scale, quality) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function canvasToJpeg(canvas, quality) {
-    var b64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
-    var bin = atob(b64); var out = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
+    return new Promise(function(resolve, reject) {
+        canvas.toBlob(function(blob) {
+            if (!blob) { reject(new Error('toBlob failed')); return; }
+            blob.arrayBuffer().then(function(ab) { resolve(new Uint8Array(ab)); }).catch(reject);
+        }, 'image/jpeg', quality);
+    });
 }
 function compressImage(file, maxDim, quality) {
     return new Promise(function(resolve, reject) {
@@ -560,7 +629,7 @@ function compressImage(file, maxDim, quality) {
                     }
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    resolve(canvasToJpeg(canvas, quality));
+                    canvasToJpeg(canvas, quality).then(resolve).catch(reject);
                 } catch(err) { reject(err); }
             };
             img.src = e.target.result;
@@ -570,33 +639,40 @@ function compressImage(file, maxDim, quality) {
 }
 
 // ── Share / download ──────────────────────────────────────────────────────────
+function triggerDownload(name) {
+    var file = new File([finalPdfBytes], name, { type: 'application/pdf' });
+    var url  = URL.createObjectURL(file);
+    var a    = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+}
+
 async function sharePDF() {
+    if (!finalPdfBytes) { alert('No PDF ready. Please create the PDF first.'); return; }
     var name = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
     if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
-    var bytesToShare = finalPdfBytes;
+    var file = new File([finalPdfBytes], name, { type: 'application/pdf' });
 
-    if (document.getElementById('pinToggle').checked) {
-        var pin = document.getElementById('pinInput').value.trim();
-        if (!pin) { alert('Enter a PIN before sharing.'); return; }
-        if (!/^\d{4,8}$/.test(pin)) { alert('PIN must be 4 to 8 digits.'); return; }
-        try {
-            var pdfDoc = await PDFLib.PDFDocument.load(finalPdfBytes);
-            bytesToShare = await pdfDoc.save({
-                userPassword: pin, ownerPassword: pin + '_o',
-                permissions: { printing: 'highResolution', copying: false, modifying: false }
-            });
-        } catch(err) { console.warn('PIN encrypt not supported:', err); }
+    // Share API unavailable — download immediately (user activation still live)
+    if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
+        triggerDownload(name); return;
     }
 
-    var file = new File([bytesToShare], name, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: name }); } catch(e) {}
-    } else {
-        var url = URL.createObjectURL(file);
-        var a = document.createElement('a');
-        a.href = url; a.download = name;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    try {
+        await navigator.share({ files: [file], title: name });
+    } catch(e) {
+        if (e.name === 'AbortError') return; // user cancelled
+        console.warn('Web Share API failed:', e);
+        // Activation expired after the async share attempt — surface a fresh tap target
+        var btn = document.getElementById('shareBtn');
+        var prev = btn.textContent;
+        btn.textContent = 'Tap to Download PDF';
+        btn.onclick = function() {
+            triggerDownload(name);
+            btn.textContent = prev;
+            btn.onclick = function() { sharePDF(); };
+        };
     }
 }
 
@@ -606,7 +682,7 @@ function saveToRecent(sizeMB) {
     var raw   = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
     var fname = raw.endsWith('.pdf') ? raw : raw + '.pdf';
     var list  = getRecent();
-    list.unshift({ name: fname, sizeMB: sizeMB, date: new Date().toLocaleDateString('en-ZA'), bytes: Array.from(finalPdfBytes) });
+    list.unshift({ name: fname, sizeMB: sizeMB, date: new Date().toLocaleDateString('en-ZA') });
     if (list.length > 5) list.length = 5;
     try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch(e) {}
     renderRecent();
@@ -620,31 +696,16 @@ function renderRecent() {
     ul.innerHTML = '';
     if (!list.length) { section.style.display = 'none'; return; }
     section.style.display = 'block';
-    list.forEach(function(exp, idx) {
+    list.forEach(function(exp) {
         var div = document.createElement('div');
         div.className = 'recent-item';
         div.innerHTML =
             '<div class="recent-item-info">' +
                 '<div class="recent-item-name">' + exp.name + '</div>' +
                 '<div class="recent-item-meta">' + exp.sizeMB + ' MB \u00B7 ' + exp.date + '</div>' +
-            '</div>' +
-            '<button class="recent-share-btn" onclick="reshareRecent(' + idx + ')">Re-share</button>';
+            '</div>';
         ul.appendChild(div);
     });
-}
-async function reshareRecent(idx) {
-    var exp = getRecent()[idx];
-    if (!exp || !exp.bytes) return;
-    var file = new File([new Uint8Array(exp.bytes)], exp.name, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: exp.name }); } catch(e) {}
-    } else {
-        var url = URL.createObjectURL(file);
-        var a = document.createElement('a');
-        a.href = url; a.download = exp.name;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
 }
 
 // ── Share Target: pick up files shared from Android share sheet ───────────────
@@ -684,6 +745,7 @@ if ('launchQueue' in window) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+initTheme();
 renderRecent();
 checkSharedFiles();
 
