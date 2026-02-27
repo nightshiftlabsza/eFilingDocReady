@@ -178,7 +178,7 @@
             SARS eFiling<br><strong>&lt; 5 MB</strong>
         </button>
         <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
-            Custom<br><strong id="emailStrong">10 MB</strong>
+            Custom<br><strong id="emailStrong">Adjustable</strong>
         </button>
         <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
             Merge only<br><strong>No limit</strong>
@@ -364,7 +364,7 @@ function setPreset(btn) {
 function adjustEmail(delta) {
     emailMB = Math.max(1, Math.min(200, emailMB + delta));
     document.getElementById('emailMBVal').textContent = emailMB;
-    document.getElementById('emailStrong').textContent = emailMB + ' MB';
+    document.getElementById('emailStrong').textContent = emailMB + ' MB max';
     TARGET_SIZE = emailMB * 1024 * 1024;
     updateSubtitle();
 }
