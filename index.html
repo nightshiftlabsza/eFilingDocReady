@@ -33,9 +33,41 @@
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
         .title-group h1 { margin: 0; font-size: 21px; font-weight: 600; color: var(--text-main); letter-spacing: -0.4px; }
         .title-group p { margin: 5px 0 0; font-size: 12.5px; color: var(--text-muted); font-weight: 400; }
-        .theme-btn { background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 0 10px; height: 32px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-muted); transition: 0.3s; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-        .theme-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-        .theme-btn .theme-icon { font-size: 12px; }
+        .menu-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; flex-shrink: 0; margin-top: 2px; }
+        .menu-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+        .menu-btn svg { display: block; }
+
+        /* ── Drawer overlay ── */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+        /* ── Drawer panel ── */
+        .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 280px; max-width: 88vw; background: var(--card); border-left: 1px solid var(--border); z-index: 201; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+        .drawer.open { transform: translateX(0); box-shadow: -8px 0 32px rgba(0,0,0,0.15); }
+        .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .drawer-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .drawer-close { background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; transition: 0.2s; }
+        .drawer-close:hover { border-color: var(--text-main); color: var(--text-main); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 28px; }
+        .drawer-section-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+
+        /* ── Appearance selector ── */
+        .appearance-selector { display: flex; gap: 6px; }
+        .appear-btn { flex: 1; padding: 10px 4px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.5; }
+        .appear-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.06); }
+        html.dark-mode .appear-btn.active { background: rgba(203,160,82,0.08); }
+        .appear-btn:hover:not(.active) { border-color: var(--text-muted); color: var(--text-main); }
+        .appear-icon { display: block; font-size: 16px; margin-bottom: 2px; }
+
+        /* ── Recent section inside drawer ── */
+        .drawer .recent-section { margin-top: 0; border-top: none; padding-top: 0; }
+
+        /* ── Drawer footer ── */
+        .drawer-footer { flex-shrink: 0; padding: 16px 18px 20px; border-top: 1px solid var(--border); }
+        .drawer-footer-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .drawer-footer-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+        .drawer-footer-link { color: var(--text-muted); text-decoration: none; }
+        .drawer-footer-link:hover { color: var(--primary); }
 
         /* ── Preset strip ── */
         .preset-strip { display: flex; gap: 8px; margin-bottom: 0; }
@@ -121,7 +153,7 @@
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
     </style>
     <script>/* block theme before first paint to prevent FOUC */
-        (function(){var s=null;try{s=localStorage.getItem('docready-theme');}catch(e){}var dark=s?s==='dark':(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.documentElement.classList.add('dark-mode');})();
+        (function(){var s=null;try{s=localStorage.getItem('docready-theme');}catch(e){}var dark=s==='dark'?true:(s==='light'?false:(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches));if(dark)document.documentElement.classList.add('dark-mode');})();
     </script>
 </head>
 <body>
@@ -133,8 +165,10 @@
             <h1>Combine Documents</h1>
             <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
         </div>
-        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Switch to dark mode">
-            <span class="theme-icon">&#9789;</span><span id="themeBtnLabel">Dark mode</span>
+        <button class="menu-btn" onclick="openMenu()" aria-label="Open settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
         </button>
     </div>
 
@@ -206,16 +240,45 @@
     <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
     <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
 
-    <!-- Recent exports -->
-    <div class="recent-section" id="recentSection" style="display:none">
-        <div class="recent-header">
-            <span>Previous exports</span>
-            <button class="recent-clear" onclick="clearRecent()">Clear</button>
-        </div>
-        <div class="recent-list" id="recentList"></div>
-    </div>
 
 </div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeMenu()"></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="drawer-header">
+        <span class="drawer-title">Settings</span>
+        <button class="drawer-close" onclick="closeMenu()" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body">
+        <div>
+            <div class="drawer-section-title">Appearance</div>
+            <div class="appearance-selector">
+                <button class="appear-btn" id="appearLight" onclick="setThemeMode('light')">
+                    <span class="appear-icon">&#9728;</span>Light
+                </button>
+                <button class="appear-btn" id="appearDark" onclick="setThemeMode('dark')">
+                    <span class="appear-icon">&#9790;</span>Dark
+                </button>
+                <button class="appear-btn" id="appearSystem" onclick="setThemeMode('system')">
+                    <span class="appear-icon">&#9681;</span>Auto
+                </button>
+            </div>
+        </div>
+        <div class="recent-section" id="recentSection" style="display:none">
+            <div class="recent-header">
+                <span>Previous exports</span>
+                <button class="recent-clear" onclick="clearRecent()">Clear</button>
+            </div>
+            <div class="recent-list" id="recentList"></div>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <div class="drawer-footer-name">eFiling DocReady</div>
+        <div class="drawer-footer-meta">v1.1 &middot; by <a href="https://nightshiftlabs.za" target="_blank" rel="noopener" class="drawer-footer-link">Nightshift Labs ZA</a></div>
+    </div>
+</div>
+
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
 var files        = [];
@@ -226,38 +289,53 @@ var A4_W = 595.28, A4_H = 841.89;
 var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
-var _userSetTheme = false;
+var _themeMode = 'system'; // 'light' | 'dark' | 'system'
 
 function applyTheme(dark) {
     document.documentElement.classList.toggle('dark-mode', dark);
-    document.querySelector('#themeBtn .theme-icon').textContent = dark ? '\u2600' : '\u263D';
-    document.getElementById('themeBtnLabel').textContent = dark ? 'Light mode' : 'Dark mode';
-    document.getElementById('themeBtn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
+    var ids = ['appearLight', 'appearDark', 'appearSystem'];
+    var modes = ['light', 'dark', 'system'];
+    ids.forEach(function(id, i) {
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('active', modes[i] === _themeMode);
+    });
 }
 
-function toggleTheme() {
-    var dark = !document.documentElement.classList.contains('dark-mode');
-    _userSetTheme = true;
-    try { localStorage.setItem('docready-theme', dark ? 'dark' : 'light'); } catch(e) {}
+function setThemeMode(mode) {
+    _themeMode = mode;
+    try { localStorage.setItem('docready-theme', mode); } catch(e) {}
+    var dark = mode === 'dark' ? true : (mode === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
     applyTheme(dark);
 }
 
 function initTheme() {
     var saved = null;
     try { saved = localStorage.getItem('docready-theme'); } catch(e) {}
-    if (saved) {
-        _userSetTheme = true;
-        applyTheme(saved === 'dark');
-    } else {
-        applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
+    _themeMode = (saved === 'dark' || saved === 'light') ? saved : 'system';
+    var dark = _themeMode === 'dark' ? true : (_themeMode === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    applyTheme(dark);
     if (window.matchMedia) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-            if (!_userSetTheme) applyTheme(e.matches);
+            if (_themeMode === 'system') applyTheme(e.matches);
         });
     }
 }
+
+// ── Drawer ────────────────────────────────────────────────────────────────────
+function openMenu() {
+    document.getElementById('drawerOverlay').classList.add('open');
+    document.getElementById('drawer').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // sync active state in case it changed
+    applyTheme(document.documentElement.classList.contains('dark-mode'));
+}
+function closeMenu() {
+    document.getElementById('drawerOverlay').classList.remove('open');
+    document.getElementById('drawer').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
 
 // ── Presets ───────────────────────────────────────────────────────────────────
 function updateSubtitle() {
