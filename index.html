@@ -151,6 +151,21 @@
         .recent-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
         .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Outfit', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
         .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Desktop two-column layout ── */
+        .main-cols { display: flex; flex-direction: column; }
+        .col-right { flex: 1; min-width: 0; }
+
+        @media (min-width: 820px) {
+            body { padding: 40px 48px 64px; }
+            .app-container { max-width: 900px; padding: 32px 36px; }
+            .main-cols { flex-direction: row; }
+            .col-left { flex-shrink: 0; width: 218px; padding-right: 28px; border-right: 1px solid var(--border); margin-right: 28px; }
+            .col-left .btn-row { flex-direction: column; margin-bottom: 0; }
+            .col-right .file-list { min-height: 240px; }
+            .col-right .filename-wrap { margin-top: 14px; }
+            .empty-state { padding: 40px 16px 36px; }
+        }
     </style>
     <script>/* block theme before first paint to prevent FOUC */
         (function(){var s=null;try{s=localStorage.getItem('docready-theme');}catch(e){}var dark=s==='dark'?true:(s==='light'?false:(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches));if(dark)document.documentElement.classList.add('dark-mode');})();
@@ -172,74 +187,87 @@
         </button>
     </div>
 
-    <!-- Preset strip -->
-    <div class="preset-strip">
-        <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" onclick="setPreset(this)">
-            SARS eFiling<br><strong>&lt; 5 MB</strong>
-        </button>
-        <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
-            Custom<br><strong id="emailStrong">Adjustable</strong>
-        </button>
-        <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
-            Merge only<br><strong>No limit</strong>
-        </button>
-    </div>
+    <div class="main-cols">
 
-    <!-- Email size adjuster (shown only when Email preset active) -->
-    <div class="email-adjuster" id="emailAdjuster">
-        <span>Max size</span>
-        <div class="stepper">
-            <button class="step-btn" onclick="adjustEmail(-1)">&#8722;</button>
-            <div class="step-val"><span id="emailMBVal">10</span> MB</div>
-            <button class="step-btn" onclick="adjustEmail(1)">&#43;</button>
-        </div>
-    </div>
+        <!-- Left column: presets + add buttons -->
+        <div class="col-left">
 
-    <div class="section-gap"></div>
+            <!-- Preset strip -->
+            <div class="preset-strip">
+                <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" onclick="setPreset(this)">
+                    SARS eFiling<br><strong>&lt; 5 MB</strong>
+                </button>
+                <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" onclick="setPreset(this)">
+                    Custom<br><strong id="emailStrong">Adjustable</strong>
+                </button>
+                <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
+                    Merge only<br><strong>No limit</strong>
+                </button>
+            </div>
 
-    <!-- File inputs -->
-    <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/*" style="display:none">
-    <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none">
+            <!-- Email size adjuster (shown only when Custom preset active) -->
+            <div class="email-adjuster" id="emailAdjuster">
+                <span>Max size</span>
+                <div class="stepper">
+                    <button class="step-btn" onclick="adjustEmail(-1)">&#8722;</button>
+                    <div class="step-val"><span id="emailMBVal">10</span> MB</div>
+                    <button class="step-btn" onclick="adjustEmail(1)">&#43;</button>
+                </div>
+            </div>
 
-    <!-- Add buttons -->
-    <div class="btn-row">
-        <button class="btn-action" onclick="document.getElementById('fileInput').click()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="18" x2="12" y2="12"/>
-                <line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
-            Add Documents
-        </button>
-        <button class="btn-action" onclick="document.getElementById('cameraInput').click()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-            </svg>
-            Scan Photo
-        </button>
-    </div>
+            <div class="section-gap"></div>
 
-    <!-- File list -->
-    <div class="file-list" id="fileList">
-        <div class="empty-state" id="emptyState">
-            <div class="empty-state-primary">No documents yet</div>
-            <div class="empty-state-hint">Tap above to add &middot; drag to reorder</div>
-        </div>
-    </div>
+            <!-- File inputs (hidden) -->
+            <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/*" style="display:none">
+            <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none">
 
-    <div class="status-box" id="statusBox"></div>
+            <!-- Add buttons -->
+            <div class="btn-row">
+                <button class="btn-action" onclick="document.getElementById('fileInput').click()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    Add Documents
+                </button>
+                <button class="btn-action" onclick="document.getElementById('cameraInput').click()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    Scan Photo
+                </button>
+            </div>
 
-    <!-- Filename -->
-    <div class="filename-wrap">
-        <label class="field-label" for="filenameInput">File name</label>
-        <input class="text-input" type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
-    </div>
+        </div><!-- /col-left -->
 
-    <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
-    <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
+        <!-- Right column: file workspace -->
+        <div class="col-right">
 
+            <!-- File list -->
+            <div class="file-list" id="fileList">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-primary">No documents yet</div>
+                    <div class="empty-state-hint">Add files or drop them here</div>
+                </div>
+            </div>
+
+            <div class="status-box" id="statusBox"></div>
+
+            <!-- Filename -->
+            <div class="filename-wrap">
+                <label class="field-label" for="filenameInput">File name</label>
+                <input class="text-input" type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
+            </div>
+
+            <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
+            <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
+
+        </div><!-- /col-right -->
+
+    </div><!-- /main-cols -->
 
 </div>
 
@@ -821,6 +849,28 @@ if ('launchQueue' in window) {
         }
     });
 }
+
+// ── OS file drop (drag from Explorer/Finder onto the app) ─────────────────────
+document.body.addEventListener('dragover', function(e) {
+    // Only handle external file drags, not internal item reorders
+    if (dragSrcIndex === null && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        document.getElementById('fileList').classList.add('drag-over');
+    }
+});
+document.body.addEventListener('dragleave', function(e) {
+    if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
+        document.getElementById('fileList').classList.remove('drag-over');
+    }
+});
+document.body.addEventListener('drop', function(e) {
+    document.getElementById('fileList').classList.remove('drag-over');
+    if (dragSrcIndex === null && e.dataTransfer.files && e.dataTransfer.files.length) {
+        e.preventDefault();
+        handleFiles(e.dataTransfer.files);
+    }
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 initTheme();
