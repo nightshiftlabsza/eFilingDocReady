@@ -182,13 +182,30 @@
         .main-cols { display: flex; flex-direction: column; }
         .col-right { flex: 1; min-width: 0; }
 
+        /* ── Desktop nav controls (hidden on mobile) ── */
+        .desktop-nav-controls { display: none; align-items: center; gap: 12px; }
+        .desktop-nav-controls .appearance-selector { gap: 4px; }
+        .desktop-nav-controls .appear-btn { padding: 7px 12px; font-size: 11px; flex: none; }
+        .desktop-nav-controls .appear-icon { display: none; }
+
         @media (min-width: 820px) {
-            body { padding: 40px 48px 64px; }
-            .app-container { max-width: 900px; padding: 32px 36px; }
-            .main-cols { flex-direction: row; }
-            .col-left { flex-shrink: 0; width: 218px; padding-right: 28px; border-right: 1px solid var(--border); margin-right: 28px; }
+            /* Full-page web app layout */
+            body { padding: 0; display: block; }
+            .app-container { max-width: none; padding: 0; border-radius: 0; box-shadow: none; border: none; border-top: none; background: transparent; }
+
+            /* Sticky top nav */
+            .header { position: sticky; top: 0; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: 0; padding: 0 48px; height: 60px; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+            .header .title-group { display: flex; align-items: center; gap: 10px; }
+            .header .title-group h1 { font-size: 18px; }
+            .header .title-group p { margin: 0; font-size: 12px; }
+            .menu-btn { display: none; }
+            .desktop-nav-controls { display: flex; }
+
+            /* Content area */
+            .main-cols { flex-direction: row; max-width: 1080px; margin: 0 auto; padding: 36px 48px 64px; }
+            .col-left { flex-shrink: 0; width: 230px; padding-right: 32px; border-right: 1px solid var(--border); margin-right: 32px; }
             .col-left .btn-row { flex-direction: column; margin-bottom: 0; }
-            .col-right .file-list { min-height: 240px; }
+            .col-right .file-list { min-height: calc(100vh - 380px); }
             .col-right .filename-wrap { margin-top: 14px; }
             .empty-state { padding: 40px 16px 36px; }
         }
@@ -205,6 +222,14 @@
         <div class="title-group">
             <h1>DocReady</h1>
             <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
+        </div>
+        <!-- Desktop appearance controls (hidden on mobile) -->
+        <div class="desktop-nav-controls">
+            <div class="appearance-selector">
+                <button class="appear-btn" id="appearLightD" onclick="setThemeMode('light')"><span class="appear-icon">☀</span>Light</button>
+                <button class="appear-btn" id="appearDarkD" onclick="setThemeMode('dark')"><span class="appear-icon">☾</span>Dark</button>
+                <button class="appear-btn" id="appearSystemD" onclick="setThemeMode('system')"><span class="appear-icon">◑</span>Auto</button>
+            </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
             <span class="premium-badge badge-free" id="freeBadge">Free</span>
@@ -374,8 +399,8 @@ var _themeMode = 'system'; // 'light' | 'dark' | 'system'
 function applyTheme(dark) {
     document.documentElement.classList.toggle('dark-mode', dark);
     document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
-    var ids = ['appearLight', 'appearDark', 'appearSystem'];
-    var modes = ['light', 'dark', 'system'];
+    var ids = ['appearLight', 'appearDark', 'appearSystem', 'appearLightD', 'appearDarkD', 'appearSystemD'];
+    var modes = ['light', 'dark', 'system', 'light', 'dark', 'system'];
     ids.forEach(function(id, i) {
         var el = document.getElementById(id);
         if (el) el.classList.toggle('active', modes[i] === _themeMode);
