@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+    --color-background: #ffffff;
+    --color-surface: #f9fafb;
+}
+
+:root {
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-width: 320px;
+    background-color: var(--bg-color);
+    /* Overridden by App.css */
+    color: var(--text-color);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.active-scale {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.active-scale:active {
+    transform: scale(0.97);
+}
+
+input[type="file"] {
+    display: none;
+}
