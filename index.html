@@ -100,7 +100,9 @@
         .btn-action svg { transition: 0.2s; }
 
         /* ── File list ── */
-        .file-list { margin-bottom: 16px; min-height: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .file-list { margin-bottom: 16px; min-height: 20px; display: flex; flex-direction: column; gap: 8px; border-radius: 8px; transition: background 0.2s; }
+        .file-list.drag-over { background: rgba(21,71,52,0.04); outline: 2.5px dashed var(--primary); outline-offset: 3px; }
+        html.dark-mode .file-list.drag-over { background: rgba(203,160,82,0.05); }
         .file-item { background: var(--bg); padding: 11px 13px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: box-shadow 0.2s, border-color 0.2s; user-select: none; }
         .file-item.dragging { opacity: 0.45; border-color: var(--primary); box-shadow: 0 4px 14px rgba(0,0,0,0.10); cursor: grabbing; }
         .file-item.drag-over { border-color: var(--accent); background: rgba(203,160,82,0.06); }
@@ -116,9 +118,10 @@
         .icon-btn { background: transparent; border: none; color: var(--text-muted); border-radius: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: 0.2s; }
         .icon-btn:hover { background: var(--border); }
         .icon-btn.delete:hover { color: #C0392B; }
-        .empty-state { text-align: center; padding: 22px 0 20px; border: 1px dashed var(--border); border-radius: 8px; }
-        .empty-state-primary { font-size: 13px; color: var(--text-muted); font-weight: 400; }
-        .empty-state-hint { font-size: 11px; color: var(--border); margin-top: 4px; font-weight: 300; }
+        .empty-state { text-align: center; padding: 32px 16px 28px; border: 1.5px dashed var(--text-muted); border-radius: 8px; }
+        .empty-state-icon { color: var(--text-muted); display: block; margin: 0 auto 12px; }
+        .empty-state-primary { font-size: 14px; color: var(--text-main); font-weight: 500; }
+        .empty-state-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
 
         /* ── Status ── */
         .status-box { font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 14px; min-height: 18px; font-weight: 500; transition: color 0.3s; }
@@ -205,9 +208,29 @@
             .main-cols { flex-direction: row; max-width: 1080px; margin: 0 auto; padding: 36px 48px 64px; }
             .col-left { flex-shrink: 0; width: 230px; padding-right: 32px; border-right: 1px solid var(--border); margin-right: 32px; }
             .col-left .btn-row { flex-direction: column; margin-bottom: 0; }
-            .col-right .file-list { min-height: calc(100vh - 380px); }
+            .col-right .file-list { min-height: calc(100vh - 380px); max-height: 600px; }
             .col-right .filename-wrap { margin-top: 14px; }
             .empty-state { padding: 40px 16px 36px; }
+        }
+        /* ── 1280px: MacBook 13" / small monitors ── */
+        @media (min-width: 1280px) {
+            .header { padding: 0 56px; }
+            .main-cols { max-width: 1200px; padding: 40px 56px 72px; }
+            .col-left { width: 260px; padding-right: 36px; margin-right: 36px; }
+            .col-right .file-list { max-height: 680px; }
+        }
+        /* ── 1920px: Full HD monitors ── */
+        @media (min-width: 1920px) {
+            .header { padding: 0 max(64px, calc((100% - 1280px) / 2)); }
+            .main-cols { max-width: 1280px; padding: 44px 64px 80px; }
+            .col-right .file-list { max-height: 760px; }
+        }
+        /* ── 2400px: QHD / Ultrawide ── */
+        @media (min-width: 2400px) {
+            .header { padding: 0 max(48px, calc((100% - 1400px) / 2)); }
+            .main-cols { max-width: 1400px; padding: 48px 72px 96px; }
+            .col-left { width: 300px; padding-right: 40px; margin-right: 40px; }
+            .col-right .file-list { max-height: 860px; }
         }
     </style>
     <script>/* block theme before first paint to prevent FOUC */
@@ -304,8 +327,9 @@
             <!-- File list -->
             <div class="file-list" id="fileList">
                 <div class="empty-state" id="emptyState">
-                    <div class="empty-state-primary">No documents yet</div>
-                    <div class="empty-state-hint">Add files or drop them here</div>
+                    <svg class="empty-state-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div class="empty-state-primary">Add files or drop them here</div>
+                    <div class="empty-state-hint">PDF, JPG or PNG &middot; reorder after adding</div>
                 </div>
             </div>
 
