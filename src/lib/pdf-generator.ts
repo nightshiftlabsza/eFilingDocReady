@@ -143,6 +143,7 @@ export const rasterizePdf = async (
         // ── Render page at 300 DPI ────────────────────────────────────────────
         await page.render({
             canvasContext: ctx as any,
+            canvas: canvas as any,
             viewport: hiResViewport,
         }).promise;
 

@@ -7,7 +7,6 @@ import {
     calculateWage,
     getNMWRate,
     NMW_RATES,
-    DEFAULT_NORMAL_HOURS,
 } from './wageRules';
 
 const OLD = NMW_RATES.beforeMarch2026; // 28.79
