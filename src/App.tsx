@@ -71,30 +71,21 @@ export default function App() {
                     return;
                 }
 
-                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive DPI+Quality Optimization.`);
+                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
 
-                // Adaptive compression: reduce both JPEG quality AND DPI together each pass.
-                // Dropping DPI from 300→85 gives a quadratic pixel-count reduction that
-                // quality alone cannot achieve, ensuring even 16+ MB inputs reach < 5 MB.
+                // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
+                // Extended to 9 passes (down to q=3%) to handle even very large inputs.
                 const phase1Bytes = pdfBytes;
-                const qualitySteps = [
-                    { quality: 0.70, dpi: 300 },
-                    { quality: 0.50, dpi: 250 },
-                    { quality: 0.35, dpi: 200 },
-                    { quality: 0.20, dpi: 150 },
-                    { quality: 0.15, dpi: 120 },
-                    { quality: 0.10, dpi: 100 },
-                    { quality: 0.07, dpi:  85 },
-                ];
+                const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
                 for (let qi = 0; qi < qualitySteps.length; qi++) {
-                    const { quality, dpi } = qualitySteps[qi];
-                    toast.loading(`Compression pass ${qi + 1}/7 (${dpi} DPI, q${Math.round(quality * 100)}%)`, { id: loadingToast });
+                    const quality = qualitySteps[qi];
+                    toast.loading(`Compression pass ${qi + 1}/9 (300 DPI, q${Math.round(quality * 100)}%)`, { id: loadingToast });
                     pdfBytes = await rasterizePdf(phase1Bytes, {
-                        scale: dpi / 72,
+                        scale: 300 / 72,
                         jpegQuality: quality,
                         grayscale: true,
                         onProgress: (current, total) => {
-                            toast.loading(`Pass ${qi + 1}/7 (${dpi} DPI): page ${current}/${total}`, { id: loadingToast });
+                            toast.loading(`Pass ${qi + 1}/9 (q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
                         },
                     });
                     if (pdfBytes.length <= 5 * 1024 * 1024) break;
@@ -106,7 +97,7 @@ export default function App() {
             if (pdfBytes.length > 5 * 1024 * 1024) {
                 console.log("Still > 5MB. Triggering Phase 3 Multi-Volume Split.");
                 toast.loading("Size still exceeds limits. Chunking into Multi-Volume Parts...", { id: loadingToast });
-                finalOutputBytes = await splitPdfIfNeeded(pdfBytes, 4.8 * 1024 * 1024);
+                finalOutputBytes = await splitPdfIfNeeded(pdfBytes, 4.5 * 1024 * 1024);
             }
 
             const urls = finalOutputBytes.map(bytes => {
