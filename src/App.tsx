@@ -144,11 +144,9 @@ export default function App() {
     const handleDownload = () => {
         if (finalPdfUrls.length === 0) return;
 
-        if (!isPremium) {
-            setIsPricingOpen(true);
-            return;
-        }
-
+        // Processing is already gated by credits in handleFilesReady.
+        // If finalPdfUrls is populated the user has already paid — with a free
+        // credit or a premium license. Allow the download unconditionally.
         finalPdfUrls.forEach((url, index) => {
             const link = document.createElement('a');
             link.href = url;
