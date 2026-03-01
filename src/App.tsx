@@ -71,21 +71,30 @@ export default function App() {
                     return;
                 }
 
-                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive 300 DPI Optimization.`);
+                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive DPI+Quality Optimization.`);
 
-                // Adaptive quality: try progressively lower JPEG quality at constant 300 DPI
-                // before falling through to Phase 3 split. Source is always the native Phase 1 bytes.
+                // Adaptive compression: reduce both JPEG quality AND DPI together each pass.
+                // Dropping DPI from 300→85 gives a quadratic pixel-count reduction that
+                // quality alone cannot achieve, ensuring even 16+ MB inputs reach < 5 MB.
                 const phase1Bytes = pdfBytes;
-                const qualitySteps = [0.7, 0.5, 0.35, 0.20, 0.15, 0.10, 0.07];
+                const qualitySteps = [
+                    { quality: 0.70, dpi: 300 },
+                    { quality: 0.50, dpi: 250 },
+                    { quality: 0.35, dpi: 200 },
+                    { quality: 0.20, dpi: 150 },
+                    { quality: 0.15, dpi: 120 },
+                    { quality: 0.10, dpi: 100 },
+                    { quality: 0.07, dpi:  85 },
+                ];
                 for (let qi = 0; qi < qualitySteps.length; qi++) {
-                    const quality = qualitySteps[qi];
-                    toast.loading(`Phase 2: 300 DPI compression (pass ${qi + 1}/7, quality ${Math.round(quality * 100)}%)`, { id: loadingToast });
+                    const { quality, dpi } = qualitySteps[qi];
+                    toast.loading(`Compression pass ${qi + 1}/7 (${dpi} DPI, q${Math.round(quality * 100)}%)`, { id: loadingToast });
                     pdfBytes = await rasterizePdf(phase1Bytes, {
-                        scale: 300 / 72,
+                        scale: dpi / 72,
                         jpegQuality: quality,
                         grayscale: true,
                         onProgress: (current, total) => {
-                            toast.loading(`Phase 2 (pass ${qi + 1}/7, q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
+                            toast.loading(`Pass ${qi + 1}/7 (${dpi} DPI): page ${current}/${total}`, { id: loadingToast });
                         },
                     });
                     if (pdfBytes.length <= 5 * 1024 * 1024) break;
