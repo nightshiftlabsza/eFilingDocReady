@@ -181,10 +181,10 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     <UploadCloud className={cn("w-8 h-8", isDragActive ? "text-[#10b981]" : "text-[#94a3b8]")} />
                 </div>
                 <h3 className="text-xl font-bold mb-2">
-                    {isDragActive ? "Drop to Scan" : "Drag Documents Here"}
+                    {isDragActive ? "Drop your files here" : "Drag documents here, or click to upload"}
                 </h3>
                 <p className="text-sm text-[var(--text-color)]/60 max-w-[300px] mx-auto">
-                    Combine IDs, Payslips, or PDFs. They stay 100% on your device.
+                    ID documents, payslips, bank statements — all processed privately on your device.
                 </p>
             </div>
 
@@ -313,9 +313,9 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                         <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-4 flex gap-3">
                             <AlertCircle className="w-5 h-5 text-[#10b981] shrink-0" />
                             <div>
-                                <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">Audit-Ready Optimization Active</p>
+                                <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">Ready to prepare for eFiling</p>
                                 <p className="text-xs text-[#10b981]/80 leading-relaxed">
-                                    We'll merge these {files.length} files and keep the output under 5MB using <strong>100% Client-Side Adaptive Compression</strong>.
+                                    We'll combine your {files.length} document{files.length !== 1 ? 's' : ''} and compress everything to under 5 MB — without uploading anything.
                                 </p>
                             </div>
                         </div>

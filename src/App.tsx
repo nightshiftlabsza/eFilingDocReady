@@ -48,13 +48,13 @@ export default function App() {
     const handleFilesReady = async (files: File[]) => {
         // Gating Check
         if (!isPremium && freeCredits <= 0) {
-            toast.error("Free credits exhausted. Upgrade for SARS Optimization.");
+            toast.error("You've used your free credits — upgrade to keep compressing.");
             setIsPricingOpen(true);
             return;
         }
 
         setIsProcessing(true);
-        const loadingToast = toast.loading("Phase 1: Native PDF Merge without quality loss...");
+        const loadingToast = toast.loading("Combining your documents…");
 
         try {
             // Phase 1: Native Merge Attempt (No Quality Loss)
@@ -65,7 +65,7 @@ export default function App() {
             // Phase 2: Native merge exceeded 5 MB — Optimize for eFiling at 300 DPI.
             if (initialSize > 5 * 1024 * 1024) {
                 if (!isPremium && freeCredits <= 0) {
-                    toast.error("File exceeds 5MB. Credits required for Advanced Compression.", { id: loadingToast, duration: 4000 });
+                    toast.error("This file is over 5 MB — unlock compression to continue.", { id: loadingToast, duration: 4000 });
                     setIsPricingOpen(true);
                     setIsProcessing(false);
                     return;
@@ -79,13 +79,13 @@ export default function App() {
                 const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
                 for (let qi = 0; qi < qualitySteps.length; qi++) {
                     const quality = qualitySteps[qi];
-                    toast.loading(`Compression pass ${qi + 1}/9 (300 DPI, q${Math.round(quality * 100)}%)`, { id: loadingToast });
+                    toast.loading(`Shrinking your file… (step ${qi + 1} of 9)`, { id: loadingToast });
                     pdfBytes = await rasterizePdf(phase1Bytes, {
                         scale: 300 / 72,
                         jpegQuality: quality,
                         grayscale: true,
                         onProgress: (current, total) => {
-                            toast.loading(`Pass ${qi + 1}/9 (q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
+                            toast.loading(`Shrinking your file… page ${current} of ${total}`, { id: loadingToast });
                         },
                     });
                     if (pdfBytes.length <= 5 * 1024 * 1024) break;
@@ -96,7 +96,7 @@ export default function App() {
             let finalOutputBytes = [pdfBytes];
             if (pdfBytes.length > 5 * 1024 * 1024) {
                 console.log("Still > 5MB. Triggering Phase 3 Multi-Volume Split.");
-                toast.loading("Size still exceeds limits. Chunking into Multi-Volume Parts...", { id: loadingToast });
+                toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
                 finalOutputBytes = await splitPdfIfNeeded(pdfBytes, 4.5 * 1024 * 1024);
             }
 
@@ -127,15 +127,15 @@ export default function App() {
             }
 
             if (isSafe && urls.length > 1) {
-                toast.success(`Ready! Split into ${urls.length} SARS-Safe volumes.`, { id: loadingToast, duration: 4000 });
+                toast.success(`Done! Saved as ${urls.length} parts — each ready to upload to eFiling.`, { id: loadingToast, duration: 4000 });
             } else if (isSafe) {
-                toast.success(`Ready! ${(totalCompressedSize / 1024 / 1024).toFixed(2)}MB (SARS-Safe).`, { id: loadingToast, duration: 4000 });
+                toast.success(`Done! Your file is ${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB and ready for SARS eFiling.`, { id: loadingToast, duration: 4000 });
             } else {
-                toast.error(`Warning: Part sizes still exceed 5MB.`, { id: loadingToast, duration: 6000 });
+                toast.error(`Heads up: one or more parts may still be over 5 MB. Try uploading anyway.`, { id: loadingToast, duration: 6000 });
             }
         } catch (error: any) {
             console.error(error);
-            toast.error(error.message || "Process failed. Try a different file.", { id: loadingToast, duration: 5000 });
+            toast.error(error.message || "Something went wrong. Please try again with a different file.", { id: loadingToast, duration: 5000 });
         } finally {
             setIsProcessing(false);
         }
@@ -161,7 +161,15 @@ export default function App() {
 
     return (
         <div className="app-container">
-            <Toaster position="top-center" />
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    style: { fontSize: '15px', maxWidth: '460px', padding: '14px 20px', fontWeight: 500 },
+                    loading: { duration: Infinity },
+                    success: { duration: 4000 },
+                    error: { duration: 6000 },
+                }}
+            />
             <Header
                 currentMode={mode}
                 onOpenSettings={() => setIsSettingsOpen(true)}
