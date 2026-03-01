@@ -116,7 +116,9 @@ export const rasterizePdf = async (
     } = options;
 
     // ── Optimize for eFiling (SARS Compliance) ────────────────────────────────────
-    const srcBytes = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+    // Always copy the buffer before passing to pdfjs — its Worker transfer detaches
+    // the original ArrayBuffer, which would corrupt phase1Bytes on subsequent passes.
+    const srcBytes = new Uint8Array(pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes));
     const loadingTask = pdfjsLib.getDocument({ data: srcBytes });
     const pdfDoc = await loadingTask.promise;
     const totalPages = pdfDoc.numPages;
