@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Shield, Zap, Users, Clock, AlertCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
 
 interface PractitionerViewProps {
     onEnterWorkspace: () => void;
@@ -108,9 +110,18 @@ export const PractitionerView: React.FC<PractitionerViewProps> = ({ onEnterWorks
                         </div>
                     </div>
                     <div className="flex flex-col gap-4">
-                        <button onClick={onEnterWorkspace} className="btn-cta practitioner-mode py-4 w-full text-lg">Open Practitioner Hub</button>
+                        <button
+                            onClick={() => {
+                                toast.success("Initializing Practitioner Hub...");
+                                onEnterWorkspace();
+                            }}
+                            className="btn-cta practitioner-mode py-4 w-full text-lg"
+                        >
+                            Open Practitioner Hub
+                        </button>
                         <button onClick={onOpenPricing} className="btn-secondary py-4 w-full text-lg">View Detailed B2B Pricing</button>
                     </div>
+
                     <p className="text-[10px] text-center mt-4 opacity-40 uppercase tracking-widest">
                         VAT-compliant invoicing and EFT support available.
                     </p>

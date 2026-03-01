@@ -1,15 +1,13 @@
 import React from 'react';
-import { Shield, LayoutDashboard, Settings, Sun, Moon } from 'lucide-react';
+import { Shield, LayoutDashboard, Settings } from 'lucide-react';
 
 interface HeaderProps {
     onOpenSettings: () => void;
     onStartOver: () => void;
     currentMode?: 'landing' | 'taxpayer-info' | 'practitioner-info' | 'workspace';
-    theme: 'light' | 'dark';
-    onToggleTheme: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, currentMode = 'landing', theme, onToggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, currentMode = 'landing' }) => {
     return (
         <nav className="navbar glass-panel">
             <div className="flex items-center gap-3 cursor-pointer" onClick={onStartOver}>
@@ -18,9 +16,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xl font-bold tracking-tight text-white leading-none">DocReady</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] uppercase tracking-widest text-[#10b981] font-semibold">Audit-Ready</span>
-                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[9px] text-emerald-500 font-bold uppercase tracking-tight">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="text-[10px] uppercase tracking-widest text-[#10b981] font-semibold whitespace-nowrap">Audit-Ready</span>
+                        <span className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[9px] text-emerald-500 font-bold uppercase tracking-tight whitespace-nowrap">
                             <Shield className="w-2 h-2" />
                             Local Only
                         </span>
@@ -35,13 +33,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                         Dashboard
                     </button>
                 )}
-                <button
-                    onClick={onToggleTheme}
-                    className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors active-scale mr-1"
-                    aria-label="Toggle Theme"
-                >
-                    {theme === 'light' ? <Moon className="w-5 h-5 text-slate-600" /> : <Sun className="w-5 h-5 text-[#94a3b8]" />}
-                </button>
 
                 <button
                     onClick={onOpenSettings}

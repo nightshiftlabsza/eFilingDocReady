@@ -1,14 +1,21 @@
-import React from 'react';
 import { X, Moon, Sun, ExternalLink, ShieldCheck, Trash2, AlertTriangle, Scale, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
 
 interface SettingsDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     onOpenPrivacy: () => void;
+    theme: 'light' | 'dark';
+    onToggleTheme: () => void;
 }
 
-export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose, onOpenPrivacy }) => {
+export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose, onOpenPrivacy, theme, onToggleTheme }) => {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -48,10 +55,22 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose,
                             <section>
                                 <label className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-3 block">Theme Preferences</label>
                                 <div className="grid grid-cols-2 gap-3 p-1 bg-white/5 rounded-2xl border border-white/5">
-                                    <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 text-white font-medium border border-white/10 shadow-sm">
+                                    <button
+                                        onClick={() => theme !== 'dark' && onToggleTheme()}
+                                        className={cn(
+                                            "flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium transition-all",
+                                            theme === 'dark' ? "bg-white/10 text-white border border-white/10 shadow-sm" : "text-slate-400 hover:text-white"
+                                        )}
+                                    >
                                         <Moon className="w-4 h-4" /> Dark
                                     </button>
-                                    <button className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-slate-400 font-medium">
+                                    <button
+                                        onClick={() => theme !== 'light' && onToggleTheme()}
+                                        className={cn(
+                                            "flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium transition-all",
+                                            theme === 'light' ? "bg-white/10 text-white border border-white/10 shadow-sm" : "text-slate-400 hover:text-white"
+                                        )}
+                                    >
                                         <Sun className="w-4 h-4" /> Light
                                     </button>
                                 </div>

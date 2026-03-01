@@ -240,11 +240,20 @@ export default function App() {
                                 </div>
                             </div>
                             <footer className="mt-20 py-8 border-t border-[var(--glass-border)] w-full text-center">
-                                <p className="text-sm opacity-50 mb-2">
-                                    Secure, Client-Side Document Optimization
-                                </p>
-                                <a href="mailto:support@docready.co.za" className="text-xs opacity-40 hover:opacity-100 transition-opacity whitespace-nowrap">support@docready.co.za</a>
+                                <div className="flex flex-col items-center gap-2">
+                                    <p className="text-sm font-semibold opacity-60 tracking-tight">
+                                        DocReady: Private Document Optimization
+                                    </p>
+                                    <div className="flex items-center gap-4 opacity-40 text-[10px] uppercase tracking-widest font-bold">
+                                        <span>POPIA Compliant</span>
+                                        <span className="w-1 h-1 bg-current rounded-full" />
+                                        <span>100% Client-Side</span>
+                                        <span className="w-1 h-1 bg-current rounded-full" />
+                                        <a href="mailto:support@docready.co.za" className="hover:text-primary transition-colors">Support</a>
+                                    </div>
+                                </div>
                             </footer>
+
                         </motion.section>
                     ) : mode === 'taxpayer-info' ? (
                         <TaxpayerView

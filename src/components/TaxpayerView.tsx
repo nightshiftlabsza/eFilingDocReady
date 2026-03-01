@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Shield, Zap, Lock } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
 
 interface TaxpayerViewProps {
     onEnterWorkspace: () => void;
@@ -63,9 +65,18 @@ export const TaxpayerView: React.FC<TaxpayerViewProps> = ({ onEnterWorkspace, on
                         </div>
                     </div>
                     <div className="w-full md:w-auto flex flex-col gap-4">
-                        <button onClick={onEnterWorkspace} className="btn-primary py-4 px-10 text-lg shadow-xl shadow-blue-500/20">Try for Free (3 Credits)</button>
+                        <button
+                            onClick={() => {
+                                toast.success("Opening Taxpayer Workspace...");
+                                onEnterWorkspace();
+                            }}
+                            className="btn-primary py-4 px-10 text-lg shadow-xl shadow-blue-500/20"
+                        >
+                            Try for Free (3 Credits)
+                        </button>
                         <button onClick={onOpenPricing} className="btn-secondary py-4 px-10 text-lg">Buy Premium Pass</button>
                     </div>
+
                 </div>
             </div>
 
