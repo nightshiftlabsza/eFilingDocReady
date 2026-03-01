@@ -8,7 +8,6 @@ interface ReceiptCardProps {
     maxPartSize?: number;
     onDownload: () => void;
     onRestart: () => void;
-    isPremium: boolean;
     partCount?: number;
     isSafe: boolean;
 }
@@ -27,7 +26,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
     maxPartSize = 0,
     onDownload,
     onRestart,
-    isPremium,
     partCount = 1,
     isSafe,
 }) => {
@@ -104,7 +102,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                     >
                         <Download className="w-5 h-5" />
                         {partCount > 1 ? `Download All Parts (${partCount})` : 'Download Final PDF'}
-                        {!isPremium && <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded-lg border border-white/10">PREMIUM</span>}
                     </motion.button>
 
                     <button

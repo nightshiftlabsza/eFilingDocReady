@@ -17,6 +17,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,woff2}'],
         // Don't cache pdfjs worker — it's large and loaded on demand
         globIgnores: ['**/pdf.worker*'],
+        cleanupOutdatedCaches: true,
       },
     }),
   ],

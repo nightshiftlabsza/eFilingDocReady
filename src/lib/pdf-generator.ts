@@ -1,5 +1,6 @@
 import { PDFDocument, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import { sanitizeSarsFilename } from './sanitizer';
 
 /**
  * Configure the pdfjs worker.
@@ -59,7 +60,8 @@ export const buildPurePdf = async (files: File[]): Promise<Uint8Array> => {
                 const copiedPages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
                 copiedPages.forEach((page) => finalPdf.addPage(page));
             } catch (err) {
-                throw new Error(`Failed to load ${file.name}. Ensure it is not locked with an unknown password.`);
+                const safeName = sanitizeSarsFilename(file.name);
+                throw new Error(`Failed to load ${safeName}. Ensure it is not locked with an unknown password.`);
             }
         }
     }

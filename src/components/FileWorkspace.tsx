@@ -111,7 +111,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto space-y-6">
+        <div className="w-full max-w-5xl mx-auto space-y-6">
             {/* Dropzone */}
             <div
                 {...getRootProps()}
@@ -154,7 +154,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             axis="y"
                             values={files}
                             onReorder={setFiles}
-                            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
                         >
                             {files.map((file, index) => {
                                 const key = `${file.name}-${file.size}`;

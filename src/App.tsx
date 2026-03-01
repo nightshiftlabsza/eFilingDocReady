@@ -76,16 +76,16 @@ export default function App() {
                 // Adaptive quality: try progressively lower JPEG quality at constant 300 DPI
                 // before falling through to Phase 3 split. Source is always the native Phase 1 bytes.
                 const phase1Bytes = pdfBytes;
-                const qualitySteps = [0.7, 0.5, 0.35, 0.20];
+                const qualitySteps = [0.7, 0.5, 0.35, 0.20, 0.15, 0.10, 0.07];
                 for (let qi = 0; qi < qualitySteps.length; qi++) {
                     const quality = qualitySteps[qi];
-                    toast.loading(`Phase 2: 300 DPI compression (pass ${qi + 1}/4, quality ${Math.round(quality * 100)}%)`, { id: loadingToast });
+                    toast.loading(`Phase 2: 300 DPI compression (pass ${qi + 1}/7, quality ${Math.round(quality * 100)}%)`, { id: loadingToast });
                     pdfBytes = await rasterizePdf(phase1Bytes, {
                         scale: 300 / 72,
                         jpegQuality: quality,
                         grayscale: true,
                         onProgress: (current, total) => {
-                            toast.loading(`Phase 2 (pass ${qi + 1}/4, q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
+                            toast.loading(`Phase 2 (pass ${qi + 1}/7, q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
                         },
                     });
                     if (pdfBytes.length <= 5 * 1024 * 1024) break;
@@ -164,8 +164,6 @@ export default function App() {
             <Toaster position="top-center" />
             <Header
                 currentMode={mode}
-                theme={theme}
-                onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onStartOver={() => {
                     setMode('landing');
@@ -243,9 +241,9 @@ export default function App() {
                             </div>
                             <footer className="mt-20 py-8 border-t border-[var(--glass-border)] w-full text-center">
                                 <p className="text-sm opacity-50 mb-2">
-                                    Made by <span className="font-semibold text-blue-500/80">NightShift Labs ZA</span>
+                                    Secure, Client-Side Document Optimization
                                 </p>
-                                <a href="mailto:nightshiftlabsza@gmail.com" className="text-xs opacity-40 hover:opacity-100 transition-opacity">nightshiftlabsza@gmail.com</a>
+                                <a href="mailto:support@docready.co.za" className="text-xs opacity-40 hover:opacity-100 transition-opacity whitespace-nowrap">support@docready.co.za</a>
                             </footer>
                         </motion.section>
                     ) : mode === 'taxpayer-info' ? (
@@ -278,7 +276,6 @@ export default function App() {
                                     maxPartSize={fileSizes.maxPartSize}
                                     onDownload={handleDownload}
                                     onRestart={() => setFinalPdfUrls([])}
-                                    isPremium={isPremium}
                                     partCount={finalPdfUrls.length}
                                     isSafe={resultIsSafe}
                                 />
@@ -293,6 +290,8 @@ export default function App() {
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
                 onOpenPrivacy={() => setIsPrivacyOpen(true)}
+                theme={theme}
+                onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
             />
             <PricingModal
                 isOpen={isPricingOpen}
