@@ -135,27 +135,33 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-h1 {
-  font-size: var(--h1-size);
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.02em;
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/*
+ * h1 and p are placed in @layer base so that Tailwind utility classes
+ * (text-xs, text-sm, text-2xl, mb-4, etc.) properly override them.
+ * Unlayered CSS always beats @layer utilities — keeping these global was
+ * the root cause of oversized modal text on ultrawide monitors.
+ */
+@layer base {
+  h1 {
+    font-size: var(--h1-size);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+    /* Gradient text for hero headings — overridden by Tailwind bg-* utilities */
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-p {
-  font-size: var(--p-size);
-  color: var(--text-color);
-  opacity: 0.7;
-  line-height: 1.6;
-  margin-bottom: 2.5rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  p {
+    /* Base fluid size — overridden by any Tailwind text-* utility */
+    font-size: var(--p-size);
+    color: var(--text-color);
+    line-height: 1.6;
+    /* No global margin/max-width/opacity — Tailwind utilities handle those per-component */
+  }
 }
 
 .disclaimer {
