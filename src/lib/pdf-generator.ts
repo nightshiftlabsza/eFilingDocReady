@@ -125,9 +125,18 @@ export const rasterizePdf = async (
         const page = await pdfDoc.getPage(pageNum);
 
         // baseViewport: original page dimensions in PDF points (72 pt = 1 inch).
-        // hiResViewport: same page at 300 DPI — this is the canvas pixel size.
         const baseViewport = page.getViewport({ scale: 1 });
-        const hiResViewport = page.getViewport({ scale });
+
+        // Cap the canvas to prevent memory crashes on large-page PDFs
+        // (e.g. PDFs created from 3440×1440 ultrawide screenshots).
+        // A4 at 300 DPI = 2480×3508px. We cap at A3 long-edge (4961px) which
+        // is far beyond SARS legibility requirements and safe for all browsers.
+        const MAX_CANVAS_DIM = 4961;
+        const rawMaxDim = Math.max(baseViewport.width, baseViewport.height) * scale;
+        const effectiveScale = rawMaxDim > MAX_CANVAS_DIM
+            ? scale * (MAX_CANVAS_DIM / rawMaxDim)
+            : scale;
+        const hiResViewport = page.getViewport({ scale: effectiveScale });
 
         const canvas = document.createElement('canvas');
         canvas.width = Math.floor(hiResViewport.width);
@@ -167,6 +176,10 @@ export const rasterizePdf = async (
 
         // ── JPEG encode ───────────────────────────────────────────────────────
         const jpegBytes = await canvasToJpegBytes(canvas, jpegQuality);
+
+        // Release canvas GPU/CPU memory before moving to next page
+        canvas.width = 0;
+        canvas.height = 0;
 
         // ── Embed into output PDF at original point dimensions ────────────────
         // The image pixel dimensions encode 300 DPI; the PDF page size is in
