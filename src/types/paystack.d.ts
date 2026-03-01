@@ -1,4 +1,15 @@
 declare module '@paystack/inline-js' {
+    export interface PaystackResponse {
+        reference: string;
+        status: string;
+        trans: string;
+        transaction: string;
+        message: string;
+        trxref: string;
+    }
+    export interface PaystackError {
+        message: string;
+    }
     export default class PaystackPop {
         newTransaction(options: {
             key: string;
@@ -7,10 +18,10 @@ declare module '@paystack/inline-js' {
             currency?: string;
             ref?: string;
             channels?: string[];
-            metadata?: any;
-            onSuccess?: (response: any) => void;
+            metadata?: Record<string, unknown>;
+            onSuccess?: (response: PaystackResponse) => void;
             onCancel?: () => void;
-            onError?: (error: any) => void;
+            onError?: (error: PaystackError) => void;
         }): void;
     }
 }

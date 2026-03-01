@@ -3,10 +3,20 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Force reload when a new service worker takes control so users always get fresh code.
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
+    navigator.serviceWorker.ready.then((registration) => {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (confirm('A new update is available. Reload to update?')) {
+                            window.location.reload();
+                        }
+                    }
+                });
+            }
+        });
     });
 }
 

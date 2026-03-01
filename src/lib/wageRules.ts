@@ -19,7 +19,7 @@ export const NMW_RATES = {
 } as const;
 
 /** Effective date of the March 2026 NMW increase (midnight, start of day). */
-const MARCH_2026 = new Date('2026-03-01T00:00:00');
+const MARCH_2026 = new Date(2026, 2, 1);
 
 const FOUR_HOUR_MIN = 4;
 const OVERTIME_MULTIPLIER = 1.5;
