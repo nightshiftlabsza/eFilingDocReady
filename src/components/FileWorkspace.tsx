@@ -25,8 +25,6 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
     const [files, setFiles] = useState<File[]>([]);
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
     const objectUrlsRef = useRef<Set<string>>(new Set());
-    // Holds the active PDF.js render task so we can cancel it if the effect re-runs
-    const currentRenderTaskRef = useRef<{ cancel: () => void } | null>(null);
 
     // Cleanup all object URLs on unmount
     useEffect(() => {
@@ -39,10 +37,12 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
     // Generate thumbnails whenever files change
     useEffect(() => {
         let cancelled = false;
+        let currentRenderTask: pdfjsLib.RenderTask | null = null;
 
         const generateThumbnails = async () => {
             for (const file of files) {
                 if (cancelled) break;
+
                 const key = `${file.name}-${file.size}`;
                 if (thumbnails[key]) continue; // already cached
 
@@ -50,8 +50,10 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     try {
                         const arrayBuffer = await file.arrayBuffer();
                         if (cancelled) break;
+
                         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                         if (cancelled) break;
+
                         const page = await pdf.getPage(1);
                         const viewport = page.getViewport({ scale: 0.4 });
 
@@ -60,26 +62,21 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                         canvas.height = viewport.height;
                         const ctx = canvas.getContext('2d')!;
 
-                        // Store render task so cleanup can cancel it if the component unmounts
-                        // or files change before the render completes (prevents stale renders
-                        // and unhandled promise rejections from overlapping PDF.js workers).
-                        const renderTask = page.render({ canvasContext: ctx, canvas, viewport });
-                        currentRenderTaskRef.current = renderTask;
-                        try {
-                            await renderTask.promise;
-                        } catch (e: any) {
-                            if (e?.name === 'RenderingCancelledException') break;
-                            throw e;
-                        } finally {
-                            currentRenderTaskRef.current = null;
-                        }
+                        // Capture task reference before awaiting so cleanup can cancel it
+                        currentRenderTask = page.render({ canvasContext: ctx, canvas, viewport });
+                        await currentRenderTask.promise;
+                        currentRenderTask = null;
 
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         if (!cancelled) {
                             setThumbnails(prev => ({ ...prev, [key]: dataUrl }));
                         }
-                    } catch {
-                        // Silently ignore — encrypted or corrupt PDF gets a fallback icon
+                    } catch (error: any) {
+                        if (error?.name === 'RenderingCancelledException') {
+                            // Intentional — effect cleaned up mid-render. Exit the loop.
+                            break;
+                        }
+                        // Silently ignore encrypted or corrupt PDFs — fallback icon shown
                     }
                 } else if (file.type.startsWith('image/')) {
                     const objectUrl = URL.createObjectURL(file);
@@ -95,8 +92,9 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
         return () => {
             cancelled = true;
             // Cancel any in-progress PDF.js render to free the worker immediately
-            currentRenderTaskRef.current?.cancel();
-            currentRenderTaskRef.current = null;
+            if (currentRenderTask) {
+                currentRenderTask.cancel();
+            }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [files]);
@@ -121,36 +119,45 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
         disabled: isProcessing
     });
 
-    const removeFile = (index: number) => {
-        const file = files[index];
-        if (file) {
-            // Revoke the object URL for image thumbnails to free memory immediately,
-            // rather than waiting until the component unmounts.
-            const key = `${file.name}-${file.size}`;
-            const url = thumbnails[key];
-            if (url && file.type.startsWith('image/')) {
-                URL.revokeObjectURL(url);
-                objectUrlsRef.current.delete(url);
+    // Uses functional updater so we always access the latest state, not a stale closure.
+    // Checks startsWith('blob:') to distinguish revocable object URLs (images) from
+    // base64 data URLs (PDF thumbnails rendered via canvas), which must not be revoked.
+    const removeFile = useCallback((index: number) => {
+        setFiles(prevFiles => {
+            const newFiles = [...prevFiles];
+            const fileToRemove = newFiles[index];
+
+            if (fileToRemove) {
+                const key = `${fileToRemove.name}-${fileToRemove.size}`;
+                setThumbnails(prevThumbnails => {
+                    const newThumbnails = { ...prevThumbnails };
+                    const thumbUrl = newThumbnails[key];
+                    if (thumbUrl && thumbUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(thumbUrl);
+                        objectUrlsRef.current.delete(thumbUrl);
+                    }
+                    delete newThumbnails[key];
+                    return newThumbnails;
+                });
             }
-            setThumbnails(prev => {
-                const next = { ...prev };
-                delete next[key];
-                return next;
-            });
-        }
-        setFiles(prev => prev.filter((_, i) => i !== index));
-    };
+
+            newFiles.splice(index, 1);
+            return newFiles;
+        });
+    }, []);
 
     // Keyboard-accessible reorder — shifts a file up or down by one position.
-    const moveFile = (from: number, to: number) => {
-        if (to < 0 || to >= files.length) return;
-        setFiles(prev => {
-            const next = [...prev];
-            const [item] = next.splice(from, 1);
-            next.splice(to, 0, item);
-            return next;
+    const moveFile = useCallback((index: number, direction: 'up' | 'down') => {
+        setFiles(prevFiles => {
+            const newFiles = [...prevFiles];
+            if (direction === 'up' && index > 0) {
+                [newFiles[index - 1], newFiles[index]] = [newFiles[index], newFiles[index - 1]];
+            } else if (direction === 'down' && index < newFiles.length - 1) {
+                [newFiles[index], newFiles[index + 1]] = [newFiles[index + 1], newFiles[index]];
+            }
+            return newFiles;
         });
-    };
+    }, []);
 
     const handleCompress = () => {
         if (files.length > 0) {
@@ -241,6 +248,28 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             >
                                                 <Trash2 className="w-4 h-4 text-white" />
                                             </button>
+
+                                            {/* Keyboard reorder controls — sr-only until keyboard-focused,
+                                                then revealed as a semi-transparent overlay so keyboard
+                                                users can visually see and operate the controls. */}
+                                            <div className="sr-only focus-within:not-sr-only focus-within:absolute focus-within:inset-0 focus-within:bg-black/80 focus-within:z-20 focus-within:flex focus-within:flex-col focus-within:items-center focus-within:justify-center focus-within:gap-2">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); moveFile(index, 'up'); }}
+                                                    disabled={index === 0}
+                                                    aria-label={`Move ${file.name} up in the list`}
+                                                    className="px-3 py-1 bg-white/20 text-white rounded text-xs font-bold disabled:opacity-30 hover:bg-white/40"
+                                                >
+                                                    Move Up
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); moveFile(index, 'down'); }}
+                                                    disabled={index === files.length - 1}
+                                                    aria-label={`Move ${file.name} down in the list`}
+                                                    className="px-3 py-1 bg-white/20 text-white rounded text-xs font-bold disabled:opacity-30 hover:bg-white/40"
+                                                >
+                                                    Move Down
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {/* Info strip */}
@@ -263,25 +292,6 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             <p className="text-xs text-[var(--text-color)]/40">
                                                 {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type.split('/')[1]?.toUpperCase() ?? 'FILE'}
                                             </p>
-
-                                            {/* Keyboard-accessible reorder controls — visually hidden,
-                                                focusable via Tab for screen reader / keyboard users */}
-                                            <div className="sr-only">
-                                                <button
-                                                    onClick={() => moveFile(index, index - 1)}
-                                                    disabled={index === 0}
-                                                    aria-label={`Move ${file.name} up`}
-                                                >
-                                                    Move up
-                                                </button>
-                                                <button
-                                                    onClick={() => moveFile(index, index + 1)}
-                                                    disabled={index === files.length - 1}
-                                                    aria-label={`Move ${file.name} down`}
-                                                >
-                                                    Move down
-                                                </button>
-                                            </div>
                                         </div>
                                     </Reorder.Item>
                                 );
