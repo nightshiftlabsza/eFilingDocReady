@@ -71,8 +71,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                                 <div className="badge tooltip mb-2" data-tip="Unlimited Merges">
                                     Premium Pass
                                 </div>
-                                <h2 className="text-3xl font-bold text-white mb-1">Lifetime License</h2>
-                                <p className="text-sm text-slate-400">Unlock SARS-compliant compression forever.</p>
+                                <h2 className="text-3xl font-bold text-[var(--text-color)] mb-1">Lifetime License</h2>
+                                <p className="text-sm text-[var(--text-color)]/60">Unlock SARS-compliant compression forever.</p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -84,26 +84,26 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
                         <div className="bg-white/5 rounded-2xl border border-white/5 p-6 mb-8">
                             <ul className="space-y-4">
-                                <li className="flex items-center gap-3 text-sm text-slate-200">
+                                <li className="flex items-center gap-3 text-sm text-[var(--text-color)]/80">
                                     <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
                                         <Check className="w-3 h-3 text-primary" />
                                     </div>
                                     Unlimited {persona === 'practitioner' ? 'Batch Processing' : 'Merges'}
                                 </li>
-                                <li className="flex items-center gap-3 text-sm text-slate-200">
+                                <li className="flex items-center gap-3 text-sm text-[var(--text-color)]/80">
                                     <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
                                         <Check className="w-3 h-3 text-primary" />
                                     </div>
                                     Advanced JPEG/PDF Compactor (Max DPI)
                                 </li>
-                                <li className="flex items-center gap-3 text-sm text-slate-200">
+                                <li className="flex items-center gap-3 text-sm text-[var(--text-color)]/80">
                                     <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
                                         <Check className="w-3 h-3 text-primary" />
                                     </div>
                                     {persona === 'practitioner' ? 'Smart Naming (SARS Character Stripping)' : 'Priority Logic (Stay Under 5MB Always)'}
                                 </li>
                                 {persona === 'practitioner' && (
-                                    <li className="flex items-center gap-3 text-sm text-slate-200">
+                                    <li className="flex items-center gap-3 text-sm text-[var(--text-color)]/80">
                                         <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
                                             <Check className="w-3 h-3 text-primary" />
                                         </div>
@@ -114,10 +114,10 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
                             <div className="mt-8 pt-6 border-t border-white/5">
                                 <div className="flex items-baseline gap-2 mb-2">
-                                    <span className="text-4xl font-black text-white">R{persona === 'practitioner' ? '499' : '89'}</span>
-                                    <span className="text-sm text-slate-400 font-medium uppercase">{persona === 'practitioner' ? 'Season Pass' : 'Lifetime'}</span>
+                                    <span className="text-4xl font-black text-[var(--text-color)]">R{persona === 'practitioner' ? '499' : '89'}</span>
+                                    <span className="text-sm text-[var(--text-color)]/60 font-medium uppercase">{persona === 'practitioner' ? 'Season Pass' : 'Lifetime'}</span>
                                 </div>
-                                <p className="text-xs text-slate-500 flex items-center gap-1">
+                                <p className="text-xs text-[var(--text-color)]/50 flex items-center gap-1">
                                     <Shield className="w-3 h-3 text-primary" />
                                     {persona === 'practitioner' ? 'Annual Firm-Ready License' : 'No subscriptions. No recurring charges.'}
                                 </p>
@@ -134,7 +134,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                                         value={userEmail}
                                         onChange={(e) => setUserEmail(e.target.value)}
                                         placeholder="your@email.com"
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-white placeholder-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-12 text-[var(--text-color)] placeholder-slate-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                                     />
                                 </div>
                             </div>
@@ -148,7 +148,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                                 {loading ? 'Payment Securely Opening...' : 'Activate Premium License'}
                             </button>
 
-                            <p className="text-[10px] text-center text-slate-500">
+                            <p className="text-[10px] text-center text-[var(--text-color)]/50">
                                 Secured by <span className="text-primary font-bold">Paystack</span>.
                                 EFT & Cards Accepted.
                             </p>

@@ -1,10 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { UploadCloud, FileText, Image as ImageIcon, Trash2, GripVertical, AlertCircle, Zap } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { sanitizeSarsFilename, isFilenameRisky } from '../lib/sanitizer';
+import * as pdfjsLib from 'pdfjs-dist';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url
+).toString();
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -17,12 +23,67 @@ interface FileWorkspaceProps {
 
 export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isProcessing }) => {
     const [files, setFiles] = useState<File[]>([]);
+    const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+    const objectUrlsRef = useRef<Set<string>>(new Set());
+
+    // Cleanup object URLs on unmount
+    useEffect(() => {
+        const urls = objectUrlsRef.current;
+        return () => {
+            urls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
+
+    // Generate thumbnails whenever files change
+    useEffect(() => {
+        let cancelled = false;
+
+        const generateThumbnails = async () => {
+            for (const file of files) {
+                const key = `${file.name}-${file.size}`;
+                if (thumbnails[key]) continue; // already cached
+
+                if (file.type === 'application/pdf') {
+                    try {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                        const page = await pdf.getPage(1);
+                        const viewport = page.getViewport({ scale: 0.4 });
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        const ctx = canvas.getContext('2d')!;
+
+                        // pdfjs-dist v5 requires both canvasContext AND canvas props
+                        await page.render({ canvasContext: ctx, canvas, viewport }).promise;
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                        if (!cancelled) {
+                            setThumbnails(prev => ({ ...prev, [key]: dataUrl }));
+                        }
+                    } catch {
+                        // Silently ignore — encrypted or corrupt PDF gets a fallback icon
+                    }
+                } else if (file.type.startsWith('image/')) {
+                    const objectUrl = URL.createObjectURL(file);
+                    objectUrlsRef.current.add(objectUrl);
+                    if (!cancelled) {
+                        setThumbnails(prev => ({ ...prev, [key]: objectUrl }));
+                    }
+                }
+            }
+        };
+
+        generateThumbnails();
+        return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [files]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const sanitizedFiles = acceptedFiles.map(file => {
             const sanitizedName = sanitizeSarsFilename(file.name);
             if (sanitizedName !== file.name) {
-                // Return a new File object with the sanitized name
                 return new File([file], sanitizedName, { type: file.type });
             }
             return file;
@@ -50,7 +111,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto space-y-6">
+        <div className="w-full max-w-3xl mx-auto space-y-6">
             {/* Dropzone */}
             <div
                 {...getRootProps()}
@@ -67,12 +128,12 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                 <h3 className="text-xl font-bold mb-2">
                     {isDragActive ? "Drop to Scan" : "Drag Documents Here"}
                 </h3>
-                <p className="text-sm text-slate-400 max-w-[300px] mx-auto">
+                <p className="text-sm text-[var(--text-color)]/60 max-w-[300px] mx-auto">
                     Combine IDs, Payslips, or PDFs. They stay 100% on your device.
                 </p>
             </div>
 
-            {/* File List */}
+            {/* File Grid */}
             <AnimatePresence>
                 {files.length > 0 && (
                     <motion.div
@@ -82,54 +143,81 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                         className="space-y-4"
                     >
                         <div className="flex items-center justify-between px-2">
-                            <span className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[var(--text-color)]/50 uppercase tracking-widest flex items-center gap-2">
                                 <FileText className="w-4 h-4" />
                                 Collection Stack ({files.length})
                             </span>
-                            <span className="text-xs text-slate-500">Drag to reorder pages</span>
+                            <span className="text-xs text-[var(--text-color)]/40">Drag to reorder</span>
                         </div>
 
-                        <Reorder.Group axis="y" values={files} onReorder={setFiles} className="space-y-3">
-                            {files.map((file, index) => (
-                                <Reorder.Item
-                                    key={`${file.name}-${index}`}
-                                    value={file}
-                                    className="glass-panel p-4 flex items-center gap-4 hover:border-white/20 transition-colors cursor-grab active:cursor-grabbing group"
-                                >
-                                    <GripVertical className="w-5 h-5 text-slate-600 group-hover:text-slate-400 shrink-0" />
-                                    <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/5 shrink-0">
-                                        {file.type === 'application/pdf' ? (
-                                            <FileText className="w-5 h-5 text-red-400" />
-                                        ) : (
-                                            <ImageIcon className="w-5 h-5 text-blue-400" />
-                                        )}
-                                    </div>
-                                    <div className="flex-grow min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-medium text-white truncate">{file.name}</p>
-                                            <AnimatePresence>
-                                                {isFilenameRisky(file.name) && (
-                                                    <motion.span
-                                                        initial={{ opacity: 0, scale: 0.8 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        className="auto-fixed-badge"
-                                                    >
-                                                        <Zap className="w-2 h-2 fill-current" />
-                                                        Auto-Fixed
-                                                    </motion.span>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                        <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB • {file.type.split('/')[1].toUpperCase()}</p>
-                                    </div>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); removeFile(index); }}
-                                        className="p-2 hover:bg-red-500/10 hover:text-red-500 text-slate-500 rounded-lg transition-colors"
+                        <Reorder.Group
+                            axis="y"
+                            values={files}
+                            onReorder={setFiles}
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                        >
+                            {files.map((file, index) => {
+                                const key = `${file.name}-${file.size}`;
+                                const thumb = thumbnails[key];
+                                return (
+                                    <Reorder.Item
+                                        key={`${file.name}-${index}`}
+                                        value={file}
+                                        className="glass-panel overflow-hidden flex flex-col hover:border-white/20 transition-colors cursor-grab active:cursor-grabbing group"
                                     >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </Reorder.Item>
-                            ))}
+                                        {/* Thumbnail */}
+                                        <div className="relative w-full h-32 bg-white/5 flex items-center justify-center overflow-hidden">
+                                            {thumb ? (
+                                                <img
+                                                    src={thumb}
+                                                    alt={file.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    {file.type === 'application/pdf'
+                                                        ? <FileText className="w-10 h-10 text-red-400/50" />
+                                                        : <ImageIcon className="w-10 h-10 text-blue-400/50" />
+                                                    }
+                                                </div>
+                                            )}
+                                            {/* Drag handle */}
+                                            <div className="absolute top-2 left-2 p-1 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <GripVertical className="w-4 h-4 text-white/80" />
+                                            </div>
+                                            {/* Delete button */}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                                                className="absolute top-2 right-2 p-1 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                                            >
+                                                <Trash2 className="w-4 h-4 text-white" />
+                                            </button>
+                                        </div>
+
+                                        {/* Info strip */}
+                                        <div className="p-3">
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <p className="text-xs font-semibold text-[var(--text-color)] truncate flex-1">{file.name}</p>
+                                                <AnimatePresence>
+                                                    {isFilenameRisky(file.name) && (
+                                                        <motion.span
+                                                            initial={{ opacity: 0, scale: 0.8 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            className="auto-fixed-badge shrink-0"
+                                                        >
+                                                            <Zap className="w-2 h-2 fill-current" />
+                                                            Fixed
+                                                        </motion.span>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                            <p className="text-xs text-[var(--text-color)]/40">
+                                                {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type.split('/')[1]?.toUpperCase() ?? 'FILE'}
+                                            </p>
+                                        </div>
+                                    </Reorder.Item>
+                                );
+                            })}
                         </Reorder.Group>
 
                         {/* Action Button */}

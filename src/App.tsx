@@ -30,7 +30,8 @@ export default function App() {
         return isNaN(parsed) ? 3 : Math.max(0, parsed);
     });
     const [finalPdfUrls, setFinalPdfUrls] = useState<string[]>([]);
-    const [fileSizes, setFileSizes] = useState<{ original: number; compressed: number }>({ original: 0, compressed: 0 });
+    const [fileSizes, setFileSizes] = useState<{ original: number; compressed: number; maxPartSize: number }>({ original: 0, compressed: 0, maxPartSize: 0 });
+    const [resultIsSafe, setResultIsSafe] = useState(false);
     const [isConsentAccepted, setIsConsentAccepted] = useState<boolean>(() => {
         return localStorage.getItem('dr_consent_accepted') === 'true';
     });
@@ -70,20 +71,25 @@ export default function App() {
                     return;
                 }
 
-                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: 300 DPI Optimization.`);
-                toast.loading("Phase 2: Optimizing for eFiling (300 DPI) — page 0/?", { id: loadingToast });
+                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive 300 DPI Optimization.`);
 
-                pdfBytes = await rasterizePdf(pdfBytes, {
-                    scale: 300 / 72,   // 300 DPI baseline
-                    jpegQuality: 0.7,
-                    grayscale: true,
-                    onProgress: (current, total) => {
-                        toast.loading(
-                            `Phase 2: Optimizing for eFiling (300 DPI) — page ${current}/${total}`,
-                            { id: loadingToast }
-                        );
-                    },
-                });
+                // Adaptive quality: try progressively lower JPEG quality at constant 300 DPI
+                // before falling through to Phase 3 split. Source is always the native Phase 1 bytes.
+                const phase1Bytes = pdfBytes;
+                const qualitySteps = [0.7, 0.5, 0.35, 0.20];
+                for (let qi = 0; qi < qualitySteps.length; qi++) {
+                    const quality = qualitySteps[qi];
+                    toast.loading(`Phase 2: 300 DPI compression (pass ${qi + 1}/4, quality ${Math.round(quality * 100)}%)`, { id: loadingToast });
+                    pdfBytes = await rasterizePdf(phase1Bytes, {
+                        scale: 300 / 72,
+                        jpegQuality: quality,
+                        grayscale: true,
+                        onProgress: (current, total) => {
+                            toast.loading(`Phase 2 (pass ${qi + 1}/4, q${Math.round(quality * 100)}%): page ${current}/${total}`, { id: loadingToast });
+                        },
+                    });
+                    if (pdfBytes.length <= 5 * 1024 * 1024) break;
+                }
             }
 
             // Phase 3: Split if final result still > 5MB
@@ -100,10 +106,14 @@ export default function App() {
             });
 
             const totalCompressedSize = finalOutputBytes.reduce((acc, bytes) => acc + bytes.length, 0);
+            const maxPartSize = Math.max(...finalOutputBytes.map(b => b.length));
+            const isSafe = finalOutputBytes.every(b => b.length <= 5 * 1024 * 1024);
 
+            setResultIsSafe(isSafe);
             setFileSizes({
                 original: files.reduce((acc, f) => acc + f.size, 0),
-                compressed: totalCompressedSize
+                compressed: totalCompressedSize,
+                maxPartSize,
             });
             setFinalPdfUrls(urls);
 
@@ -115,8 +125,6 @@ export default function App() {
                     return next;
                 });
             }
-
-            const isSafe = finalOutputBytes.every(b => b.length <= 5 * 1024 * 1024);
 
             if (isSafe && urls.length > 1) {
                 toast.success(`Ready! Split into ${urls.length} SARS-Safe volumes.`, { id: loadingToast, duration: 4000 });
@@ -269,10 +277,12 @@ export default function App() {
                                 <ReceiptCard
                                     originalSize={fileSizes.original}
                                     compressedSize={fileSizes.compressed}
+                                    maxPartSize={fileSizes.maxPartSize}
                                     onDownload={handleDownload}
                                     onRestart={() => setFinalPdfUrls([])}
                                     isPremium={isPremium}
                                     partCount={finalPdfUrls.length}
+                                    isSafe={resultIsSafe}
                                 />
                             )}
                         </motion.div>
