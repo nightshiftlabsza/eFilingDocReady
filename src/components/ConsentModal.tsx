@@ -21,6 +21,9 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                     />
 
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="consent-modal-title"
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -31,7 +34,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 <ShieldCheck className="text-primary w-7 h-7" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-white tracking-tight">POPIA & Privacy Consent</h2>
+                                <h2 id="consent-modal-title" className="text-2xl font-bold text-white tracking-tight">POPIA & Privacy Consent</h2>
                                 <p className="text-sm text-emerald-500 font-semibold uppercase tracking-wider">Secure Local Environment</p>
                             </div>
                         </div>

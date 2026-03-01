@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Shield, Receipt, CreditCard } from 'lucide-react';
@@ -12,9 +12,27 @@ interface PricingModalProps {
     persona?: 'taxpayer' | 'practitioner' | null;
 }
 
+// Pricing tiers — amounts in South African cents (Paystack convention: 100 cents = R1)
+const PRICING = {
+    practitioner: { amount: 49900, display: 'R499', period: 'Season Pass', note: 'Annual Firm-Ready License' },
+    taxpayer:     { amount: 8900,  display: 'R89',  period: 'Lifetime',    note: 'No subscriptions. No recurring charges.' },
+} as const;
+
 export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSuccess, email, persona }) => {
     const [userEmail, setUserEmail] = useState(email || '');
     const [loading, setLoading] = useState(false);
+
+    const tier = persona === 'practitioner' ? PRICING.practitioner : PRICING.taxpayer;
+
+    // Close on Escape key
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     const handlePay = () => {
         if (!userEmail) {
@@ -23,13 +41,9 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
         }
         setLoading(true);
 
-        // Practitioner: R499 (Solo Season Pass)
-        // Taxpayer: R89 (Lifetime)
-        const amount = persona === 'practitioner' ? 49900 : 8900;
-
         launchPaystack({
             email: userEmail,
-            amount: amount,
+            amount: tier.amount,
             onSuccess: () => {
                 setLoading(false);
                 toast.success("License Activated! Processing PDF...");
@@ -58,6 +72,9 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
                     {/* Modal Content */}
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="pricing-modal-title"
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -71,11 +88,12 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                                 <div className="badge tooltip mb-2" data-tip="Unlimited Merges">
                                     Premium Pass
                                 </div>
-                                <h2 className="text-3xl font-bold text-[var(--text-color)] mb-1">Lifetime License</h2>
+                                <h2 id="pricing-modal-title" className="text-3xl font-bold text-[var(--text-color)] mb-1">Lifetime License</h2>
                                 <p className="text-sm text-[var(--text-color)]/60">Unlock SARS-compliant compression forever.</p>
                             </div>
                             <button
                                 onClick={onClose}
+                                aria-label="Close pricing modal"
                                 className="p-2 hover:bg-white/5 rounded-full transition-colors active-scale"
                             >
                                 <X className="w-5 h-5 text-slate-500" />
@@ -114,12 +132,12 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
                             <div className="mt-8 pt-6 border-t border-white/5">
                                 <div className="flex items-baseline gap-2 mb-2">
-                                    <span className="text-4xl font-black text-[var(--text-color)]">R{persona === 'practitioner' ? '499' : '89'}</span>
-                                    <span className="text-sm text-[var(--text-color)]/60 font-medium uppercase">{persona === 'practitioner' ? 'Season Pass' : 'Lifetime'}</span>
+                                    <span className="text-4xl font-black text-[var(--text-color)]">{tier.display}</span>
+                                    <span className="text-sm text-[var(--text-color)]/60 font-medium uppercase">{tier.period}</span>
                                 </div>
                                 <p className="text-xs text-[var(--text-color)]/50 flex items-center gap-1">
                                     <Shield className="w-3 h-3 text-primary" />
-                                    {persona === 'practitioner' ? 'Annual Firm-Ready License' : 'No subscriptions. No recurring charges.'}
+                                    {tier.note}
                                 </p>
                             </div>
                         </div>
