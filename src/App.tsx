@@ -45,9 +45,9 @@ export default function App() {
         readPremiumFlag().then(setIsPremium);
     }, []);
 
-    const handleFilesReady = async (files: File[]) => {
+    const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5) => {
         // Gating Check
-        if (!isPremium && freeCredits <= 0) {
+        if (!mergeOnly && !isPremium && freeCredits <= 0) {
             toast.error("You've used your free credits — upgrade to keep compressing.");
             setIsPricingOpen(true);
             return;
@@ -55,6 +55,7 @@ export default function App() {
 
         setIsProcessing(true);
         const loadingToast = toast.loading("Combining your documents…");
+        const targetBytes = targetMB * 1024 * 1024;
 
         try {
             // Phase 1: Native Merge Attempt (No Quality Loss)
@@ -62,42 +63,46 @@ export default function App() {
             let pdfBytes = await buildPurePdf(files);
             const initialSize = pdfBytes.length; // More efficient than new Blob().size
 
-            // Phase 2: Native merge exceeded 5 MB — Optimize for eFiling at 300 DPI.
-            if (initialSize > 5 * 1024 * 1024) {
-                if (!isPremium && freeCredits <= 0) {
-                    toast.error("This file is over 5 MB — unlock compression to continue.", { id: loadingToast, duration: 4000 });
-                    setIsPricingOpen(true);
-                    setIsProcessing(false);
-                    return;
-                }
-
-                console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
-
-                // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
-                // Extended to 9 passes (down to q=3%) to handle even very large inputs.
-                const phase1Bytes = pdfBytes;
-                const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
-                for (let qi = 0; qi < qualitySteps.length; qi++) {
-                    const quality = qualitySteps[qi];
-                    toast.loading(`Shrinking your file… (step ${qi + 1} of 9)`, { id: loadingToast });
-                    pdfBytes = await rasterizePdf(phase1Bytes, {
-                        scale: 300 / 72,
-                        jpegQuality: quality,
-                        grayscale: true,
-                        onProgress: (current, total) => {
-                            toast.loading(`Shrinking your file… page ${current} of ${total}`, { id: loadingToast });
-                        },
-                    });
-                    if (pdfBytes.length <= 5 * 1024 * 1024) break;
-                }
-            }
-
-            // Phase 3: Split if final result still > 5MB
             let finalOutputBytes = [pdfBytes];
-            if (pdfBytes.length > 5 * 1024 * 1024) {
-                console.log("Still > 5MB. Triggering Phase 3 Multi-Volume Split.");
-                toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
-                finalOutputBytes = await splitPdfIfNeeded(pdfBytes, 4.5 * 1024 * 1024);
+
+            if (!mergeOnly) {
+                // Phase 2: Native merge exceeded targetBytes — Optimize for eFiling at 300 DPI.
+                if (initialSize > targetBytes) {
+                    if (!isPremium && freeCredits <= 0) {
+                        toast.error(`This file is over ${targetMB} MB — unlock compression to continue.`, { id: loadingToast, duration: 4000 });
+                        setIsPricingOpen(true);
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
+
+                    // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
+                    // Extended to 9 passes (down to q=3%) to handle even very large inputs.
+                    const phase1Bytes = pdfBytes;
+                    const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
+                    for (let qi = 0; qi < qualitySteps.length; qi++) {
+                        const quality = qualitySteps[qi];
+                        toast.loading(`Shrinking your file… (step ${qi + 1} of 9)`, { id: loadingToast });
+                        pdfBytes = await rasterizePdf(phase1Bytes, {
+                            scale: 300 / 72,
+                            jpegQuality: quality,
+                            grayscale: true,
+                            onProgress: (current, total) => {
+                                toast.loading(`Shrinking your file… page ${current} of ${total}`, { id: loadingToast });
+                            },
+                        });
+                        if (pdfBytes.length <= targetBytes) break;
+                    }
+                }
+
+                // Phase 3: Split if final result still > targetBytes
+                finalOutputBytes = [pdfBytes];
+                if (pdfBytes.length > targetBytes) {
+                    console.log(`Still > ${targetMB}MB. Triggering Phase 3 Multi-Volume Split.`);
+                    toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
+                    finalOutputBytes = await splitPdfIfNeeded(pdfBytes, targetBytes * 0.9);
+                }
             }
 
             const urls = finalOutputBytes.map(bytes => {
@@ -107,7 +112,7 @@ export default function App() {
 
             const totalCompressedSize = finalOutputBytes.reduce((acc, bytes) => acc + bytes.length, 0);
             const maxPartSize = Math.max(...finalOutputBytes.map(b => b.length));
-            const isSafe = finalOutputBytes.every(b => b.length <= 5 * 1024 * 1024);
+            const isSafe = finalOutputBytes.every(b => b.length <= targetBytes);
 
             setResultIsSafe(isSafe);
             setFileSizes({
@@ -117,21 +122,25 @@ export default function App() {
             });
             setFinalPdfUrls(urls);
 
-            // Consume credit if work was done (Phase 2 or Phase 3 triggered)
-            if (!isPremium && (initialSize > 5 * 1024 * 1024 || finalOutputBytes.length > 1)) {
-                setFreeCredits(prev => {
-                    const next = Math.max(0, prev - 1);
-                    localStorage.setItem('dr_free_credits', next.toString());
-                    return next;
-                });
-            }
-
-            if (isSafe && urls.length > 1) {
-                toast.success(`Done! Saved as ${urls.length} parts — each ready to upload to eFiling.`, { id: loadingToast, duration: 4000 });
-            } else if (isSafe) {
-                toast.success(`Done! Your file is ${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB and ready for SARS eFiling.`, { id: loadingToast, duration: 4000 });
+            if (mergeOnly) {
+                toast.success("Done! Files merged — no compression applied.", { id: loadingToast, duration: 4000 });
             } else {
-                toast.error(`Heads up: one or more parts may still be over 5 MB. Try uploading anyway.`, { id: loadingToast, duration: 6000 });
+                // Consume credit if work was done (Phase 2 or Phase 3 triggered)
+                if (!isPremium && (initialSize > targetBytes || finalOutputBytes.length > 1)) {
+                    setFreeCredits(prev => {
+                        const next = Math.max(0, prev - 1);
+                        localStorage.setItem('dr_free_credits', next.toString());
+                        return next;
+                    });
+                }
+
+                if (isSafe && urls.length > 1) {
+                    toast.success(`Done! Saved as ${urls.length} parts — each ready to upload to eFiling.`, { id: loadingToast, duration: 4000 });
+                } else if (isSafe) {
+                    toast.success(`Done! Your file is ${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB and ready for SARS eFiling.`, { id: loadingToast, duration: 4000 });
+                } else {
+                    toast.error(`Heads up: one or more parts may still be over ${targetMB} MB. Try uploading anyway.`, { id: loadingToast, duration: 6000 });
+                }
             }
         } catch (error: any) {
             console.error(error);

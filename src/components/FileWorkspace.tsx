@@ -17,13 +17,14 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface FileWorkspaceProps {
-    onFilesReady: (files: File[]) => void;
+    onFilesReady: (files: File[], mergeOnly?: boolean, targetMB?: number) => void;
     isProcessing: boolean;
 }
 
 export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isProcessing }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+    const [targetMB, setTargetMB] = useState<number>(5);
     const objectUrlsRef = useRef<Set<string>>(new Set());
 
     // Cleanup all object URLs on unmount
@@ -161,7 +162,13 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
 
     const handleCompress = () => {
         if (files.length > 0) {
-            onFilesReady(files);
+            onFilesReady(files, false, targetMB);
+        }
+    };
+
+    const handleMergeOnly = () => {
+        if (files.length > 0) {
+            onFilesReady(files, true, targetMB);
         }
     };
 
@@ -298,24 +305,59 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             })}
                         </Reorder.Group>
 
-                        {/* Action Button */}
-                        <motion.button
-                            onClick={handleCompress}
-                            disabled={isProcessing}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50"
-                        >
-                            <Zap className="w-5 h-5" />
-                            {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
-                        </motion.button>
+                        {/* Action Buttons */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
+                                <label htmlFor="target-size" className="text-sm font-semibold text-[var(--text-color)]/80 flex-1">
+                                    Target size per part (MB)
+                                </label>
+                                <input
+                                    id="target-size"
+                                    type="number"
+                                    min={1}
+                                    max={50}
+                                    value={targetMB}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value, 10);
+                                        if (!isNaN(val)) setTargetMB(val);
+                                    }}
+                                    onBlur={(e) => {
+                                        let val = parseInt(e.target.value, 10);
+                                        if (isNaN(val) || val < 1) val = 1;
+                                        if (val > 50) val = 50;
+                                        setTargetMB(val);
+                                    }}
+                                    className="w-20 bg-black/20 border border-white/20 rounded-lg p-2 text-center text-[var(--text-color)] font-bold focus:ring-2 focus:ring-primary outline-none"
+                                />
+                            </div>
+                            <motion.button
+                                onClick={handleCompress}
+                                disabled={isProcessing}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50"
+                            >
+                                <Zap className="w-5 h-5" />
+                                {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
+                            </motion.button>
+                            <motion.button
+                                onClick={handleMergeOnly}
+                                disabled={isProcessing}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                className="w-full py-3 bg-transparent border-2 border-[var(--glass-border)] hover:bg-white/5 text-[var(--text-color)] font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Merge only
+                            </motion.button>
+                        </div>
 
                         <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-4 flex gap-3">
                             <AlertCircle className="w-5 h-5 text-[#10b981] shrink-0" />
                             <div>
                                 <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">Ready to prepare for eFiling</p>
                                 <p className="text-xs text-[#10b981]/80 leading-relaxed">
-                                    We'll combine your {files.length} document{files.length !== 1 ? 's' : ''} and compress everything to under 5 MB — without uploading anything.
+                                    We'll combine your {files.length} document{files.length !== 1 ? 's' : ''} and compress everything to under {targetMB} MB — without uploading anything.
                                 </p>
                             </div>
                         </div>
