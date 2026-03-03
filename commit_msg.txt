@@ -1,0 +1,11 @@
+refine: apply Gemini code review improvements to FileWorkspace.tsx
+
+- removeFile: useCallback + functional updater (prevFiles) to avoid stale closure;
+  check thumbUrl.startsWith('blob:') to only revoke object URLs, not canvas data URLs
+- Thumbnail effect: local currentRenderTask var (cleaner than ref); added
+  if (cancelled) break after each await; log RenderingCancelledException explicitly
+- moveFile: useCallback + direction:'up'|'down' API + destructuring swap
+- Keyboard reorder overlay: sr-only -> focus-within:not-sr-only so controls become
+  visually visible (dark overlay) when keyboard-focused, not just screen-reader-only
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

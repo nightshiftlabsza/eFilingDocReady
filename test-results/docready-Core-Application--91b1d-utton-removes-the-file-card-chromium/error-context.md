@@ -1,0 +1,67 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e7]
+      - generic [ref=e9]:
+        - generic [ref=e10]: DocReady
+        - generic [ref=e11]:
+          - generic [ref=e12]: Audit-Ready
+          - generic [ref=e13]:
+            - img [ref=e14]
+            - text: Local Only
+    - generic [ref=e16]:
+      - button "Dashboard" [ref=e17]:
+        - img [ref=e18]
+        - text: Dashboard
+      - button "Settings" [ref=e23]:
+        - img [ref=e24]
+  - main [ref=e27]:
+    - generic [ref=e29]:
+      - generic [ref=e30] [cursor=pointer]:
+        - img [ref=e32]
+        - heading "Drag documents here, or click to upload" [level=3] [ref=e35]
+        - paragraph [ref=e36]: ID documents, payslips, bank statements — all processed privately on your device.
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - img [ref=e40]
+            - text: Collection Stack (1)
+          - generic [ref=e43]: Drag to reorder
+        - list [ref=e44]:
+          - listitem [ref=e45]:
+            - generic [ref=e46]:
+              - img "remove_me.pdf" [ref=e47]
+              - img [ref=e49]
+              - button "Remove remove_me.pdf" [ref=e56]:
+                - img [ref=e57]
+              - generic [ref=e60]:
+                - button "Move remove_me.pdf up in the list" [disabled] [ref=e61]: Move Up
+                - button "Move remove_me.pdf down in the list" [disabled] [ref=e62]: Move Down
+            - generic [ref=e63]:
+              - paragraph [ref=e65]: remove_me.pdf
+              - paragraph [ref=e66]: 0.00 MB • PDF
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - generic [ref=e69]: Target size per part (MB)
+            - spinbutton "Target size per part (MB)" [ref=e70]: "5"
+          - generic "Upgrade to Premium to unlock this feature" [ref=e71]:
+            - img [ref=e73]
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: Output Password Protection
+              - paragraph [ref=e78]: Premium feature — upgrade to enable
+            - img [ref=e79]
+          - button "Scan & Merge for eFiling" [ref=e81]:
+            - img [ref=e82]
+            - text: Scan & Merge for eFiling
+          - button "Merge only" [ref=e84]:
+            - img [ref=e85]
+            - text: Merge only
+        - generic [ref=e88]:
+          - img [ref=e89]
+          - generic [ref=e91]:
+            - paragraph [ref=e92]: Ready to prepare for eFiling
+            - paragraph [ref=e93]: We'll combine your 1 document and compress everything to under 5 MB — without uploading anything.
+```

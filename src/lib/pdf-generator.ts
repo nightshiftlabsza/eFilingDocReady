@@ -1,4 +1,4 @@
-import { PDFDocument, PageSizes } from 'pdf-lib';
+import { PDFDocument, PageSizes } from '@cantoo/pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { sanitizeSarsFilename } from './sanitizer';
 
@@ -25,9 +25,6 @@ const CONTRAST_INTERCEPT = 128 * (1 - CONTRAST_FACTOR);
  * Images are embedded at original quality.
  */
 export const buildPurePdf = async (files: File[]): Promise<Uint8Array> => {
-    if (files.length > 20) {
-        throw new Error("SARS maximum allowed is 20 files per submission.");
-    }
 
     const finalPdf = await PDFDocument.create();
 
@@ -59,9 +56,12 @@ export const buildPurePdf = async (files: File[]): Promise<Uint8Array> => {
                 const sourcePdf = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
                 const copiedPages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
                 copiedPages.forEach((page) => finalPdf.addPage(page));
-            } catch (err) {
+            } catch (err: any) {
                 const safeName = sanitizeSarsFilename(file.name);
-                throw new Error(`Failed to load ${safeName}. Ensure it is not locked with an unknown password.`);
+                if (err?.message?.toLowerCase().includes('password') || err?.message?.toLowerCase().includes('encrypt')) {
+                    throw new Error(`File "${safeName}" is locked with a password. Please wait for the unlock prompt or remove it.`);
+                }
+                throw new Error(`Failed to load ${safeName}. Ensure it is a valid PDF.`);
             }
         }
     }

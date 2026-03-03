@@ -31,10 +31,9 @@ export default defineConfig({
         },
     ],
 
-    // Uncomment to spin up the Vite dev server automatically:
-    // webServer: {
-    //     command: 'npm run dev',
-    //     url: 'http://localhost:5173',
-    //     reuseExistingServer: !process.env.CI,
-    // },
+    webServer: {
+        command: 'npm run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+    },
 });

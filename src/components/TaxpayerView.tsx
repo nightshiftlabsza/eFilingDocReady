@@ -81,7 +81,7 @@ export const TaxpayerView: React.FC<TaxpayerViewProps> = ({ onEnterWorkspace, on
             </div>
 
             <p className="text-center text-sm opacity-40">
-                You can also pay R49 for a single-use audit pack. Credits never expire.
+                Credits never expire.
             </p>
         </motion.div>
     );

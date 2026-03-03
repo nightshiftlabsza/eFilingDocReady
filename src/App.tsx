@@ -8,6 +8,7 @@ import { SettingsDrawer } from './components/SettingsDrawer';
 import { ReceiptCard } from './components/ReceiptCard';
 import { Toaster, toast } from 'react-hot-toast';
 import { buildPurePdf, rasterizePdf, splitPdfIfNeeded } from './lib/pdf-generator';
+import { addPasswordToPdf } from './lib/lockPdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentModal } from './components/ConsentModal';
 import { PrivacyModal } from './components/PrivacyModal';
@@ -45,7 +46,7 @@ export default function App() {
         readPremiumFlag().then(setIsPremium);
     }, []);
 
-    const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5) => {
+    const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5, outputPassword?: string) => {
         // Gating Check
         if (!mergeOnly && !isPremium && freeCredits <= 0) {
             toast.error("You've used your free credits — upgrade to keep compressing.");
@@ -59,7 +60,7 @@ export default function App() {
 
         try {
             // Phase 1: Native Merge Attempt (No Quality Loss)
-            console.log("Phase 1: Attempting Native Merge");
+            if (import.meta.env.DEV) console.log("Phase 1: Attempting Native Merge");
             let pdfBytes = await buildPurePdf(files);
             const initialSize = pdfBytes.length; // More efficient than new Blob().size
 
@@ -75,7 +76,7 @@ export default function App() {
                         return;
                     }
 
-                    console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
+                    if (import.meta.env.DEV) console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
 
                     // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
                     // Extended to 9 passes (down to q=3%) to handle even very large inputs.
@@ -99,10 +100,18 @@ export default function App() {
                 // Phase 3: Split if final result still > targetBytes
                 finalOutputBytes = [pdfBytes];
                 if (pdfBytes.length > targetBytes) {
-                    console.log(`Still > ${targetMB}MB. Triggering Phase 3 Multi-Volume Split.`);
+                    if (import.meta.env.DEV) console.log(`Still > ${targetMB}MB. Triggering Phase 3 Multi-Volume Split.`);
                     toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
                     finalOutputBytes = await splitPdfIfNeeded(pdfBytes, targetBytes * 0.9);
                 }
+            }
+
+            // Apply output password if set (premium feature)
+            if (outputPassword) {
+                toast.loading('Encrypting output PDF…', { id: loadingToast });
+                finalOutputBytes = await Promise.all(
+                    finalOutputBytes.map(bytes => addPasswordToPdf(bytes, outputPassword))
+                );
             }
 
             const urls = finalOutputBytes.map(bytes => {
@@ -210,7 +219,7 @@ export default function App() {
                                     SARS-Ready Documents. <br /> Zero Upload Friction.
                                 </h1>
                                 <p className="text-lg md:text-2xl opacity-70 max-w-2xl mx-auto">
-                                    The only tool with <span className="text-blue-500 font-semibold italic inline-block px-1 border-b border-blue-500/30">Smart 4.9MB</span> target compression and SARS-compliant filename sanitization. Instant compliance for any upload. No account, no cloud, no risk.
+                                    Compress, merge, and prepare your documents for eFiling — everything runs <span className="text-blue-500 font-semibold italic inline-block px-1 border-b border-blue-500/30">directly on your device</span>. Your files never leave it. No account, no cloud, no risk.
                                 </p>
                             </div>
 
@@ -294,6 +303,7 @@ export default function App() {
                                 <FileWorkspace
                                     onFilesReady={handleFilesReady}
                                     isProcessing={isProcessing}
+                                    isPremium={isPremium}
                                 />
                             ) : (
                                 <ReceiptCard

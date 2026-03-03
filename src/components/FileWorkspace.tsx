@@ -1,11 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { UploadCloud, FileText, Image as ImageIcon, Trash2, GripVertical, AlertCircle, Zap } from 'lucide-react';
+import { UploadCloud, FileText, Image as ImageIcon, Trash2, GripVertical, AlertCircle, Zap, Lock, Eye, EyeOff, ShieldCheck, Crown } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { sanitizeSarsFilename, isFilenameRisky } from '../lib/sanitizer';
 import * as pdfjsLib from 'pdfjs-dist';
+import { UnlockerModal } from './UnlockerModal';
+import { unlockEncryptedPdf } from '../lib/unlockPdf';
+import { toast } from 'react-hot-toast';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -17,15 +20,23 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface FileWorkspaceProps {
-    onFilesReady: (files: File[], mergeOnly?: boolean, targetMB?: number) => void;
+    onFilesReady: (files: File[], mergeOnly?: boolean, targetMB?: number, outputPassword?: string) => void;
     isProcessing: boolean;
+    isPremium: boolean;
 }
 
-export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isProcessing }) => {
+export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isProcessing, isPremium }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
     const [targetMB, setTargetMB] = useState<number>(5);
+    const [lockedFile, setLockedFile] = useState<File | null>(null);
     const objectUrlsRef = useRef<Set<string>>(new Set());
+    // Output password state (premium only)
+    const [outputPasswordEnabled, setOutputPasswordEnabled] = useState(false);
+    const [outputPassword, setOutputPassword] = useState('');
+    const [outputPasswordConfirm, setOutputPasswordConfirm] = useState('');
+    const [showOutputPassword, setShowOutputPassword] = useState(false);
+    const passwordMismatch = outputPasswordEnabled && outputPassword.length > 0 && outputPassword !== outputPasswordConfirm;
 
     // Cleanup all object URLs on unmount
     useEffect(() => {
@@ -77,7 +88,9 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             // Intentional — effect cleaned up mid-render. Exit the loop.
                             break;
                         }
-                        // Silently ignore encrypted or corrupt PDFs — fallback icon shown
+                        if (error?.name === 'PasswordException') {
+                            if (!cancelled) setLockedFile(prev => prev ? prev : file);
+                        }
                     }
                 } else if (file.type.startsWith('image/')) {
                     const objectUrl = URL.createObjectURL(file);
@@ -97,7 +110,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                 currentRenderTask.cancel();
             }
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [files]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -162,13 +175,15 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
 
     const handleCompress = () => {
         if (files.length > 0) {
-            onFilesReady(files, false, targetMB);
+            const pwd = isPremium && outputPasswordEnabled && outputPassword && !passwordMismatch ? outputPassword : undefined;
+            onFilesReady(files, false, targetMB, pwd);
         }
     };
 
     const handleMergeOnly = () => {
         if (files.length > 0) {
-            onFilesReady(files, true, targetMB);
+            const pwd = isPremium && outputPasswordEnabled && outputPassword && !passwordMismatch ? outputPassword : undefined;
+            onFilesReady(files, true, targetMB, pwd);
         }
     };
 
@@ -255,6 +270,16 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             >
                                                 <Trash2 className="w-4 h-4 text-white" />
                                             </button>
+                                            {/* Lock indicator badge for encrypted PDFs (premium can remove) */}
+                                            {!thumbnails[`${file.name}-${file.size}`] && file.type === 'application/pdf' && isPremium && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="absolute bottom-2 left-2 flex items-center gap-1 bg-amber-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                                >
+                                                    <Lock className="w-2.5 h-2.5" /> LOCKED
+                                                </motion.div>
+                                            )}
 
                                             {/* Keyboard reorder controls — sr-only until keyboard-focused,
                                                 then revealed as a semi-transparent overlay so keyboard
@@ -330,14 +355,158 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                     className="w-20 bg-black/20 border border-white/20 rounded-lg p-2 text-center text-[var(--text-color)] font-bold focus:ring-2 focus:ring-primary outline-none"
                                 />
                             </div>
+
+                            {/* ── Premium: Output Password Protection ─────────────────────── */}
+                            {isPremium ? (
+                                <motion.div
+                                    layout
+                                    className="overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-500/5 to-orange-500/5"
+                                >
+                                    {/* Toggle header */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOutputPasswordEnabled(prev => !prev);
+                                            setOutputPassword('');
+                                            setOutputPasswordConfirm('');
+                                        }}
+                                        className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/5"
+                                        aria-expanded={outputPasswordEnabled}
+                                        aria-controls="output-password-panel"
+                                    >
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${outputPasswordEnabled ? 'bg-amber-500/20 border border-amber-400/40' : 'bg-white/5 border border-white/10'
+                                            }`}>
+                                            {outputPasswordEnabled
+                                                ? <ShieldCheck className="w-4 h-4 text-amber-400" />
+                                                : <Lock className="w-4 h-4 text-[var(--text-color)]/40" />
+                                            }
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-sm font-bold transition-colors ${outputPasswordEnabled ? 'text-amber-300' : 'text-[var(--text-color)]/70'
+                                                }`}>Protect output with a password</p>
+                                            <p className="text-xs text-[var(--text-color)]/40 truncate">
+                                                {outputPasswordEnabled ? 'PDF will be encrypted on download' : 'Premium — tap to enable'}
+                                            </p>
+                                        </div>
+                                        <Crown className="w-4 h-4 text-amber-400/60 shrink-0" />
+                                        <motion.div
+                                            animate={{ rotate: outputPasswordEnabled ? 180 : 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="text-[var(--text-color)]/30 shrink-0"
+                                        >
+                                            ▾
+                                        </motion.div>
+                                    </button>
+
+                                    {/* Expanded password fields */}
+                                    <AnimatePresence initial={false}>
+                                        {outputPasswordEnabled && (
+                                            <motion.div
+                                                id="output-password-panel"
+                                                key="pw-panel"
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="px-4 pb-4 space-y-3">
+                                                    <div className="h-px bg-white/5" />
+                                                    {/* Password field */}
+                                                    <div className="relative">
+                                                        <label htmlFor="output-password" className="block text-[10px] uppercase tracking-widest text-amber-400/70 font-bold mb-1.5 ml-1">Password</label>
+                                                        <div className="relative">
+                                                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-color)]/30" />
+                                                            <input
+                                                                id="output-password"
+                                                                type={showOutputPassword ? 'text' : 'password'}
+                                                                value={outputPassword}
+                                                                onChange={e => setOutputPassword(e.target.value)}
+                                                                placeholder="Enter password…"
+                                                                autoComplete="new-password"
+                                                                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-12 text-[var(--text-color)] placeholder-[var(--text-color)]/25 text-sm focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/40 outline-none transition-all font-mono tracking-wider"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowOutputPassword(p => !p)}
+                                                                aria-label={showOutputPassword ? 'Hide password' : 'Show password'}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--text-color)]/30 hover:text-[var(--text-color)]/70 transition-colors"
+                                                            >
+                                                                {showOutputPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    {/* Confirm field */}
+                                                    <div className="relative">
+                                                        <label htmlFor="output-password-confirm" className="block text-[10px] uppercase tracking-widest text-amber-400/70 font-bold mb-1.5 ml-1">Confirm</label>
+                                                        <div className="relative">
+                                                            <ShieldCheck className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${outputPasswordConfirm.length > 0 && !passwordMismatch ? 'text-green-400' : 'text-[var(--text-color)]/30'
+                                                                }`} />
+                                                            <input
+                                                                id="output-password-confirm"
+                                                                type={showOutputPassword ? 'text' : 'password'}
+                                                                value={outputPasswordConfirm}
+                                                                onChange={e => setOutputPasswordConfirm(e.target.value)}
+                                                                placeholder="Repeat password…"
+                                                                autoComplete="new-password"
+                                                                className={`w-full bg-black/20 border rounded-xl py-3 pl-10 pr-4 text-[var(--text-color)] placeholder-[var(--text-color)]/25 text-sm focus:ring-2 outline-none transition-all font-mono tracking-wider ${passwordMismatch
+                                                                    ? 'border-red-400/50 focus:ring-red-400/30'
+                                                                    : outputPasswordConfirm.length > 0
+                                                                        ? 'border-green-400/40 focus:ring-green-400/30'
+                                                                        : 'border-white/10 focus:ring-amber-400/50 focus:border-amber-400/40'
+                                                                    }`}
+                                                            />
+                                                        </div>
+                                                        <AnimatePresence>
+                                                            {passwordMismatch && (
+                                                                <motion.p
+                                                                    initial={{ opacity: 0, y: -4 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    exit={{ opacity: 0, y: -4 }}
+                                                                    className="text-xs text-red-400 mt-1.5 ml-1"
+                                                                >
+                                                                    Passwords don't match
+                                                                </motion.p>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                    {/* Info note */}
+                                                    <div className="flex items-start gap-2 bg-amber-400/5 rounded-xl p-3 border border-amber-400/10">
+                                                        <AlertCircle className="w-3.5 h-3.5 text-amber-400/60 shrink-0 mt-0.5" />
+                                                        <p className="text-[10px] text-[var(--text-color)]/50 leading-relaxed">
+                                                            AES-256 encrypted. Keep this password safe — there is no recovery. The encrypted PDF will work in Adobe Reader, Preview, and all standard viewers.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            ) : (
+                                /* Teaser for free users */
+                                <div className="flex items-center gap-3 bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 cursor-not-allowed" title="Upgrade to Premium to unlock this feature">
+                                    <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                        <Lock className="w-4 h-4 text-[var(--text-color)]/30" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-[var(--text-color)]/40">Output Password Protection</p>
+                                        <p className="text-xs text-[var(--text-color)]/25">Premium feature — upgrade to enable</p>
+                                    </div>
+                                    <Crown className="w-4 h-4 text-amber-400/30 ml-auto shrink-0" />
+                                </div>
+                            )}
+
                             <motion.button
                                 onClick={handleCompress}
-                                disabled={isProcessing}
+                                disabled={isProcessing || (outputPasswordEnabled && (passwordMismatch || !outputPassword))}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50"
+                                className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Zap className="w-5 h-5" />
+                                {outputPasswordEnabled && !passwordMismatch && outputPassword
+                                    ? <ShieldCheck className="w-5 h-5" />
+                                    : <Zap className="w-5 h-5" />
+                                }
                                 {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
                             </motion.button>
                             <motion.button
@@ -364,6 +533,28 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {lockedFile && (
+                <UnlockerModal
+                    fileName={lockedFile.name}
+                    isPremium={isPremium}
+                    onCancel={() => {
+                        setFiles(prev => prev.filter(f => f !== lockedFile));
+                        setLockedFile(null);
+                    }}
+                    onUnlock={async (password) => {
+                        try {
+                            const decryptedBytes = await unlockEncryptedPdf(lockedFile, password);
+                            const unlockedFile = new File([decryptedBytes as any], lockedFile.name, { type: 'application/pdf' });
+                            setFiles(prev => prev.map(f => f === lockedFile ? unlockedFile : f));
+                            setLockedFile(null);
+                            toast.success(isPremium ? "Password removed — file unlocked and stripped!" : "File unlocked successfully!");
+                        } catch (err: any) {
+                            toast.error(err.message || "Incorrect password");
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

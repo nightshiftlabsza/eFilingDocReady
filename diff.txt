@@ -1,0 +1,77 @@
+diff --git a/src/components/FileWorkspace.tsx b/src/components/FileWorkspace.tsx
+index 0d5e275..375a4c4 100644
+--- a/src/components/FileWorkspace.tsx
++++ b/src/components/FileWorkspace.tsx
+@@ -6,6 +6,9 @@ import { clsx, type ClassValue } from 'clsx';
+ import { twMerge } from 'tailwind-merge';
+ import { sanitizeSarsFilename, isFilenameRisky } from '../lib/sanitizer';
+ import * as pdfjsLib from 'pdfjs-dist';
++import { UnlockerModal } from './UnlockerModal';
++import { unlockEncryptedPdf } from '../lib/unlockPdf';
++import { toast } from 'react-hot-toast';
+ 
+ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+     'pdfjs-dist/build/pdf.worker.min.mjs',
+@@ -25,6 +28,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
+     const [files, setFiles] = useState<File[]>([]);
+     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+     const [targetMB, setTargetMB] = useState<number>(5);
++    const [lockedFile, setLockedFile] = useState<File | null>(null);
+     const objectUrlsRef = useRef<Set<string>>(new Set());
+ 
+     // Cleanup all object URLs on unmount
+@@ -73,11 +77,16 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
+                             setThumbnails(prev => ({ ...prev, [key]: dataUrl }));
+                         }
+                     } catch (error: any) {
++                        console.log('PDFJS ERROR NAME:', error?.name, error?.message);
+                         if (error?.name === 'RenderingCancelledException') {
+                             // Intentional — effect cleaned up mid-render. Exit the loop.
+                             break;
+                         }
+-                        // Silently ignore encrypted or corrupt PDFs — fallback icon shown
++                        /*
++                        if (error?.name === 'PasswordException') {
++                            if (!cancelled) setLockedFile(prev => prev ? prev : file);
++                        }
++                        */
+                     }
+                 } else if (file.type.startsWith('image/')) {
+                     const objectUrl = URL.createObjectURL(file);
+@@ -97,7 +106,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
+                 currentRenderTask.cancel();
+             }
+         };
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
++        // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [files]);
+ 
+     const onDrop = useCallback((acceptedFiles: File[]) => {
+@@ -364,6 +373,27 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
+                     </motion.div>
+                 )}
+             </AnimatePresence>
++
++            {lockedFile && (
++                <UnlockerModal
++                    fileName={lockedFile.name}
++                    onCancel={() => {
++                        setFiles(prev => prev.filter(f => f !== lockedFile));
++                        setLockedFile(null);
++                    }}
++                    onUnlock={async (password) => {
++                        try {
++                            const decryptedBytes = await unlockEncryptedPdf(lockedFile, password);
++                            const unlockedFile = new File([decryptedBytes as any], lockedFile.name, { type: 'application/pdf' });
++                            setFiles(prev => prev.map(f => f === lockedFile ? unlockedFile : f));
++                            setLockedFile(null);
++                            toast.success("File unlocked successfully!");
++                        } catch (err: any) {
++                            toast.error(err.message || "Incorrect password");
++                        }
++                    }}
++                />
++            )}
+         </div>
+     );
+ };
