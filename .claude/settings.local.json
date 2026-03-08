@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push)",
+      "Bash(git add index.html sw.js cloudflare-worker.js manifest.json vercel.json)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(node serve-dev.js)",
+      "Bash(echo \"EXIT_CODE: $?\")",
+      "Bash(grep -r \"docready\\|lekkerledger\" index.html)",
+      "Bash(grep -v \"node_modules\")",
+      "Bash(where npm)",
+      "Bash(where node)",
+      "mcp__Desktop_Commander__read_file"
+    ]
+  }
+}
