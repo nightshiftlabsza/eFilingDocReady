@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "DocReady Dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["serve-dev.js"],
+      "port": 3000
+    }
+  ]
+}
