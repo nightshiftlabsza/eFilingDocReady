@@ -34,7 +34,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 <ShieldCheck className="text-primary w-7 h-7" />
                             </div>
                             <div>
-                                <h2 id="consent-modal-title" className="text-2xl font-bold text-white tracking-tight">POPIA & Privacy Consent</h2>
+                                <h2 id="consent-modal-title" className="text-2xl font-bold text-white tracking-tight">Privacy & Data Consent</h2>
                                 <p className="text-sm text-emerald-500 font-semibold uppercase tracking-wider">Secure Local Environment</p>
                             </div>
                         </div>
@@ -79,7 +79,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 onClick={onOpenPrivacy}
                                 className="text-xs text-slate-500 hover:text-white transition-colors underline underline-offset-4"
                             >
-                                Read Full POPIA Privacy Notice
+                                Read Full Privacy Details
                             </button>
                         </div>
                     </motion.div>

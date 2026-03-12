@@ -30,7 +30,7 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                             <div className="flex items-center gap-3">
                                 <ShieldCheck className="text-primary w-6 h-6" />
-                                <h2 className="text-xl font-bold text-white">POPIA Privacy Notice</h2>
+                                <h2 className="text-xl font-bold text-white">Privacy Details</h2>
                             </div>
                             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-slate-400" />
@@ -44,7 +44,7 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                                     <Scale className="w-4 h-4 text-blue-500" /> 1. Introduction
                                 </h3>
                                 <p className="text-sm leading-relaxed">
-                                    DocReady ("we", "us") is committed to protecting your personal information in accordance with the Protection of Personal Information Act (POPIA). This notice explains how we handle your data.
+                                    DocReady is an independent productivity tool. It is not a law firm and does not provide legal, tax, or compliance advice. This page explains how your data is handled when you use the app.
                                 </p>
                             </section>
 
@@ -92,7 +92,7 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                                         </div>
                                     </div>
                                     <p className="text-[11px] text-slate-400 italic mt-4">
-                                        As per POPIA requirements, our Information Officer is registered with the Information Regulator and is available for any data access or deletion requests.
+                                        For any questions about how DocReady handles data, contact us at the address below. DocReady is not affiliated with SARS and does not act as an information officer under any regulatory framework.
                                     </p>
                                 </div>
                             </section>
@@ -104,7 +104,7 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                                 onClick={onClose}
                                 className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all font-medium border border-white/10"
                             >
-                                Close Notice
+                                Close
                             </button>
                         </div>
                     </motion.div>

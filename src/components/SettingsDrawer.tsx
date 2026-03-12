@@ -77,7 +77,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose,
                             </section>
 
                             <section>
-                                <label className="text-xs uppercase tracking-widest text-[#2563eb] dark:text-slate-400 font-bold mb-3 block">Compliance & Privacy</label>
+                                <label className="text-xs uppercase tracking-widest text-[#2563eb] dark:text-slate-400 font-bold mb-3 block">Privacy & Data</label>
                                 <div className="space-y-4">
                                     <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex gap-3">
                                         <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
@@ -92,7 +92,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose,
                                     <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex gap-3">
                                         <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
                                         <div>
-                                            <p className="text-sm font-semibold text-amber-500">POPIA Data Retention</p>
+                                            <p className="text-sm font-semibold text-amber-500">Local Data Only</p>
                                             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                                                 Clearing your browser data will permanently delete your records. Data is stored solely to facilitate your current session.
                                             </p>
@@ -105,7 +105,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose,
                                             <div>
                                                 <p className="text-sm font-semibold text-red-500">Accountability</p>
                                                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                                                    Request deletion of all personal information as per POPIA mandates.
+                                                    To clear your stored preferences, wipe your browser's local data. No data is held on any server.
                                                 </p>
                                                 <button
                                                     onClick={() => {
@@ -140,16 +140,16 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose,
                                     onClick={onOpenPrivacy}
                                     className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white transition-colors text-left"
                                 >
-                                    POPIA Privacy Notice <ExternalLink className="w-3 h-3" />
+                                    Privacy Details <ExternalLink className="w-3 h-3" />
                                 </button>
                                 <button
-                                    onClick={onOpenPrivacy}
+                                    onClick={() => window.location.href = 'mailto:nightshiftlabsza@gmail.com'}
                                     className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white transition-colors text-left"
                                 >
-                                    Information Officer Contact <ExternalLink className="w-3 h-3" />
+                                    Contact Support <ExternalLink className="w-3 h-3" />
                                 </button>
                                 <div className="text-[10px] text-slate-500 dark:text-slate-600 flex flex-col mt-2">
-                                    <span>DocReady v3.1 (POPIA Verified)</span>
+                                    <span>DocReady v3.1</span>
                                     <span className="text-primary font-bold">Client-Side Architecture</span>
                                 </div>
                             </div>

@@ -20,7 +20,7 @@ export const PractitionerView: React.FC<PractitionerViewProps> = ({ onEnterWorks
             <div className="text-center mb-16">
                 <h2 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">I am a Practitioner</h2>
                 <p className="text-xl md:text-2xl opacity-70 max-w-3xl mx-auto leading-relaxed">
-                    Secure, <span className="text-indigo-500 font-semibold underline decoration-indigo-500/30">POPIA-compliant</span> folder management and document optimization.
+                    Secure, private folder management and document optimization.
                     Recover billable time and standardize your firm's document preparation.
                 </p>
             </div>
@@ -52,7 +52,7 @@ export const PractitionerView: React.FC<PractitionerViewProps> = ({ onEnterWorks
                         <Shield className="text-rose-500 w-6 h-6" />
                     </div>
                     <h3 className="font-bold mb-2">Zero Privacy Risk</h3>
-                    <p className="text-sm opacity-60">POPIA compliance is built-in. Sensitive data never leaves your firm's PC.</p>
+                    <p className="text-sm opacity-60">Sensitive data never leaves your firm's PC. Everything runs locally — zero cloud exposure.</p>
                 </div>
             </div>
 
@@ -66,7 +66,7 @@ export const PractitionerView: React.FC<PractitionerViewProps> = ({ onEnterWorks
                             </div>
                             <div>
                                 <h4 className="font-bold text-sm mb-1 uppercase tracking-widest text-rose-500">The Problem (Adobe/iLovePDF)</h4>
-                                <p className="text-sm opacity-60">Excessive annual fees (R5k+ per seat) or dangerous cloud uploads that violate POPIA code of conduct.</p>
+                                <p className="text-sm opacity-60">Excessive annual fees (R5k+ per seat) or risky cloud uploads that expose client documents to third-party servers.</p>
                             </div>
                         </div>
                         <div className="flex gap-4 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">

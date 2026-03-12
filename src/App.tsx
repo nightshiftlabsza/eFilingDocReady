@@ -213,7 +213,7 @@ export default function App() {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold text-sm mb-6 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
                                 >
-                                    100% Client-Side Processing • SARS Optimized • POPIA Compliant • 3 Free Trials Included
+                                    100% Client-Side Processing • SARS Optimized • No Cloud Uploads • 3 Free Compressions Included
                                 </motion.div>
                                 <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
                                     SARS-Ready Documents. <br /> Zero Upload Friction.
@@ -258,7 +258,7 @@ export default function App() {
                                     </div>
                                     <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>I am a Practitioner</h2>
                                     <p className="opacity-70 mb-8 flex-grow leading-relaxed text-sm">
-                                        Secure, POPIA-compliant folder management. Request, optimize, and organize client documents without data leaks.
+                                        Secure, private folder management. Request, optimize, and organize client documents — everything stays on your device, no cloud uploads.
                                     </p>
                                     <div className="text-indigo-500 font-bold flex items-center gap-2 group">
                                         Open Practitioner Hub <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -271,7 +271,7 @@ export default function App() {
                                         DocReady: Private Document Optimization
                                     </p>
                                     <div className="flex items-center gap-4 opacity-40 text-[10px] uppercase tracking-widest font-bold">
-                                        <span>POPIA Compliant</span>
+                                        <span>No Cloud Uploads</span>
                                         <span className="w-1 h-1 bg-current rounded-full" />
                                         <span>100% Client-Side</span>
                                         <span className="w-1 h-1 bg-current rounded-full" />

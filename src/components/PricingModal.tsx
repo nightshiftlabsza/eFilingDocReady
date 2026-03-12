@@ -123,7 +123,7 @@ const PRACTITIONER_TIERS: PractitionerTier[] = [
             'Everything in Solo',
             'VAT-compliant invoice (EFT)',
             'Standardised "SARS packs" firm-wide',
-            'POPIA-safe — zero cloud uploads',
+            'Zero cloud uploads — your files stay on your device',
             'Priority Legibility-First algorithm',
         ],
     },
@@ -138,7 +138,7 @@ const PRACTITIONER_TIERS: PractitionerTier[] = [
         features: [
             'Everything in Small Practice',
             'Admin dashboard (seat management)',
-            'Downloadable POPIA Compliance Pack',
+            'Dedicated onboarding support',
             'Dedicated onboarding support',
             'Bulk-deploy for all staff',
         ],
@@ -293,7 +293,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                                 </h2>
                                 <p className="text-sm text-[var(--text-color)]/60 mt-1">
                                     {isPractitioner
-                                        ? 'Local-only processing. POPIA-safe. Works offline.'
+                                        ? 'Local-only processing. No cloud uploads. Works offline.'
                                         : 'Compress, merge, and sanitise for SARS eFiling. On your device only.'}
                                 </p>
                             </div>
@@ -310,7 +310,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                         <div className="flex items-center gap-4 mb-6 px-4 py-2.5 bg-emerald-500/8 border border-emerald-500/15 rounded-xl">
                             <Lock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                             <p className="text-[11px] text-emerald-400/90 font-medium leading-relaxed">
-                                <span className="font-bold">Client-Side Processing Only.</span> Your files are never uploaded anywhere. Once loaded, DocReady works fully offline — zero servers, zero data breach risk, zero POPIA liability.
+                                <span className="font-bold">Client-Side Processing Only.</span> Your files are never uploaded anywhere. Once loaded, DocReady works fully offline — zero servers, zero data breach risk.
                             </p>
                         </div>
 
