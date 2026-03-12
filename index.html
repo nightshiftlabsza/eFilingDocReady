@@ -515,13 +515,19 @@ document.getElementById('filenameInput').addEventListener('input', function() {
 });
 
 // ── Page count probe ──────────────────────────────────────────────────────────
+// ── Page count probe ──────────────────────────────────────────────────────────
 async function getPageCount(file) {
     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
         try {
             var buf = await file.arrayBuffer();
+            if (buf.byteLength === 0) throw new Error('File is empty');
             var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
             return pdf.numPages;
-        } catch(e) { return null; }
+        } catch(e) { 
+            console.error('PDF probe failed:', e);
+            if (e.name === 'PasswordException') return 'Encrypted PDF';
+            return 'Invalid PDF';
+        }
     }
     return 1;
 }
@@ -549,9 +555,15 @@ function renderFileList() {
         div.draggable = true;
 
         var sizeMB    = (fileObj.file.size / 1024 / 1024).toFixed(2) + ' MB';
-        var pagesHtml = fileObj.pageCount != null
-            ? '<span class="file-pages">' + fileObj.pageCount + (fileObj.pageCount === 1 ? ' pg' : ' pgs') + '</span>'
-            : '';
+        var pagesHtml = '';
+        if (fileObj.pageCount === 'loading') {
+            pagesHtml = '<span class="file-pages" style="background:var(--accent);color:#fff">Processing\u2026</span>';
+        } else if (typeof fileObj.pageCount === 'number') {
+            pagesHtml = '<span class="file-pages">' + fileObj.pageCount + (fileObj.pageCount === 1 ? ' pg' : ' pgs') + '</span>';
+        } else if (typeof fileObj.pageCount === 'string') {
+            pagesHtml = '<span class="file-error">\u26A0 ' + fileObj.pageCount + '</span>';
+        }
+        
         var errorHtml = fileObj.error
             ? '<span class="file-error">\u26A0 ' + fileObj.error + '</span>'
             : '';
@@ -646,14 +658,35 @@ function onTouchEnd(e) {
 
 // ── File handling ─────────────────────────────────────────────────────────────
 async function handleFiles(newFiles) {
-    for (var i = 0; i < newFiles.length; i++) files.push({ file: newFiles[i], pageCount: null, error: null });
-    renderFileList();
-    suggestFilename();
-    for (var j = 0; j < files.length; j++) {
-        if (files[j].pageCount === null && !files[j].error) {
-            files[j].pageCount = await getPageCount(files[j].file);
-            renderFileList();
+    try {
+        if (!newFiles || !newFiles.length) return;
+        
+        var startIdx = files.length;
+        for (var i = 0; i < newFiles.length; i++) {
+            files.push({ file: newFiles[i], pageCount: 'loading', error: null });
         }
+        
+        renderFileList();
+        suggestFilename();
+        
+        for (var j = startIdx; j < files.length; j++) {
+            if (files[j] && files[j].pageCount === 'loading') {
+                try {
+                    var count = await getPageCount(files[j].file);
+                    files[j].pageCount = count;
+                } catch(e) {
+                    console.error('Processing error for', files[j].file.name, e);
+                    files[j].pageCount = 'Error';
+                    files[j].error = 'Could not process file';
+                }
+                renderFileList();
+            }
+        }
+    } catch(err) {
+        console.error('handleFiles failed:', err);
+        var sb = document.getElementById('statusBox');
+        sb.textContent = 'Error adding files. Please try again.';
+        sb.style.color = '#C0392B';
     }
 }
 document.getElementById('fileInput').addEventListener('change',  function(e) { handleFiles(e.target.files); });
