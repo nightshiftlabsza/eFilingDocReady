@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.nightshiftlabsza.twa",
+    "sha256_cert_fingerprints": ["AF:85:34:92:62:B5:E3:B2:93:28:A1:9D:42:DB:AD:96:9A:86:FB:2C:C8:0B:5D:41:77:BA:D6:42:CE:2D:EB:7D"]
+  }
+}]
