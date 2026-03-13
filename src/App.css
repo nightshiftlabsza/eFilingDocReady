@@ -210,6 +210,7 @@ body {
 
 .hero.practitioner-view h1 {
   background: linear-gradient(135deg, #e2e8f0, #6366f1);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -391,4 +392,36 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Landing V2 Premium Overrides */
+.landing-v2 {
+  background: radial-gradient(circle at top left, rgba(21, 71, 52, 0.15), transparent 40%),
+              radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%);
+}
+
+.hero-v2 h1 {
+  background: linear-gradient(135deg, #fff 40%, rgba(255, 255, 255, 0.5));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-v2 h1 span {
+  -webkit-text-fill-color: #10b981;
+}
+
+.feature-card-v2 {
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.feature-card-v2:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.footer-v2 a {
+  font-size: 0.95rem;
+  font-weight: 500;
 }

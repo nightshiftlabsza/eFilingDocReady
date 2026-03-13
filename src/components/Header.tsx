@@ -41,9 +41,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                             (window as any).openPricingPage();
                         }
                     }}
-                    className="flex items-center gap-2 text-sm font-medium opacity-80 hover:opacity-100 transition-opacity"
+                    className="hidden sm:flex items-center gap-2 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity"
                 >
-                    Pricing
+                    Features
+                </button>
+
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (typeof window !== 'undefined' && (window as any).openPricingPage) {
+                            (window as any).openPricingPage();
+                        }
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-900/20"
+                >
+                    View Pricing
                 </button>
 
                 <button

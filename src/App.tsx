@@ -14,6 +14,7 @@ import { ConsentModal } from './components/ConsentModal';
 import { PrivacyModal } from './components/PrivacyModal';
 import { TaxpayerView } from './components/TaxpayerView';
 import { PractitionerView } from './components/PractitionerView';
+import { LandingPage } from './components/LandingPage';
 
 export default function App() {
     const [mode, setMode] = useState<'landing' | 'taxpayer-info' | 'practitioner-info' | 'workspace'>('landing');
@@ -245,74 +246,10 @@ export default function App() {
             <main className="content flex-grow">
                 <AnimatePresence mode="wait">
                     {mode === 'landing' ? (
-                        <motion.section
-                            key="landing"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05 }}
-                            className="flex flex-col items-center justify-center min-h-[75vh] px-4 max-w-5xl mx-auto w-full"
-                        >
-                            <div className="text-center mb-12">
-                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
-                                    SARS-Ready Documents. <br /> Zero Upload Friction.
-                                </h1>
-                                <p className="text-lg md:text-2xl opacity-70 max-w-2xl mx-auto">
-                                    Compress, merge, and prepare your documents for eFiling — everything runs <span className="text-blue-500 font-semibold italic inline-block px-1 border-b border-blue-500/30">directly on your device</span>. Your files never leave it. No account, no cloud, no risk.
-                                </p>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
-                                {/* Taxpayer Gateway */}
-                                <div
-                                    className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-blue-500 active:scale-95"
-                                    onClick={() => navigateTo('taxpayer-info', 'taxpayer')}
-                                >
-                                    <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-8">
-                                        <div className="w-6 h-6 bg-blue-500 rounded-sm"></div>
-                                    </div>
-                                    <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>I am a Taxpayer</h2>
-                                    <p className="opacity-70 mb-8 flex-grow leading-relaxed text-sm">
-                                        Combine and optimize IDs, receipts, and PDFs for any upload. Perfectly sized for the 5MB eFiling limit. Fast, private, zero-server processing.
-                                    </p>
-                                    <div className="text-blue-500 font-bold flex items-center gap-2 group">
-                                        View Solutions <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                    </div>
-                                </div>
-
-                                {/* Practitioner Gateway */}
-                                <div
-                                    className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-indigo-500 active:scale-95"
-                                    onClick={() => navigateTo('practitioner-info', 'practitioner')}
-                                >
-                                    <div className="w-14 h-14 rounded-full bg-indigo-500/10 flex items-center justify-center mb-8">
-                                        <div className="w-6 h-6 bg-indigo-500 rounded-sm"></div>
-                                        <div className="w-6 h-6 bg-indigo-400 rounded-sm -ml-2 -mt-2 opacity-80"></div>
-                                    </div>
-                                    <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>I am a Practitioner</h2>
-                                    <p className="opacity-70 mb-8 flex-grow leading-relaxed text-sm">
-                                        Secure, private folder management. Request, optimize, and organize client documents — everything stays on your device, no cloud uploads.
-                                    </p>
-                                    <div className="text-indigo-500 font-bold flex items-center gap-2 group">
-                                        Open Practitioner Hub <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <footer className="mt-20 py-8 border-t border-[var(--glass-border)] w-full text-center">
-                                <div className="flex flex-col items-center gap-2">
-                                    <p className="text-sm font-semibold opacity-60 tracking-tight">
-                                        DocReady: Private Document Optimization
-                                    </p>
-                                    <div className="flex items-center gap-4 opacity-40 text-[10px] uppercase tracking-widest font-bold">
-                                        <span>No Cloud Uploads</span>
-                                        <span className="w-1 h-1 bg-current rounded-full" />
-                                        <span>100% Client-Side</span>
-                                        <span className="w-1 h-1 bg-current rounded-full" />
-                                        <a href="mailto:support@docready.co.za" className="hover:text-primary transition-colors">Support</a>
-                                    </div>
-                                </div>
-                            </footer>
-
-                        </motion.section>
+                        <LandingPage 
+                            onStartFreeTrial={() => navigateTo('taxpayer-info', 'taxpayer')}
+                            onViewPricing={() => setIsPricingOpen(true)}
+                        />
                     ) : mode === 'taxpayer-info' ? (
                         <TaxpayerView
                             onEnterWorkspace={() => navigateTo('workspace')}
