@@ -1,0 +1,163 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - status [ref=e9]: You've used your free credits — upgrade to keep compressing.
+  - navigation [ref=e10]:
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e13]
+      - generic [ref=e15]:
+        - generic [ref=e16]: DocReady
+        - generic [ref=e17]:
+          - generic [ref=e18]: Audit-Ready
+          - generic [ref=e19]:
+            - img [ref=e20]
+            - text: Local Only
+    - generic [ref=e22]:
+      - button "Dashboard" [ref=e23]:
+        - img [ref=e24]
+        - text: Dashboard
+      - button "Settings" [ref=e29]:
+        - img [ref=e30]
+  - main [ref=e33]:
+    - generic [ref=e35]:
+      - generic [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - heading "Drag documents here, or click to upload" [level=3] [ref=e41]
+        - paragraph [ref=e42]: ID documents, payslips, bank statements — all processed privately on your device.
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - img [ref=e46]
+            - text: Collection Stack (1)
+          - generic [ref=e49]: Drag to reorder
+        - list [ref=e50]:
+          - listitem [ref=e51]:
+            - generic [ref=e52]:
+              - img "test.pdf" [ref=e53]
+              - img [ref=e55]
+              - button "Remove test.pdf" [ref=e62]:
+                - img [ref=e63]
+              - generic [ref=e66]:
+                - button "Move test.pdf up in the list" [disabled] [ref=e67]: Move Up
+                - button "Move test.pdf down in the list" [disabled] [ref=e68]: Move Down
+            - generic [ref=e69]:
+              - paragraph [ref=e71]: test.pdf
+              - paragraph [ref=e72]: 0.00 MB • PDF
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: Target size per part (MB)
+            - spinbutton "Target size per part (MB)" [ref=e76]: "5"
+          - generic "Upgrade to Premium to unlock this feature" [ref=e77]:
+            - img [ref=e79]
+            - generic [ref=e82]:
+              - paragraph [ref=e83]: Output Password Protection
+              - paragraph [ref=e84]: Premium feature — upgrade to enable
+            - img [ref=e85]
+          - button "Scan & Merge for eFiling" [active] [ref=e87]:
+            - img [ref=e88]
+            - text: Scan & Merge for eFiling
+          - button "Merge only" [ref=e90]:
+            - img [ref=e91]
+            - text: Merge only
+        - generic [ref=e94]:
+          - img [ref=e95]
+          - generic [ref=e97]:
+            - paragraph [ref=e98]: Ready to prepare for eFiling
+            - paragraph [ref=e99]: We'll combine your 1 document and compress everything to under 5 MB — without uploading anything.
+  - dialog "Practitioner Plans" [ref=e102]:
+    - generic [ref=e103]:
+      - generic [ref=e104]:
+        - generic [ref=e105]:
+          - img [ref=e106]
+          - text: Early Bird Pricing Active
+        - heading "Practitioner Plans" [level=2] [ref=e108]
+        - paragraph [ref=e109]: Local-only processing. POPIA-safe. Works offline.
+      - button "Close pricing modal" [ref=e110]:
+        - img [ref=e111]
+    - generic [ref=e114]:
+      - img [ref=e115]
+      - paragraph [ref=e118]: Client-Side Processing Only. Your files are never uploaded anywhere. Once loaded, DocReady works fully offline — zero servers, zero data breach risk, zero POPIA liability.
+    - generic [ref=e119]:
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - img [ref=e122]
+          - text: Early Bird Pricing — Limited Slots
+        - generic [ref=e124]: 23/100 claimed
+      - paragraph [ref=e127]: Price locked for life once claimed. No renewal surprises.
+    - generic [ref=e128]:
+      - button "1 user Solo Practitioner R699/yrEarly Bird R399/yr Unlimited SARS-ready bundles Batch compression (20 files) Smart filename sanitisation Password removal & output lock Offline — files never leave you" [ref=e129]:
+        - generic [ref=e130]:
+          - img [ref=e131]
+          - generic [ref=e133]: 1 user
+        - paragraph [ref=e134]: Solo Practitioner
+        - generic [ref=e135]: R699/yrEarly Bird
+        - paragraph [ref=e136]: R399/yr
+        - list [ref=e137]:
+          - listitem [ref=e138]:
+            - img [ref=e140]
+            - text: Unlimited SARS-ready bundles
+          - listitem [ref=e142]:
+            - img [ref=e144]
+            - text: Batch compression (20 files)
+          - listitem [ref=e146]:
+            - img [ref=e148]
+            - text: Smart filename sanitisation
+          - listitem [ref=e150]:
+            - img [ref=e152]
+            - text: Password removal & output lock
+          - listitem [ref=e154]:
+            - img [ref=e156]
+            - text: Offline — files never leave you
+      - button "Most Popular Up to 10 users Small Practice R1,999/yrEarly Bird R999/yr Everything in Solo VAT-compliant invoice (EFT) Standardised \"SARS packs\" firm-wide POPIA-safe — zero cloud uploads Priority Legibility-First algorithm" [ref=e158]:
+        - generic [ref=e159]: Most Popular
+        - generic [ref=e160]:
+          - img [ref=e161]
+          - generic [ref=e166]: Up to 10 users
+        - paragraph [ref=e167]: Small Practice
+        - generic [ref=e168]: R1,999/yrEarly Bird
+        - paragraph [ref=e169]: R999/yr
+        - list [ref=e170]:
+          - listitem [ref=e171]:
+            - img [ref=e173]
+            - text: Everything in Solo
+          - listitem [ref=e175]:
+            - img [ref=e177]
+            - text: VAT-compliant invoice (EFT)
+          - listitem [ref=e179]:
+            - img [ref=e181]
+            - text: Standardised "SARS packs" firm-wide
+          - listitem [ref=e183]:
+            - img [ref=e185]
+            - text: POPIA-safe — zero cloud uploads
+          - listitem [ref=e187]:
+            - img [ref=e189]
+            - text: Priority Legibility-First algorithm
+      - 'button "Unlimited users Firm / Site License R4,999/yrEarly Bird R2,499/yr Everything in Small Practice Admin dashboard (seat management) Downloadable POPIA Compliance Pack Dedicated onboarding support Bulk-deploy for all staff Adobe Acrobat Pro costs R5,257 per user per year — and uploads your client docs to their cloud. For a 20-person firm that''s R105,140/yr. DocReady: R4,999 for every user you''ll ever hire. 100% local. Zero data breach risk." [ref=e191]':
+        - generic [ref=e192]:
+          - img [ref=e193]
+          - generic [ref=e197]: Unlimited users
+        - paragraph [ref=e198]: Firm / Site License
+        - generic [ref=e199]: R4,999/yrEarly Bird
+        - paragraph [ref=e200]: R2,499/yr
+        - list [ref=e201]:
+          - listitem [ref=e202]:
+            - img [ref=e204]
+            - text: Everything in Small Practice
+          - listitem [ref=e206]:
+            - img [ref=e208]
+            - text: Admin dashboard (seat management)
+          - listitem [ref=e210]:
+            - img [ref=e212]
+            - text: Downloadable POPIA Compliance Pack
+          - listitem [ref=e214]:
+            - img [ref=e216]
+            - text: Dedicated onboarding support
+          - listitem [ref=e218]:
+            - img [ref=e220]
+            - text: Bulk-deploy for all staff
+        - generic [ref=e223]:
+          - img [ref=e224]
+          - paragraph [ref=e226]: "Adobe Acrobat Pro costs R5,257 per user per year — and uploads your client docs to their cloud. For a 20-person firm that's R105,140/yr. DocReady: R4,999 for every user you'll ever hire. 100% local. Zero data breach risk."
+    - paragraph [ref=e227]: DocReady is an independent South African tool for tax professionals. NOT affiliated with, endorsed by, or partnered with SARS. SARS is a trademark of the South African Revenue Service.
+```

@@ -1,1099 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eFiling DocReady</title>
-    <meta name="theme-color" content="#154734" id="themeColorMeta">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="DocReady">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-
-    <style>
-        :root {
-            --bg: #F4F5F2; --card: #FFFFFF; --text-main: #1F2421; --text-muted: #7A807C;
-            --primary: #154734; --primary-hover: #0E3324; --accent: #CBA052; --border: #E6E8E3; --radius: 10px;
-        }
-        html.dark-mode {
-            --bg: #141615; --card: #1F2220; --text-main: #EFEFEF; --text-muted: #8F9491;
-            --primary: #CBA052; --primary-hover: #B38B42; --accent: #154734; --border: #303431;
-        }
-
-        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 24px 15px 40px; margin: 0; display: flex; justify-content: center; transition: background-color 0.4s ease; }
-        .app-container { background: var(--card); max-width: 480px; width: 100%; border-radius: var(--radius); padding: 28px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.07); border: 1px solid var(--border); border-top: 5px solid var(--accent); transition: all 0.4s ease; }
-
-        /* ── Header ── */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
-        .title-group h1 { margin: 0; font-size: 22px; font-weight: 600; color: var(--text-main); letter-spacing: -0.5px; }
-        .title-group p { margin: 5px 0 0; font-size: 12.5px; color: var(--text-muted); font-weight: 400; }
-        .menu-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; flex-shrink: 0; margin-top: 2px; }
-        .menu-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-        .menu-btn svg { display: block; }
-
-        /* ── Drawer overlay ── */
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-
-        /* ── Drawer panel ── */
-        .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 280px; max-width: 88vw; background: var(--card); border-left: 1px solid var(--border); z-index: 201; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
-        .drawer.open { transform: translateX(0); box-shadow: -8px 0 32px rgba(0,0,0,0.15); }
-        .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 18px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .drawer-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .drawer-close { background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; transition: 0.2s; }
-        .drawer-close:hover { border-color: var(--text-main); color: var(--text-main); }
-        .drawer-body { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 28px; }
-        .drawer-section-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
-
-        /* ── Appearance selector ── */
-        .appearance-selector { display: flex; gap: 6px; }
-        .appear-btn { flex: 1; padding: 10px 4px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.5; }
-        .appear-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.06); }
-        html.dark-mode .appear-btn.active { background: rgba(203,160,82,0.08); }
-        .appear-btn:hover:not(.active) { border-color: var(--text-muted); color: var(--text-main); }
-        .appear-icon { display: block; font-size: 16px; margin-bottom: 2px; }
-
-        /* ── Recent section inside drawer ── */
-        .drawer .recent-section { margin-top: 0; border-top: none; padding-top: 0; }
-
-        /* ── Drawer footer ── */
-        .drawer-footer { flex-shrink: 0; padding: 16px 18px 20px; border-top: 1px solid var(--border); }
-        .drawer-footer-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .drawer-footer-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
-        .drawer-footer-link { color: var(--text-muted); text-decoration: none; }
-        .drawer-footer-link:hover { color: var(--primary); }
-
-        /* ── Preset strip ── */
-        .preset-strip { display: flex; gap: 8px; margin-bottom: 0; }
-        .preset-btn { flex: 1; padding: 9px 6px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; text-align: center; line-height: 1.4; }
-        .preset-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.05); }
-        html.dark-mode .preset-btn.active { background: rgba(203,160,82,0.07); }
-        .preset-btn:hover:not(.active) { border-color: var(--text-muted); }
-
-        /* ── Email adjuster ── */
-        .email-adjuster { display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
-        .email-adjuster span { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-        .email-adjuster-val { font-size: 13px; font-weight: 600; color: var(--primary); min-width: 60px; text-align: center; }
-        html.dark-mode .email-adjuster-val { color: var(--primary); }
-        .stepper { display: flex; align-items: center; gap: 0; }
-        .step-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Outfit', sans-serif; }
-        .step-btn:hover { border-color: var(--primary); color: var(--primary); }
-        .step-btn:first-child { border-radius: 6px 0 0 6px; }
-        .step-btn:last-child  { border-radius: 0 6px 6px 0; }
-        .step-val { border: 1px solid var(--border); border-left: none; border-right: none; height: 28px; min-width: 52px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-main); background: var(--card); }
-
-        /* ── Divider ── */
-        .section-gap { height: 18px; }
-
-        /* ── Add buttons ── */
-        .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
-        .btn-action { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 16px 10px; border-radius: var(--radius); font-weight: 500; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Outfit', sans-serif; }
-        .btn-action:hover { border-color: var(--primary); color: var(--primary); background: rgba(21,71,52,0.03); }
-        html.dark-mode .btn-action:hover { background: rgba(203,160,82,0.05); }
-        .btn-action svg { transition: 0.2s; }
-
-        /* ── File list ── */
-        .file-list { margin-bottom: 16px; min-height: 20px; display: flex; flex-direction: column; gap: 8px; border-radius: 8px; transition: background 0.2s; }
-        .file-list.drag-over { background: rgba(21,71,52,0.04); outline: 2.5px dashed var(--primary); outline-offset: 3px; }
-        html.dark-mode .file-list.drag-over { background: rgba(203,160,82,0.05); }
-        .file-item { background: var(--bg); padding: 11px 13px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: box-shadow 0.2s, border-color 0.2s; user-select: none; }
-        .file-item.dragging { opacity: 0.45; border-color: var(--primary); box-shadow: 0 4px 14px rgba(0,0,0,0.10); cursor: grabbing; }
-        .file-item.drag-over { border-color: var(--accent); background: rgba(203,160,82,0.06); }
-        .file-info { display: flex; flex-direction: column; gap: 3px; overflow: hidden; flex: 1; min-width: 0; }
-        .file-name { font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
-        .file-size { font-size: 11px; color: var(--text-muted); }
-        .file-pages { font-size: 11px; color: var(--text-muted); background: var(--border); padding: 1px 6px; border-radius: 3px; }
-        .file-error { font-size: 11px; color: #C0392B; font-weight: 500; }
-        .file-progress { height: 2px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; display: none; }
-        .file-progress-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.25s ease; }
-        .file-controls { display: flex; gap: 4px; margin-left: 8px; flex-shrink: 0; }
-        .icon-btn { background: transparent; border: none; color: var(--text-muted); border-radius: 4px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; transition: 0.2s; }
-        .icon-btn:hover { background: var(--border); }
-        .icon-btn.delete:hover { color: #C0392B; }
-        .empty-state { text-align: center; padding: 32px 16px 28px; border: 1.5px dashed var(--text-muted); border-radius: 8px; }
-        .empty-state-icon { color: var(--text-muted); display: block; margin: 0 auto 12px; }
-        .empty-state-primary { font-size: 14px; color: var(--text-main); font-weight: 500; }
-        .empty-state-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
-
-        /* ── Status ── */
-        .status-box { font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 14px; min-height: 18px; font-weight: 500; transition: color 0.3s; }
-
-        /* ── Filename ── */
-        .field-label { display: block; font-size: 11px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .text-input { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 14px; transition: 0.3s; }
-        .text-input:focus { outline: none; border-color: var(--primary); background: var(--card); }
-        .filename-wrap { margin-bottom: 10px; }
-
-
-
-        /* ── Action buttons ── */
-        .primary-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: var(--primary); cursor: pointer; transition: 0.25s; font-family: 'Outfit', sans-serif; letter-spacing: 0.3px; margin-bottom: 9px; display: block; box-sizing: border-box; }
-        html.dark-mode .primary-btn { color: #141615; font-weight: 600; }
-        .primary-btn:hover:not(:disabled) { background: var(--primary-hover); }
-        .primary-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-        .share-btn { background: var(--accent) !important; }
-        html.dark-mode .share-btn { color: #141615 !important; }
-
-        /* ── Recent exports ── */
-        .recent-section { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
-        .recent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .recent-header span { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .recent-clear { background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0; font-family: 'Outfit', sans-serif; }
-        .recent-clear:hover { color: #C0392B; }
-        .recent-list { display: flex; flex-direction: column; gap: 7px; }
-        .recent-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; }
-        .recent-item-info { overflow: hidden; flex: 1; min-width: 0; }
-        .recent-item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 500; }
-        .recent-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .recent-share-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11.5px; color: var(--text-muted); cursor: pointer; font-family: 'Outfit', sans-serif; transition: 0.2s; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
-        .recent-share-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-        /* ── Premium badge ── */
-        .premium-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.3px; flex-shrink: 0; }
-        .badge-free { background: var(--border); color: var(--text-muted); }
-        .badge-premium { background: var(--accent); color: #1F2421; }
-        html.dark-mode .badge-premium { color: #141615; }
-
-        /* ── Preset lock icon ── */
-        .preset-lock { font-size: 9px; opacity: 0.55; display: inline; }
-
-        /* ── Upgrade modal ── */
-        .upgrade-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; box-sizing: border-box; }
-        .upgrade-overlay.open { opacity: 1; pointer-events: auto; }
-        .upgrade-card { background: var(--card); border-radius: 14px; padding: 28px 24px 22px; max-width: 360px; width: 100%; border: 1px solid var(--border); border-top: 4px solid var(--accent); box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-        .upgrade-title { font-size: 18px; font-weight: 600; margin: 0 0 6px; color: var(--text-main); }
-        .upgrade-sub { font-size: 12.5px; color: var(--text-muted); margin: 0 0 18px; line-height: 1.55; }
-        .upgrade-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; }
-        .upgrade-features li { font-size: 12.5px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-        .upgrade-features li::before { content: '✓'; color: var(--primary); font-weight: 700; flex-shrink: 0; }
-        html.dark-mode .upgrade-features li::before { color: var(--accent); }
-        .upgrade-price-row { margin-bottom: 18px; }
-        .upgrade-price { font-size: 28px; font-weight: 700; color: var(--text-main); line-height: 1; }
-        .upgrade-price-note { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-        .upgrade-close-link { display: block; text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 10px; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; width: 100%; padding: 4px; }
-        .upgrade-close-link:hover { color: var(--text-main); }
-
-        /* ── Desktop two-column layout ── */
-        .main-cols { display: flex; flex-direction: column; }
-        .col-right { flex: 1; min-width: 0; }
-
-        /* ── Desktop nav controls (hidden on mobile) ── */
-        .desktop-nav-controls { display: none; align-items: center; gap: 12px; }
-        .desktop-nav-controls .appearance-selector { gap: 4px; }
-        .desktop-nav-controls .appear-btn { padding: 7px 12px; font-size: 11px; flex: none; }
-        .desktop-nav-controls .appear-icon { display: none; }
-
-        @media (min-width: 820px) {
-            /* Full-page web app layout */
-            body { padding: 0; display: block; }
-            .app-container { max-width: none; padding: 0; border-radius: 0; box-shadow: none; border: none; border-top: none; background: transparent; }
-
-            /* Sticky top nav */
-            .header { position: sticky; top: 0; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); border-radius: 0; margin-bottom: 0; padding: 0 48px; height: 60px; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-            .header .title-group { display: flex; align-items: center; gap: 10px; }
-            .header .title-group h1 { font-size: 18px; }
-            .header .title-group p { margin: 0; font-size: 12px; }
-            .menu-btn { display: none; }
-            .desktop-nav-controls { display: flex; }
-
-            /* Content area */
-            .main-cols { flex-direction: row; max-width: 1080px; margin: 0 auto; padding: 36px 48px 64px; }
-            .col-left { flex-shrink: 0; width: 230px; padding-right: 32px; border-right: 1px solid var(--border); margin-right: 32px; }
-            .col-left .btn-row { flex-direction: column; margin-bottom: 0; }
-            .col-right .file-list { min-height: calc(100vh - 380px); max-height: 600px; }
-            .col-right .filename-wrap { margin-top: 14px; }
-            .empty-state { padding: 40px 16px 36px; }
-        }
-        /* ── 1280px: MacBook 13" / small monitors ── */
-        @media (min-width: 1280px) {
-            .header { padding: 0 56px; }
-            .main-cols { max-width: 1200px; padding: 40px 56px 72px; }
-            .col-left { width: 260px; padding-right: 36px; margin-right: 36px; }
-            .col-right .file-list { max-height: 680px; }
-        }
-        /* ── 1920px: Full HD monitors ── */
-        @media (min-width: 1920px) {
-            .header { padding: 0 max(64px, calc((100% - 1280px) / 2)); }
-            .main-cols { max-width: 1280px; padding: 44px 64px 80px; }
-            .col-right .file-list { max-height: 760px; }
-        }
-        /* ── 2400px: QHD / Ultrawide ── */
-        @media (min-width: 2400px) {
-            .header { padding: 0 max(48px, calc((100% - 1400px) / 2)); }
-            .main-cols { max-width: 1400px; padding: 48px 72px 96px; }
-            .col-left { width: 300px; padding-right: 40px; margin-right: 40px; }
-            .col-right .file-list { max-height: 860px; }
-        }
-    </style>
-    <script>/* block theme before first paint to prevent FOUC */
-        (function(){var s=null;try{s=localStorage.getItem('docready-theme');}catch(e){}var dark=s==='dark'?true:(s==='light'?false:(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches));if(dark)document.documentElement.classList.add('dark-mode');})();
-    </script>
-</head>
-<body>
-<div class="app-container">
-
-    <!-- Header -->
-    <div class="header">
-        <div class="title-group">
-            <h1>DocReady</h1>
-            <p id="subtitle">For SARS eFiling &middot; under 5 MB</p>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Compress and merge documents for SARS eFiling. 100% on-device — your files never leave your browser." />
+    <meta name="theme-color" content="#154734" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="/pricing.css" />
+    <title>DocReady — SARS eFiling Doc Prep</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Add to index.html before closing </body> -->
+    <section id="pricing-page" class="pricing-page" style="display: none;">
+      <div class="pricing-container">
+        <div class="pricing-header">
+          <h1>Choose Your Plan</h1>
+          <button class="close-btn" onclick="closePricingPage()">×</button>
         </div>
-        <!-- Desktop appearance controls (hidden on mobile) -->
-        <div class="desktop-nav-controls">
-            <div class="appearance-selector">
-                <button class="appear-btn" id="appearLightD" onclick="setThemeMode('light')"><span class="appear-icon">☀</span>Light</button>
-                <button class="appear-btn" id="appearDarkD" onclick="setThemeMode('dark')"><span class="appear-icon">☾</span>Dark</button>
-                <button class="appear-btn" id="appearSystemD" onclick="setThemeMode('system')"><span class="appear-icon">◑</span>Auto</button>
-            </div>
+        
+        <div class="user-type-toggle">
+          <button id="btn-individual" class="toggle-btn active" onclick="switchUserType('individual')">I'm an Individual</button>
+          <button id="btn-professional" class="toggle-btn" onclick="switchUserType('professional')">I'm a Professional</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-            <span class="premium-badge badge-free" id="freeBadge">Free</span>
-            <span class="premium-badge badge-premium" id="premiumBadge" style="display:none">Premium ✓</span>
-            <button class="menu-btn" onclick="openMenu()" aria-label="Open settings">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
+
+        <div id="individual-cards" class="pricing-cards">
+          <div class="pricing-card">
+            <h2 class="tier-name">Free Trial</h2>
+            <div class="tier-price">R0</div>
+            <div class="tier-period">One-time</div>
+            <ul class="tier-features">
+              <li>3 optimizations</li>
+              <li>Basic compression</li>
+              <li>No priority support</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('free')">Select Plan</button>
+          </div>
+          <div class="pricing-card">
+            <h2 class="tier-name">Pay-As-You-Go</h2>
+            <div class="tier-price">R29</div>
+            <div class="tier-period">per 5 credits</div>
+            <ul class="tier-features">
+              <li>5 optimizations</li>
+              <li>Priority processing</li>
+              <li>Batch up to 5 files</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('paygo')">Select Plan</button>
+          </div>
+          <div class="pricing-card recommended">
+            <div class="recommended-badge">Recommended</div>
+            <h2 class="tier-name">Annual Pro</h2>
+            <div class="tier-price">R199</div>
+            <div class="tier-period">Annual</div>
+            <ul class="tier-features">
+              <li>Unlimited optimizations</li>
+              <li>Advanced compression</li>
+              <li>Batch unlimited</li>
+              <li>Email support</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('annual')">Select Plan</button>
+          </div>
+        </div>
+
+        <div id="professional-cards" class="pricing-cards" style="display: none;">
+          <div class="pricing-card">
+            <h2 class="tier-name">Solo Practitioner</h2>
+            <div class="tier-price">R499</div>
+            <div class="tier-period">Annual</div>
+            <ul class="tier-features">
+              <li>Unlimited optimization</li>
+              <li>Client management</li>
+              <li>Batch 50 files</li>
+              <li>Email support</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('solo')">Select Plan</button>
+          </div>
+          <div class="pricing-card recommended">
+            <div class="recommended-badge">Recommended</div>
+            <h2 class="tier-name">Small Firm</h2>
+            <div class="tier-price">R1899</div>
+            <div class="tier-period">Annual</div>
+            <ul class="tier-features">
+              <li>Up to 10 staff seats</li>
+              <li>Firm-wide management</li>
+              <li>Client request system</li>
+              <li>Analytics dashboard</li>
+              <li>Priority support</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('firm')">Select Plan</button>
+          </div>
+          <div class="pricing-card">
+            <h2 class="tier-name">Site License</h2>
+            <div class="tier-price">R4999</div>
+            <div class="tier-period">Annual</div>
+            <ul class="tier-features">
+              <li>Unlimited staff</li>
+              <li>Enterprise management</li>
+              <li>Advanced client portal</li>
+              <li>Comprehensive analytics</li>
+              <li>Dedicated support</li>
+              <li>Custom integrations</li>
+            </ul>
+            <button class="select-plan-btn" onclick="selectPlan('enterprise')">Select Plan</button>
+          </div>
+        </div>
+
+        <div class="comparison-table-container">
+          <h2>Feature Comparison</h2>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Basic</th>
+                <th>Pro</th>
+                <th>Enterprise</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-tbody">
+              <!-- Content generated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              What happens if I try to compress a file over 5MB? <span class="icon">+</span>
             </button>
+            <div class="faq-answer">DocReady is strictly designed to get your files under the SARS 5MB limit.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              Are my documents safe? <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">Yes, we process everything locally in your browser.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              Can I upgrade from Individual to Professional? <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">Yes, you can upgrade your plan at any point.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              What payment methods do you accept? <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">We accept credit cards and EFT via PayFast.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              Do credits expire on Pay-As-You-Go? <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">No, there is no expiration date on your credits.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(this)">
+              Is there a limit on file size? <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">Only your browser limits how large a file you can upload.</div>
+          </div>
         </div>
-    </div>
-
-    <div class="main-cols">
-
-        <!-- Left column: presets + add buttons -->
-        <div class="col-left">
-
-            <!-- Preset strip -->
-            <div class="preset-strip">
-                <button class="preset-btn active" data-limit="5242880" data-label="SARS eFiling" data-premium="true" onclick="setPreset(this)">
-                    SARS eFiling<br><strong>&lt; 5 MB</strong> <span class="preset-lock">🔒</span>
-                </button>
-                <button class="preset-btn" data-limit="10485760" data-label="Custom" data-email="true" data-premium="true" onclick="setPreset(this)">
-                    Custom<br><strong id="emailStrong">Adjustable</strong> <span class="preset-lock">🔒</span>
-                </button>
-                <button class="preset-btn" data-limit="0" data-label="Merge only" onclick="setPreset(this)">
-                    Merge only<br><strong>No limit</strong>
-                </button>
-            </div>
-
-            <!-- Email size adjuster (shown only when Custom preset active) -->
-            <div class="email-adjuster" id="emailAdjuster">
-                <span>Max size</span>
-                <div class="stepper">
-                    <button class="step-btn" onclick="adjustEmail(-1)">&#8722;</button>
-                    <div class="step-val"><span id="emailMBVal">10</span> MB</div>
-                    <button class="step-btn" onclick="adjustEmail(1)">&#43;</button>
-                </div>
-            </div>
-
-            <div class="section-gap"></div>
-
-            <!-- File inputs (hidden) -->
-            <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/*" style="display:none">
-            <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none">
-
-            <!-- Add buttons -->
-            <div class="btn-row">
-                <button class="btn-action" onclick="document.getElementById('fileInput').click()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="12" y1="18" x2="12" y2="12"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                    Add Documents
-                </button>
-                <button class="btn-action" onclick="document.getElementById('cameraInput').click()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    Scan Photo
-                </button>
-            </div>
-
-        </div><!-- /col-left -->
-
-        <!-- Right column: file workspace -->
-        <div class="col-right">
-
-            <!-- File list -->
-            <div class="file-list" id="fileList">
-                <div class="empty-state" id="emptyState">
-                    <svg class="empty-state-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <div class="empty-state-primary">Add files or drop them here</div>
-                    <div class="empty-state-hint">PDF, JPG or PNG &middot; reorder after adding</div>
-                </div>
-            </div>
-
-            <div class="status-box" id="statusBox"></div>
-
-            <!-- Filename -->
-            <div class="filename-wrap">
-                <label class="field-label" for="filenameInput">File name</label>
-                <input class="text-input" type="text" id="filenameInput" placeholder="e.g. 2026-02-26_TaxDocs">
-            </div>
-
-            <button class="primary-btn" id="makePdfBtn" onclick="startGeneration()" disabled>Create PDF</button>
-            <button class="primary-btn share-btn" id="shareBtn" onclick="sharePDF()" style="display:none">Share or Download</button>
-
-        </div><!-- /col-right -->
-
-    </div><!-- /main-cols -->
-
-</div>
-
-<!-- Upgrade modal -->
-<div class="upgrade-overlay" id="upgradeOverlay" onclick="closeUpgradeModal()">
-    <div class="upgrade-card" onclick="event.stopPropagation()">
-        <div class="upgrade-title">Unlock DocReady Premium</div>
-        <div class="upgrade-sub">Automatically compress and resize your documents to meet SARS eFiling's strict 5 MB limit.</div>
-        <ul class="upgrade-features">
-            <li>Smart compression to under 5 MB</li>
-            <li>Adjustable size limit for any upload</li>
-            <li>Works on all your devices</li>
-            <li>Once-off payment — no subscription ever</li>
-        </ul>
-        <div class="upgrade-price-row">
-            <div class="upgrade-price">R69</div>
-            <div class="upgrade-price-note">Once-off &middot; No subscription &middot; No account needed</div>
-        </div>
-        <input class="text-input" type="email" id="payEmail" placeholder="your@email.com" style="margin-bottom:6px;" autocomplete="email">
-        <div id="payEmailError" style="display:none;font-size:11px;color:#C0392B;margin-bottom:6px;">Please enter a valid email address.</div>
-        <button type="button" class="primary-btn" onclick="payWithPaystack()" style="margin-bottom:0">Pay R69 with Paystack</button>
-        <button class="upgrade-close-link" onclick="closeUpgradeModal()">Continue with free (merge only)</button>
-    </div>
-</div>
-
-<!-- Drawer -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeMenu()"></div>
-<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Settings">
-    <div class="drawer-header">
-        <span class="drawer-title">Settings</span>
-        <button class="drawer-close" onclick="closeMenu()" aria-label="Close">&times;</button>
-    </div>
-    <div class="drawer-body">
-        <div>
-            <div class="drawer-section-title">Appearance</div>
-            <div class="appearance-selector">
-                <button class="appear-btn" id="appearLight" onclick="setThemeMode('light')">
-                    <span class="appear-icon">&#9728;</span>Light
-                </button>
-                <button class="appear-btn" id="appearDark" onclick="setThemeMode('dark')">
-                    <span class="appear-icon">&#9790;</span>Dark
-                </button>
-                <button class="appear-btn" id="appearSystem" onclick="setThemeMode('system')">
-                    <span class="appear-icon">&#9681;</span>Auto
-                </button>
-            </div>
-        </div>
-        <div class="recent-section" id="recentSection" style="display:none">
-            <div class="recent-header">
-                <span>Previous exports</span>
-                <button class="recent-clear" onclick="clearRecent()">Clear</button>
-            </div>
-            <div class="recent-list" id="recentList"></div>
-        </div>
-    </div>
-    <div class="drawer-footer">
-        <div class="drawer-footer-name">eFiling DocReady</div>
-        <div class="drawer-footer-meta">v1.1 &middot; by <a href="https://nightshiftlabs.za" target="_blank" rel="noopener" class="drawer-footer-link">Nightshift Labs ZA</a></div>
-    </div>
-</div>
-
-<script>
-// ── State ─────────────────────────────────────────────────────────────────────
-var files        = [];
-var finalPdfBytes = null;
-var TARGET_SIZE  = 5242880;   // default: 5 MB
-var emailMB      = 10;        // user-adjustable email limit
-var A4_W = 595.28, A4_H = 841.89;
-var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
-
-// ── Theme ─────────────────────────────────────────────────────────────────────
-var _themeMode = 'system'; // 'light' | 'dark' | 'system'
-
-function applyTheme(dark) {
-    document.documentElement.classList.toggle('dark-mode', dark);
-    document.getElementById('themeColorMeta').setAttribute('content', dark ? '#141615' : '#154734');
-    var ids = ['appearLight', 'appearDark', 'appearSystem', 'appearLightD', 'appearDarkD', 'appearSystemD'];
-    var modes = ['light', 'dark', 'system', 'light', 'dark', 'system'];
-    ids.forEach(function(id, i) {
-        var el = document.getElementById(id);
-        if (el) el.classList.toggle('active', modes[i] === _themeMode);
-    });
-}
-
-function setThemeMode(mode) {
-    _themeMode = mode;
-    try { localStorage.setItem('docready-theme', mode); } catch(e) {}
-    var dark = mode === 'dark' ? true : (mode === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
-    applyTheme(dark);
-}
-
-function initTheme() {
-    var saved = null;
-    try { saved = localStorage.getItem('docready-theme'); } catch(e) {}
-    _themeMode = (saved === 'dark' || saved === 'light') ? saved : 'system';
-    var dark = _themeMode === 'dark' ? true : (_themeMode === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
-    applyTheme(dark);
-    if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-            if (_themeMode === 'system') applyTheme(e.matches);
-        });
-    }
-}
-
-// ── Drawer ────────────────────────────────────────────────────────────────────
-function openMenu() {
-    document.getElementById('drawerOverlay').classList.add('open');
-    document.getElementById('drawer').classList.add('open');
-    document.body.style.overflow = 'hidden';
-    // sync active state in case it changed
-    applyTheme(document.documentElement.classList.contains('dark-mode'));
-}
-function closeMenu() {
-    document.getElementById('drawerOverlay').classList.remove('open');
-    document.getElementById('drawer').classList.remove('open');
-    document.body.style.overflow = '';
-}
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeMenu(); closeUpgradeModal(); } });
-
-// ── Presets ───────────────────────────────────────────────────────────────────
-function updateSubtitle() {
-    var btn = document.querySelector('.preset-btn.active');
-    if (!btn) return;
-    var label = btn.dataset.label;
-    if (TARGET_SIZE === Infinity) {
-        document.getElementById('subtitle').textContent = label + ' \u00B7 no size limit';
-    } else {
-        var mb = Math.round(TARGET_SIZE / 1024 / 1024);
-        document.getElementById('subtitle').textContent = 'For ' + label + ' \u00B7 under ' + mb + ' MB';
-    }
-}
-
-function setPreset(btn) {
-    if (btn.dataset.premium === 'true' && !isPremium) { showUpgradeModal(); return; }
-    document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    var isEmail = btn.dataset.email === 'true';
-    var adjuster = document.getElementById('emailAdjuster');
-    adjuster.style.display = isEmail ? 'flex' : 'none';
-    var limitVal = parseInt(btn.dataset.limit);
-    TARGET_SIZE = isEmail ? emailMB * 1024 * 1024 : (limitVal === 0 ? Infinity : limitVal);
-    updateSubtitle();
-}
-
-function adjustEmail(delta) {
-    emailMB = Math.max(1, Math.min(200, emailMB + delta));
-    document.getElementById('emailMBVal').textContent = emailMB;
-    document.getElementById('emailStrong').textContent = emailMB + ' MB max';
-    TARGET_SIZE = emailMB * 1024 * 1024;
-    updateSubtitle();
-}
-
-
-// ── Filename auto-suggest ─────────────────────────────────────────────────────
-function suggestFilename() {
-    var el = document.getElementById('filenameInput');
-    if (el.dataset.userEdited) return;
-    if (!files.length) return;
-    var today = new Date().toISOString().slice(0, 10);
-    var first = files[0].file.name.replace(/\.[^.]+$/, '');
-    el.value = today + '_' + first;
-}
-document.getElementById('filenameInput').addEventListener('input', function() {
-    if (this.value) this.dataset.userEdited = '1';
-    else delete this.dataset.userEdited;
-});
-
-// ── Page count probe ──────────────────────────────────────────────────────────
-// ── Page count probe ──────────────────────────────────────────────────────────
-async function getPageCount(file) {
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        try {
-            var buf = await file.arrayBuffer();
-            if (buf.byteLength === 0) throw new Error('File is empty');
-            var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
-            return pdf.numPages;
-        } catch(e) { 
-            console.error('PDF probe failed:', e);
-            if (e.name === 'PasswordException') return 'Encrypted PDF';
-            return 'Invalid PDF';
-        }
-    }
-    return 1;
-}
-
-// ── Render file list ──────────────────────────────────────────────────────────
-function renderFileList() {
-    var list  = document.getElementById('fileList');
-    var empty = document.getElementById('emptyState');
-    list.querySelectorAll('.file-item').forEach(function(e) { e.remove(); });
-
-    if (!files.length) {
-        empty.style.display = 'block';
-        document.getElementById('makePdfBtn').disabled = true;
-        return;
-    }
-    empty.style.display = 'none';
-    document.getElementById('makePdfBtn').disabled = false;
-    document.getElementById('shareBtn').style.display = 'none';
-    document.getElementById('statusBox').textContent = '';
-
-    files.forEach(function(fileObj, index) {
-        var div = document.createElement('div');
-        div.className = 'file-item';
-        div.dataset.index = index;
-        div.draggable = true;
-
-        var sizeMB    = (fileObj.file.size / 1024 / 1024).toFixed(2) + ' MB';
-        var pagesHtml = '';
-        if (fileObj.pageCount === 'loading') {
-            pagesHtml = '<span class="file-pages" style="background:var(--accent);color:#fff">Processing\u2026</span>';
-        } else if (typeof fileObj.pageCount === 'number') {
-            pagesHtml = '<span class="file-pages">' + fileObj.pageCount + (fileObj.pageCount === 1 ? ' pg' : ' pgs') + '</span>';
-        } else if (typeof fileObj.pageCount === 'string') {
-            pagesHtml = '<span class="file-error">\u26A0 ' + fileObj.pageCount + '</span>';
-        }
-        
-        var errorHtml = fileObj.error
-            ? '<span class="file-error">\u26A0 ' + fileObj.error + '</span>'
-            : '';
-
-        div.innerHTML =
-            '<div class="file-info">' +
-                '<span class="file-name">' + fileObj.file.name + '</span>' +
-                '<div class="file-meta"><span class="file-size">' + sizeMB + '</span>' + pagesHtml + '</div>' +
-                errorHtml +
-                '<div class="file-progress" id="prog-' + index + '">' +
-                    '<div class="file-progress-bar" id="progbar-' + index + '"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="file-controls">' +
-                '<button class="icon-btn delete" onclick="removeFile(' + index + ')">&times;</button>' +
-            '</div>';
-
-        div.addEventListener('dragstart', onDragStart);
-        div.addEventListener('dragover',  onDragOver);
-        div.addEventListener('dragleave', onDragLeave);
-        div.addEventListener('drop',      onDrop);
-        div.addEventListener('dragend',   onDragEnd);
-        div.addEventListener('touchstart', onTouchStart, { passive: true });
-        div.addEventListener('touchmove',  onTouchMove,  { passive: false });
-        div.addEventListener('touchend',   onTouchEnd);
-        list.appendChild(div);
-    });
-}
-
-// ── Drag-to-reorder ───────────────────────────────────────────────────────────
-var dragSrcIndex = null;
-function onDragStart(e) { dragSrcIndex = parseInt(this.dataset.index); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
-function onDragOver(e)  { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; this.classList.add('drag-over'); }
-function onDragLeave()  { this.classList.remove('drag-over'); }
-function onDrop(e) {
-    e.preventDefault();
-    var target = parseInt(this.dataset.index);
-    if (dragSrcIndex !== null && dragSrcIndex !== target) {
-        files.splice(target, 0, files.splice(dragSrcIndex, 1)[0]);
-        renderFileList(); suggestFilename();
-    }
-}
-function onDragEnd() {
-    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('dragging','drag-over'); });
-    dragSrcIndex = null;
-}
-
-// ── Touch drag-to-reorder ─────────────────────────────────────────────────────
-var touchSrcIndex = null;
-var touchGhost    = null;
-
-function onTouchStart(e) {
-    touchSrcIndex = parseInt(this.dataset.index);
-    this.classList.add('dragging');
-}
-
-function onTouchMove(e) {
-    if (touchSrcIndex === null) return;
-    e.preventDefault(); // prevent page scroll while dragging
-    var touch   = e.touches[0];
-    var target  = document.elementFromPoint(touch.clientX, touch.clientY);
-    var item    = target && target.closest('.file-item');
-    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('drag-over'); });
-    if (item && item !== e.currentTarget) item.classList.add('drag-over');
-}
-
-function onTouchEnd(e) {
-    if (touchSrcIndex === null) return;
-    var touch   = e.changedTouches[0];
-    var target  = document.elementFromPoint(touch.clientX, touch.clientY);
-    var item    = target && target.closest('.file-item');
-    // Fallback: finger lifted in a gap between items — find nearest by Y
-    if (!item) {
-        var closest = null, closestDist = Infinity;
-        document.querySelectorAll('.file-item').forEach(function(el) {
-            var rect = el.getBoundingClientRect();
-            var dist = Math.abs(touch.clientY - (rect.top + rect.height / 2));
-            if (dist < closestDist) { closestDist = dist; closest = el; }
-        });
-        item = closest;
-    }
-    document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('dragging','drag-over'); });
-    if (item) {
-        var destIndex = parseInt(item.dataset.index);
-        if (!isNaN(destIndex) && destIndex !== touchSrcIndex) {
-            files.splice(destIndex, 0, files.splice(touchSrcIndex, 1)[0]);
-            renderFileList(); suggestFilename();
-        }
-    }
-    touchSrcIndex = null;
-}
-
-// ── File handling ─────────────────────────────────────────────────────────────
-async function handleFiles(newFiles) {
-    try {
-        if (!newFiles || !newFiles.length) return;
-        
-        var startIdx = files.length;
-        for (var i = 0; i < newFiles.length; i++) {
-            files.push({ file: newFiles[i], pageCount: 'loading', error: null });
-        }
-        
-        renderFileList();
-        suggestFilename();
-        
-        for (var j = startIdx; j < files.length; j++) {
-            if (files[j] && files[j].pageCount === 'loading') {
-                try {
-                    var count = await getPageCount(files[j].file);
-                    files[j].pageCount = count;
-                } catch(e) {
-                    console.error('Processing error for', files[j].file.name, e);
-                    files[j].pageCount = 'Error';
-                    files[j].error = 'Could not process file';
-                }
-                renderFileList();
-            }
-        }
-    } catch(err) {
-        console.error('handleFiles failed:', err);
-        var sb = document.getElementById('statusBox');
-        sb.textContent = 'Error adding files. Please try again.';
-        sb.style.color = '#C0392B';
-    }
-}
-document.getElementById('fileInput').addEventListener('change',  function(e) { handleFiles(e.target.files); });
-document.getElementById('cameraInput').addEventListener('change', function(e) { handleFiles(e.target.files); });
-function removeFile(index) { files.splice(index, 1); renderFileList(); suggestFilename(); }
-
-// ── Per-file progress ─────────────────────────────────────────────────────────
-function showFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='block'; }
-function setFileProgress(i, pct) { var el = document.getElementById('progbar-'+i); if(el) el.style.width=pct+'%'; }
-function hideFileProgress(i)     { var el = document.getElementById('prog-'+i);    if(el) el.style.display='none'; }
-function markFileError(i, msg)   { files[i].error = msg; renderFileList(); }
-
-// ── Generation ────────────────────────────────────────────────────────────────
-async function startGeneration() {
-    var btn    = document.getElementById('makePdfBtn');
-    var status = document.getElementById('statusBox');
-    btn.disabled = true;
-    status.style.color = 'var(--accent)';
-    files.forEach(function(f) { f.error = null; });
-    renderFileList();
-
-    status.textContent = 'Preparing your document\u2026';
-    await delay(80);
-    var pdfBytes = await generatePurePDF();
-
-    // No-limit mode: skip compression entirely after the pure merge
-    if (TARGET_SIZE === Infinity) {
-        if (pdfBytes) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); }
-        else { status.textContent = 'Could not process these files.'; status.style.color = '#C0392B'; btn.disabled = false; btn.textContent = 'Create PDF'; }
-        return;
-    }
-
-    if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; finishSuccess(status, btn); return; }
-
-    // Quality-first compression: exhaust quality options before reducing resolution.
-    // Scale is DPI multiplier vs 72dpi base (s=2 ≈ 144dpi, s=1 ≈ 72dpi).
-    // Never go below s=1.0 — text becomes unreadable below ~72dpi.
-    var passes = [
-        {s:2.0,q:0.80},{s:2.0,q:0.65},{s:2.0,q:0.50},
-        {s:1.5,q:0.75},{s:1.5,q:0.55},{s:1.5,q:0.40},
-        {s:1.2,q:0.65},{s:1.2,q:0.45},
-        {s:1.0,q:0.60},{s:1.0,q:0.40},{s:1.0,q:0.28}
-    ];
-    var bestBytes = pdfBytes; // start with the pure merge as baseline
-    var success = false;
-    for (var i = 0; i < passes.length; i++) {
-        status.textContent = 'Compressing\u2026 pass ' + (i + 1) + ' of ' + passes.length;
-        await delay(80);
-        pdfBytes = await generateRasterPDF(passes[i].s, passes[i].q);
-        if (pdfBytes && (!bestBytes || pdfBytes.byteLength < bestBytes.byteLength)) bestBytes = pdfBytes;
-        if (pdfBytes && pdfBytes.byteLength <= TARGET_SIZE) { finalPdfBytes = pdfBytes; success = true; break; }
-    }
-
-    if (success) {
-        finishSuccess(status, btn);
-    } else if (bestBytes) {
-        // Always give the user something — output best result with honest warning
-        finalPdfBytes = bestBytes;
-        var sizeMB   = (bestBytes.byteLength / 1024 / 1024).toFixed(2);
-        var targetMB = Math.round(TARGET_SIZE / 1024 / 1024);
-        status.textContent = '\u26A0\uFE0F ' + sizeMB + ' MB \u2014 couldn\u2019t reach ' + targetMB + ' MB target. You can still share it.';
-        status.style.color = 'var(--accent)';
-        btn.textContent = 'PDF ready'; btn.disabled = false;
-        document.getElementById('shareBtn').style.display = 'block';
-        saveToRecent(sizeMB);
-    } else {
-        status.textContent = 'Could not process these files. Try removing one.';
-        status.style.color = '#C0392B';
-        btn.disabled = false; btn.textContent = 'Create PDF';
-    }
-}
-
-function finishSuccess(status, btn) {
-    var sizeMB = (finalPdfBytes.byteLength / 1024 / 1024).toFixed(2);
-    status.textContent = '\u2713 Ready \u00B7 ' + sizeMB + ' MB';
-    status.style.color = 'var(--primary)';
-    btn.textContent = 'PDF ready';
-    document.getElementById('shareBtn').style.display = 'block';
-    saveToRecent(sizeMB);
-}
-
-// ── A4 embed helper ───────────────────────────────────────────────────────────
-function embedOnA4(pdfDoc, img) {
-    var page = pdfDoc.addPage([A4_W, A4_H]);
-    page.drawRectangle({ x: 0, y: 0, width: A4_W, height: A4_H, color: PDFLib.rgb(1, 1, 1) });
-    var r = Math.min(A4_W / img.width, A4_H / img.height);
-    var w = img.width * r, h = img.height * r;
-    page.drawImage(img, { x: (A4_W-w)/2, y: (A4_H-h)/2, width: w, height: h });
-}
-
-// ── Phase 1: native merge ─────────────────────────────────────────────────────
-async function generatePurePDF() {
-    try {
-        var PDFDocument = PDFLib.PDFDocument;
-        var out = await PDFDocument.create();
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i].file;
-            showFileProgress(i); setFileProgress(i, 10);
-            try {
-                var ab = await file.arrayBuffer(); setFileProgress(i, 40);
-                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                    var src = await PDFDocument.load(ab);
-                    var pages = await out.copyPages(src, src.getPageIndices());
-                    pages.forEach(function(p) {
-                        var sz = p.getSize();
-                        var r  = Math.min(A4_W / sz.width, A4_H / sz.height);
-                        p.scale(r, r);
-                        p.translateContent((A4_W - sz.width * r) / 2, (A4_H - sz.height * r) / 2);
-                        p.setSize(A4_W, A4_H);
-                        out.addPage(p);
-                    });
-                } else {
-                    var bytes = await compressImage(file, 1600, 0.82);
-                    embedOnA4(out, await out.embedJpg(bytes));
-                }
-                setFileProgress(i, 90);
-            } catch(err) { console.error('Merge error', file.name, err); markFileError(i, 'Could not read file'); }
-            setFileProgress(i, 100); await delay(60); hideFileProgress(i);
-        }
-        return await out.save();
-    } catch(err) { console.error('generatePurePDF failed', err); return null; }
-}
-
-// ── Phase 2: rasterise ────────────────────────────────────────────────────────
-async function generateRasterPDF(scale, quality) {
-    try {
-        var PDFDocument = PDFLib.PDFDocument;
-        var out = await PDFDocument.create();
-        for (var i = 0; i < files.length; i++) {
-            if (files[i].error) continue;
-            var file = files[i].file;
-            showFileProgress(i);
-            try {
-                var ab = await file.arrayBuffer();
-                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                    var src = await pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
-                    var total = src.numPages;
-                    for (var p = 1; p <= total; p++) {
-                        setFileProgress(i, Math.round((p/total)*90));
-                        var pg = await src.getPage(p);
-                        var vp = pg.getViewport({ scale: scale });
-                        var canvas = document.createElement('canvas');
-                        canvas.width = vp.width; canvas.height = vp.height;
-                        await pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-                        embedOnA4(out, await out.embedJpg(await canvasToJpeg(canvas, quality)));
-                    }
-                } else {
-                    setFileProgress(i, 40);
-                    embedOnA4(out, await out.embedJpg(await compressImage(file, scale*800, quality)));
-                }
-            } catch(err) { console.error('Raster error', file.name, err); markFileError(i, 'Processing error'); }
-            setFileProgress(i, 100); await delay(60); hideFileProgress(i);
-        }
-        return await out.save();
-    } catch(err) { console.error('generateRasterPDF failed', err); return null; }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function canvasToJpeg(canvas, quality) {
-    return new Promise(function(resolve, reject) {
-        canvas.toBlob(function(blob) {
-            if (!blob) { reject(new Error('toBlob failed')); return; }
-            blob.arrayBuffer().then(function(ab) { resolve(new Uint8Array(ab)); }).catch(reject);
-        }, 'image/jpeg', quality);
-    });
-}
-function compressImage(file, maxDim, quality) {
-    return new Promise(function(resolve, reject) {
-        var reader = new FileReader();
-        reader.onerror = function() { reject(new Error('Read failed: ' + file.name)); };
-        reader.onload = function(e) {
-            var img = new Image();
-            img.onerror = function() { reject(new Error('Decode failed: ' + file.name)); };
-            img.onload = function() {
-                try {
-                    var canvas = document.createElement('canvas');
-                    var w = img.width, h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) { h = Math.round(h*maxDim/w); w = maxDim; }
-                        else       { w = Math.round(w*maxDim/h); h = maxDim; }
-                    }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    canvasToJpeg(canvas, quality).then(resolve).catch(reject);
-                } catch(err) { reject(err); }
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-// ── Share / download ──────────────────────────────────────────────────────────
-function triggerDownload(name) {
-    var file = new File([finalPdfBytes], name, { type: 'application/pdf' });
-    var url  = URL.createObjectURL(file);
-    var a    = document.createElement('a');
-    a.href = url; a.download = name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
-}
-
-async function sharePDF() {
-    if (!finalPdfBytes) { alert('No PDF ready. Please create the PDF first.'); return; }
-    var name = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
-    if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
-    var file = new File([finalPdfBytes], name, { type: 'application/pdf' });
-
-    // Share API unavailable — download immediately (user activation still live)
-    if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
-        triggerDownload(name); return;
-    }
-
-    try {
-        await navigator.share({ files: [file], title: name });
-    } catch(e) {
-        if (e.name === 'AbortError') return; // user cancelled
-        console.warn('Web Share API failed:', e);
-        // Activation expired after the async share attempt — surface a fresh tap target
-        var btn = document.getElementById('shareBtn');
-        var prev = btn.textContent;
-        btn.textContent = 'Tap to Download PDF';
-        btn.onclick = function() {
-            triggerDownload(name);
-            btn.textContent = prev;
-            btn.onclick = function() { sharePDF(); };
-        };
-    }
-}
-
-// ── Recent exports ────────────────────────────────────────────────────────────
-var RECENT_KEY = 'sars_recent_v1';
-function saveToRecent(sizeMB) {
-    var raw   = document.getElementById('filenameInput').value.trim() || 'eFiling_DocReady';
-    var fname = raw.endsWith('.pdf') ? raw : raw + '.pdf';
-    var list  = getRecent();
-    list.unshift({ name: fname, sizeMB: sizeMB, date: new Date().toLocaleDateString('en-ZA') });
-    if (list.length > 5) list.length = 5;
-    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch(e) {}
-    renderRecent();
-}
-function getRecent() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch(e) { return []; } }
-function clearRecent() { localStorage.removeItem(RECENT_KEY); renderRecent(); }
-function renderRecent() {
-    var list = getRecent();
-    var section = document.getElementById('recentSection');
-    var ul = document.getElementById('recentList');
-    ul.innerHTML = '';
-    if (!list.length) { section.style.display = 'none'; return; }
-    section.style.display = 'block';
-    list.forEach(function(exp) {
-        var div = document.createElement('div');
-        div.className = 'recent-item';
-        div.innerHTML =
-            '<div class="recent-item-info">' +
-                '<div class="recent-item-name">' + exp.name + '</div>' +
-                '<div class="recent-item-meta">' + exp.sizeMB + ' MB \u00B7 ' + exp.date + '</div>' +
-            '</div>';
-        ul.appendChild(div);
-    });
-}
-
-// ── Share Target: pick up files shared from Android share sheet ───────────────
-async function checkSharedFiles() {
-    if (!location.search.includes('shared=1')) return;
-    history.replaceState({}, '', './index.html');
-    try {
-        var cache = await caches.open('sars-share-v1');
-        var listResp = await cache.match('file-list');
-        if (!listResp) return;
-        var fileList = await listResp.json();
-        var newFiles = [];
-        for (var i = 0; i < fileList.length; i++) {
-            var entry = fileList[i];
-            var resp = await cache.match(entry.key);
-            if (resp) {
-                var ab = await resp.arrayBuffer();
-                var fname = decodeURIComponent(resp.headers.get('X-Filename') || entry.name);
-                newFiles.push(new File([ab], fname, { type: entry.type }));
-                await cache.delete(entry.key);
-            }
-        }
-        await cache.delete('file-list');
-        if (newFiles.length) await handleFiles(newFiles);
-    } catch(err) { console.warn('Share target load failed:', err); }
-}
-
-// ── File Handlers: open PDFs/images directly from Files app ──────────────────
-if ('launchQueue' in window) {
-    window.launchQueue.setConsumer(function(launchParams) {
-        if (launchParams.files && launchParams.files.length) {
-            Promise.all(launchParams.files.map(function(fh) { return fh.getFile(); }))
-                .then(function(newFiles) { handleFiles(newFiles); })
-                .catch(function(err) { console.warn('File handler failed:', err); });
-        }
-    });
-}
-
-// ── Premium / PayFast unlock ───────────────────────────────────────────────────
-var isPremium = false;
-
-function initPremium() {
-    try { isPremium = localStorage.getItem('docready-premium') === '1'; } catch(e) {}
-    updatePremiumUI();
-}
-
-function payWithPaystack() {
-    var email = document.getElementById('payEmail').value.trim();
-    var errEl = document.getElementById('payEmailError');
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-        errEl.style.display = 'block';
-        document.getElementById('payEmail').focus();
-        return;
-    }
-    errEl.style.display = 'none';
-
-    var handler = PaystackPop.setup({
-        key: 'pk_test_3520c14017518f98180b12907a3069d4916eac7c',
-        email: email,
-        amount: 6900,        // R69 in cents (ZAR)
-        currency: 'ZAR',
-        ref: 'DOCR-' + Date.now() + '-' + Math.floor(Math.random() * 9999),
-        label: 'DocReady Premium',
-        metadata: { custom_fields: [{ display_name: 'Product', value: 'DocReady Premium' }] },
-        onClose: function() { /* user closed popup — do nothing */ },
-        callback: function(response) {
-            // Payment confirmed by Paystack
-            try {
-                localStorage.setItem('docready-premium', '1');
-                localStorage.setItem('docready-ref', response.reference);
-            } catch(e) {}
-            isPremium = true;
-            updatePremiumUI();
-            closeUpgradeModal();
-            var sb = document.getElementById('statusBox');
-            sb.textContent = '\u2713 Premium unlocked \u00B7 Thank you!';
-            sb.style.color = 'var(--primary)';
-            setTimeout(function() { if (sb.textContent.includes('Premium')) sb.textContent = ''; }, 5000);
-        }
-    });
-    handler.openIframe();
-}
-
-function updatePremiumUI() {
-    document.getElementById('freeBadge').style.display    = isPremium ? 'none'   : 'inline';
-    document.getElementById('premiumBadge').style.display = isPremium ? 'inline' : 'none';
-    document.querySelectorAll('.preset-lock').forEach(function(el) {
-        el.style.display = isPremium ? 'none' : 'inline';
-    });
-    // Non-premium: force Merge only as the active preset
-    if (!isPremium) {
-        var mergeBtn = document.querySelector('.preset-btn[data-limit="0"]');
-        if (mergeBtn) {
-            document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
-            mergeBtn.classList.add('active');
-            document.getElementById('emailAdjuster').style.display = 'none';
-            TARGET_SIZE = Infinity;
-            updateSubtitle();
-        }
-    }
-}
-
-function showUpgradeModal() {
-    document.getElementById('upgradeOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeUpgradeModal() {
-    document.getElementById('upgradeOverlay').classList.remove('open');
-    document.body.style.overflow = '';
-}
-
-// ── OS file drop (drag from Explorer/Finder onto the app) ─────────────────────
-document.body.addEventListener('dragover', function(e) {
-    // Only handle external file drags, not internal item reorders
-    if (dragSrcIndex === null && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-        document.getElementById('fileList').classList.add('drag-over');
-    }
-});
-document.body.addEventListener('dragleave', function(e) {
-    if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-        document.getElementById('fileList').classList.remove('drag-over');
-    }
-});
-document.body.addEventListener('drop', function(e) {
-    document.getElementById('fileList').classList.remove('drag-over');
-    if (dragSrcIndex === null && e.dataTransfer.files && e.dataTransfer.files.length) {
-        e.preventDefault();
-        handleFiles(e.dataTransfer.files);
-    }
-});
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-initTheme();
-initPremium();
-renderRecent();
-checkSharedFiles();
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').catch(function(err) {
-            console.warn('SW registration failed:', err);
-        });
-    });
-}
-</script>
-</body>
+      </div>
+    </section>
+    <!-- Initialize the table for the default individual view -->
+    <script src="/pricing.js"></script>
+    <script>
+      // ensure the table is updated when the DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+         if (typeof updateComparisonTable === 'function') {
+            updateComparisonTable('individual');
+         }
+      });
+    </script>
+  </body>
 </html>

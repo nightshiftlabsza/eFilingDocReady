@@ -1,0 +1,120 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e7]
+      - generic [ref=e9]:
+        - generic [ref=e10]: DocReady
+        - generic [ref=e11]:
+          - generic [ref=e12]: Audit-Ready
+          - generic [ref=e13]:
+            - img [ref=e14]
+            - text: Local Only
+    - button "Settings" [ref=e17]:
+      - img [ref=e18]
+  - main [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "I am a Taxpayer" [level=2] [ref=e24]
+        - paragraph [ref=e25]: Combine IDs, receipts, and PDFs into a single, optimized file. Perfectly sized for the 5MB eFiling limit. Zero server involvement. Your sensitive documents never leave your device.
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - img [ref=e29]
+          - heading "100% Private" [level=3] [ref=e31]
+          - paragraph [ref=e32]: No uploads. Processing happens entirely in your browser.
+        - generic [ref=e33]:
+          - img [ref=e35]
+          - heading "SARS Optimized" [level=3] [ref=e37]
+          - paragraph [ref=e38]: Automatically targets 4.9MB to ensure successful eFiling uploads.
+        - generic [ref=e39]:
+          - img [ref=e41]
+          - heading "Password Removal" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Safely strip security from bank statements for SARS processing.
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: Limited Offer
+          - heading "Lifetime Access" [level=3] [ref=e50]
+          - list [ref=e51]:
+            - listitem [ref=e52]:
+              - img [ref=e53]
+              - text: Unlimited Merges & Compressions
+            - listitem [ref=e55]:
+              - img [ref=e56]
+              - text: No Watermarks
+            - listitem [ref=e58]:
+              - img [ref=e59]
+              - text: Advanced Legibility Mode
+          - generic [ref=e61]:
+            - generic [ref=e62]: R89
+            - generic [ref=e63]: ONCE-OFF
+        - generic [ref=e64]:
+          - button "Try for Free (3 Credits)" [ref=e65] [cursor=pointer]
+          - button "Buy Premium Pass" [active] [ref=e66] [cursor=pointer]
+      - paragraph [ref=e67]: Credits never expire.
+  - dialog "Choose Your Plan" [ref=e70]:
+    - generic [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - img [ref=e74]
+          - text: No subscriptions. Pay once.
+        - heading "Choose Your Plan" [level=2] [ref=e76]
+        - paragraph [ref=e77]: Compress, merge, and sanitise for SARS eFiling. On your device only.
+      - button "Close pricing modal" [ref=e78]:
+        - img [ref=e79]
+    - generic [ref=e82]:
+      - img [ref=e83]
+      - paragraph [ref=e86]: Client-Side Processing Only. Your files are never uploaded anywhere. Once loaded, DocReady works fully offline — zero servers, zero data breach risk, zero POPIA liability.
+    - generic [ref=e87]:
+      - button "Single Credit R29 1 SARS-ready bundle Compress + Merge + Sanitize Password-strip & output lock No account needed" [ref=e88]:
+        - paragraph [ref=e89]: Single Credit
+        - paragraph [ref=e90]: R29
+        - list [ref=e91]:
+          - listitem [ref=e92]:
+            - img [ref=e94]
+            - text: 1 SARS-ready bundle
+          - listitem [ref=e96]:
+            - img [ref=e98]
+            - text: Compress + Merge + Sanitize
+          - listitem [ref=e100]:
+            - img [ref=e102]
+            - text: Password-strip & output lock
+          - listitem [ref=e104]:
+            - img [ref=e106]
+            - text: No account needed
+      - button "Best Value 3 Credits R69 3 SARS-ready bundles Use anytime — no expiry All Single Credit features Covers spouse + own return" [ref=e108]:
+        - generic [ref=e109]: Best Value
+        - paragraph [ref=e110]: 3 Credits
+        - paragraph [ref=e111]: R69
+        - list [ref=e112]:
+          - listitem [ref=e113]:
+            - img [ref=e115]
+            - text: 3 SARS-ready bundles
+          - listitem [ref=e117]:
+            - img [ref=e119]
+            - text: Use anytime — no expiry
+          - listitem [ref=e121]:
+            - img [ref=e123]
+            - text: All Single Credit features
+          - listitem [ref=e125]:
+            - img [ref=e127]
+            - text: Covers spouse + own return
+      - button "Lifetime R99 Unlimited personal use No watermark All compression features Future updates included" [ref=e129]:
+        - paragraph [ref=e130]: Lifetime
+        - paragraph [ref=e131]: R99
+        - list [ref=e132]:
+          - listitem [ref=e133]:
+            - img [ref=e135]
+            - text: Unlimited personal use
+          - listitem [ref=e137]:
+            - img [ref=e139]
+            - text: No watermark
+          - listitem [ref=e141]:
+            - img [ref=e143]
+            - text: All compression features
+          - listitem [ref=e145]:
+            - img [ref=e147]
+            - text: Future updates included
+    - paragraph [ref=e149]: DocReady is an independent South African tool for tax professionals. NOT affiliated with, endorsed by, or partnered with SARS. SARS is a trademark of the South African Revenue Service.
+```

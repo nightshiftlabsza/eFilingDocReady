@@ -1,0 +1,14 @@
+
+added 3 packages, and audited 525 packages in 7s
+
+150 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+'playwright' is not recognized as an internal or external command,
+operable program or batch file.

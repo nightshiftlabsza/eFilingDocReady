@@ -1,0 +1,171 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e7]
+      - generic [ref=e9]:
+        - generic [ref=e10]: DocReady
+        - generic [ref=e11]:
+          - generic [ref=e12]: Audit-Ready
+          - generic [ref=e13]:
+            - img [ref=e14]
+            - text: Local Only
+    - button "Settings" [ref=e17]:
+      - img [ref=e18]
+  - main [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "I am a Practitioner" [level=2] [ref=e24]
+        - paragraph [ref=e25]: Secure, POPIA-compliant folder management and document optimization. Recover billable time and standardize your firm's document preparation.
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - img [ref=e29]
+          - heading "Save Hours Weekly" [level=3] [ref=e32]
+          - paragraph [ref=e33]: Save up to 20% of your workweek by automating retrieval and organization.
+        - generic [ref=e34]:
+          - img [ref=e36]
+          - heading "Firm-Wide Support" [level=3] [ref=e41]
+          - paragraph [ref=e42]: Deskilling administrative tasks allows partners to focus on high-value work.
+        - generic [ref=e43]:
+          - img [ref=e45]
+          - heading "SARS Precision" [level=3] [ref=e47]
+          - paragraph [ref=e48]: Automatic "&" character stripping and 4.9MB sizing for foolproof uploads.
+        - generic [ref=e49]:
+          - img [ref=e51]
+          - heading "Zero Privacy Risk" [level=3] [ref=e53]
+          - paragraph [ref=e54]: POPIA compliance is built-in. Sensitive data never leaves your firm's PC.
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - heading "Professional Comparison" [level=3] [ref=e57]
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - img [ref=e61]
+              - generic [ref=e63]:
+                - heading "The Problem (Adobe/iLovePDF)" [level=4] [ref=e64]
+                - paragraph [ref=e65]: Excessive annual fees (R5k+ per seat) or dangerous cloud uploads that violate POPIA code of conduct.
+            - generic [ref=e66]:
+              - img [ref=e68]
+              - generic [ref=e70]:
+                - heading "The DocReady Advantage" [level=4] [ref=e71]
+                - paragraph [ref=e72]: SARS-specific presets (Target 4.9MB), Smart Naming, and Offline Processing for a fraction of the cost.
+            - paragraph [ref=e73]: A single R900-R2000/hr saving of just 30 minutes pays for a practitioner license multiple times over.
+        - generic [ref=e74]:
+          - heading "Firm Licensing" [level=3] [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - heading "Solo Practitioner" [level=4] [ref=e79]
+                - paragraph [ref=e80]: Annual Filing Season Pass
+              - generic [ref=e81]: R499
+            - generic [ref=e82]:
+              - generic [ref=e83]:
+                - heading "Small Firm" [level=4] [ref=e84]
+                - paragraph [ref=e85]: Up to 10 staff seats
+              - generic [ref=e86]: R1,899
+            - generic [ref=e87]:
+              - generic [ref=e88]:
+                - heading "Site License" [level=4] [ref=e89]
+                - paragraph [ref=e90]: Unlimited firm-wide
+              - generic [ref=e91]: R4,999
+          - generic [ref=e92]:
+            - button "Open Practitioner Hub" [ref=e93] [cursor=pointer]
+            - button "View Detailed B2B Pricing" [active] [ref=e94] [cursor=pointer]
+          - paragraph [ref=e95]: VAT-compliant invoicing and EFT support available.
+  - dialog "Practitioner Plans" [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]:
+        - generic [ref=e101]:
+          - img [ref=e102]
+          - text: Early Bird Pricing Active
+        - heading "Practitioner Plans" [level=2] [ref=e104]
+        - paragraph [ref=e105]: Local-only processing. POPIA-safe. Works offline.
+      - button "Close pricing modal" [ref=e106]:
+        - img [ref=e107]
+    - generic [ref=e110]:
+      - img [ref=e111]
+      - paragraph [ref=e114]: Client-Side Processing Only. Your files are never uploaded anywhere. Once loaded, DocReady works fully offline — zero servers, zero data breach risk, zero POPIA liability.
+    - generic [ref=e115]:
+      - generic [ref=e116]:
+        - generic [ref=e117]:
+          - img [ref=e118]
+          - text: Early Bird Pricing — Limited Slots
+        - generic [ref=e120]: 23/100 claimed
+      - paragraph [ref=e123]: Price locked for life once claimed. No renewal surprises.
+    - generic [ref=e124]:
+      - button "1 user Solo Practitioner R699/yrEarly Bird R399/yr Unlimited SARS-ready bundles Batch compression (20 files) Smart filename sanitisation Password removal & output lock Offline — files never leave you" [ref=e125]:
+        - generic [ref=e126]:
+          - img [ref=e127]
+          - generic [ref=e129]: 1 user
+        - paragraph [ref=e130]: Solo Practitioner
+        - generic [ref=e131]: R699/yrEarly Bird
+        - paragraph [ref=e132]: R399/yr
+        - list [ref=e133]:
+          - listitem [ref=e134]:
+            - img [ref=e136]
+            - text: Unlimited SARS-ready bundles
+          - listitem [ref=e138]:
+            - img [ref=e140]
+            - text: Batch compression (20 files)
+          - listitem [ref=e142]:
+            - img [ref=e144]
+            - text: Smart filename sanitisation
+          - listitem [ref=e146]:
+            - img [ref=e148]
+            - text: Password removal & output lock
+          - listitem [ref=e150]:
+            - img [ref=e152]
+            - text: Offline — files never leave you
+      - button "Most Popular Up to 10 users Small Practice R1,999/yrEarly Bird R999/yr Everything in Solo VAT-compliant invoice (EFT) Standardised \"SARS packs\" firm-wide POPIA-safe — zero cloud uploads Priority Legibility-First algorithm" [ref=e154]:
+        - generic [ref=e155]: Most Popular
+        - generic [ref=e156]:
+          - img [ref=e157]
+          - generic [ref=e162]: Up to 10 users
+        - paragraph [ref=e163]: Small Practice
+        - generic [ref=e164]: R1,999/yrEarly Bird
+        - paragraph [ref=e165]: R999/yr
+        - list [ref=e166]:
+          - listitem [ref=e167]:
+            - img [ref=e169]
+            - text: Everything in Solo
+          - listitem [ref=e171]:
+            - img [ref=e173]
+            - text: VAT-compliant invoice (EFT)
+          - listitem [ref=e175]:
+            - img [ref=e177]
+            - text: Standardised "SARS packs" firm-wide
+          - listitem [ref=e179]:
+            - img [ref=e181]
+            - text: POPIA-safe — zero cloud uploads
+          - listitem [ref=e183]:
+            - img [ref=e185]
+            - text: Priority Legibility-First algorithm
+      - 'button "Unlimited users Firm / Site License R4,999/yrEarly Bird R2,499/yr Everything in Small Practice Admin dashboard (seat management) Downloadable POPIA Compliance Pack Dedicated onboarding support Bulk-deploy for all staff Adobe Acrobat Pro costs R5,257 per user per year — and uploads your client docs to their cloud. For a 20-person firm that''s R105,140/yr. DocReady: R4,999 for every user you''ll ever hire. 100% local. Zero data breach risk." [ref=e187]':
+        - generic [ref=e188]:
+          - img [ref=e189]
+          - generic [ref=e193]: Unlimited users
+        - paragraph [ref=e194]: Firm / Site License
+        - generic [ref=e195]: R4,999/yrEarly Bird
+        - paragraph [ref=e196]: R2,499/yr
+        - list [ref=e197]:
+          - listitem [ref=e198]:
+            - img [ref=e200]
+            - text: Everything in Small Practice
+          - listitem [ref=e202]:
+            - img [ref=e204]
+            - text: Admin dashboard (seat management)
+          - listitem [ref=e206]:
+            - img [ref=e208]
+            - text: Downloadable POPIA Compliance Pack
+          - listitem [ref=e210]:
+            - img [ref=e212]
+            - text: Dedicated onboarding support
+          - listitem [ref=e214]:
+            - img [ref=e216]
+            - text: Bulk-deploy for all staff
+        - generic [ref=e219]:
+          - img [ref=e220]
+          - paragraph [ref=e222]: "Adobe Acrobat Pro costs R5,257 per user per year — and uploads your client docs to their cloud. For a 20-person firm that's R105,140/yr. DocReady: R4,999 for every user you'll ever hire. 100% local. Zero data breach risk."
+    - paragraph [ref=e223]: DocReady is an independent South African tool for tax professionals. NOT affiliated with, endorsed by, or partnered with SARS. SARS is a trademark of the South African Revenue Service.
+```

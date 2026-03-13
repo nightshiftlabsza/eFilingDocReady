@@ -1,0 +1,391 @@
+import { useState, useEffect } from 'react';
+import './App.css';
+import { readPremiumFlag, writePremiumFlag } from './lib/storage';
+import { Header } from './components/Header';
+import { FileWorkspace } from './components/FileWorkspace';
+import { PricingModal } from './components/PricingModal';
+import { SettingsDrawer } from './components/SettingsDrawer';
+import { ReceiptCard } from './components/ReceiptCard';
+import { Toaster, toast } from 'react-hot-toast';
+import { buildPurePdf, rasterizePdf, splitPdfIfNeeded } from './lib/pdf-generator';
+import { addPasswordToPdf } from './lib/lockPdf';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ConsentModal } from './components/ConsentModal';
+import { PrivacyModal } from './components/PrivacyModal';
+import { TaxpayerView } from './components/TaxpayerView';
+import { PractitionerView } from './components/PractitionerView';
+
+export default function App() {
+    const [mode, setMode] = useState<'landing' | 'taxpayer-info' | 'practitioner-info' | 'workspace'>('landing');
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isPricingOpen, setIsPricingOpen] = useState(false);
+    const [persona, setPersona] = useState<'taxpayer' | 'practitioner' | null>(null);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isPremium, setIsPremium] = useState(false);
+    const [freeCredits, setFreeCredits] = useState<number>(() => {
+        const saved = localStorage.getItem('dr_free_credits');
+        if (saved === null) return 3;
+        const parsed = parseInt(saved, 10);
+        return isNaN(parsed) ? 3 : Math.max(0, parsed);
+    });
+    const [finalPdfUrls, setFinalPdfUrls] = useState<string[]>([]);
+    const [fileSizes, setFileSizes] = useState<{ original: number; compressed: number; maxPartSize: number }>({ original: 0, compressed: 0, maxPartSize: 0 });
+    const [resultIsSafe, setResultIsSafe] = useState(false);
+    const [isConsentAccepted, setIsConsentAccepted] = useState<boolean>(() => {
+        return localStorage.getItem('dr_consent_accepted') === 'true';
+    });
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
+    // Routing: Synchronize state with history for back-button support
+    useEffect(() => {
+        // Handle initial hash if present
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            if (hash === 'taxpayer-info') {
+                setMode('taxpayer-info');
+                setPersona('taxpayer');
+            } else if (hash === 'practitioner-info') {
+                setMode('practitioner-info');
+                setPersona('practitioner');
+            } else if (hash.startsWith('workspace')) {
+                setMode('workspace');
+                // Persona is usually remembered if navigation was internal, 
+                // but for fresh loads we'll just stay in workspace.
+            }
+        }
+
+        // Initial state
+        const initialState = { mode, persona, hasResults: finalPdfUrls.length > 0 };
+        window.history.replaceState(initialState, '');
+
+        const handlePopState = (event: PopStateEvent) => {
+            if (event.state) {
+                const { mode: nMode, persona: nPersona, hasResults } = event.state;
+                setMode(nMode);
+                setPersona(nPersona);
+                if (!hasResults) setFinalPdfUrls([]);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const navigateTo = (newMode: typeof mode, newPersona: typeof persona = persona, hasResults: boolean = false) => {
+        const nextState = { mode: newMode, persona: newPersona, hasResults };
+        const hash = newMode === 'landing' ? '' : `#${newMode}${hasResults ? '-results' : ''}`;
+        window.history.pushState(nextState, '', hash || window.location.pathname);
+        setMode(newMode);
+        setPersona(newPersona);
+        if (!hasResults) setFinalPdfUrls([]);
+    };
+
+    // Read premium flag from IndexedDB + localStorage on mount
+    useEffect(() => {
+        readPremiumFlag().then(setIsPremium);
+    }, []);
+
+    const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5, outputPassword?: string) => {
+        // Gating Check
+        if (!mergeOnly && !isPremium && freeCredits <= 0) {
+            toast.error("You've used your free credits — upgrade to keep compressing.");
+            setIsPricingOpen(true);
+            return;
+        }
+
+        setIsProcessing(true);
+        const loadingToast = toast.loading("Combining your documents…");
+        const targetBytes = targetMB * 1024 * 1024;
+
+        try {
+            // Phase 1: Native Merge Attempt (No Quality Loss)
+            if (import.meta.env.DEV) console.log("Phase 1: Attempting Native Merge");
+            let pdfBytes = await buildPurePdf(files);
+            const initialSize = pdfBytes.length; // More efficient than new Blob().size
+
+            let finalOutputBytes = [pdfBytes];
+
+            if (!mergeOnly) {
+                // Phase 2: Native merge exceeded targetBytes — Optimize for eFiling at 300 DPI.
+                if (initialSize > targetBytes) {
+                    if (!isPremium && freeCredits <= 0) {
+                        toast.error(`This file is over ${targetMB} MB — unlock compression to continue.`, { id: loadingToast, duration: 4000 });
+                        setIsPricingOpen(true);
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    if (import.meta.env.DEV) console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
+
+                    // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
+                    // Extended to 9 passes (down to q=3%) to handle even very large inputs.
+                    const phase1Bytes = pdfBytes;
+                    const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
+                    for (let qi = 0; qi < qualitySteps.length; qi++) {
+                        const quality = qualitySteps[qi];
+                        toast.loading(`Shrinking your file… (step ${qi + 1} of 9)`, { id: loadingToast });
+                        pdfBytes = await rasterizePdf(phase1Bytes, {
+                            scale: 300 / 72,
+                            jpegQuality: quality,
+                            grayscale: true,
+                            onProgress: (current, total) => {
+                                toast.loading(`Shrinking your file… page ${current} of ${total}`, { id: loadingToast });
+                            },
+                        });
+                        if (pdfBytes.length <= targetBytes) break;
+                    }
+                }
+
+                // Phase 3: Split if final result still > targetBytes
+                finalOutputBytes = [pdfBytes];
+                if (pdfBytes.length > targetBytes) {
+                    if (import.meta.env.DEV) console.log(`Still > ${targetMB}MB. Triggering Phase 3 Multi-Volume Split.`);
+                    toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
+                    finalOutputBytes = await splitPdfIfNeeded(pdfBytes, targetBytes * 0.9);
+                }
+            }
+
+            // Apply output password if set (premium feature)
+            if (outputPassword) {
+                toast.loading('Encrypting output PDF…', { id: loadingToast });
+                finalOutputBytes = await Promise.all(
+                    finalOutputBytes.map(bytes => addPasswordToPdf(bytes, outputPassword))
+                );
+            }
+
+            const urls = finalOutputBytes.map(bytes => {
+                const b = new Blob([bytes as any], { type: 'application/pdf' });
+                return URL.createObjectURL(b);
+            });
+
+            const totalCompressedSize = finalOutputBytes.reduce((acc, bytes) => acc + bytes.length, 0);
+            const maxPartSize = Math.max(...finalOutputBytes.map(b => b.length));
+            const isSafe = finalOutputBytes.every(b => b.length <= targetBytes);
+
+            setResultIsSafe(isSafe);
+            setFileSizes({
+                original: files.reduce((acc, f) => acc + f.size, 0),
+                compressed: totalCompressedSize,
+                maxPartSize,
+            });
+            setFinalPdfUrls(urls);
+            // Push state for results view
+            window.history.pushState({ mode, persona, hasResults: true }, '', '#workspace-results');
+
+            if (mergeOnly) {
+                toast.success("Done! Files merged — no compression applied.", { id: loadingToast, duration: 4000 });
+            } else {
+                // Consume credit if work was done (Phase 2 or Phase 3 triggered)
+                if (!isPremium && (initialSize > targetBytes || finalOutputBytes.length > 1)) {
+                    setFreeCredits(prev => {
+                        const next = Math.max(0, prev - 1);
+                        localStorage.setItem('dr_free_credits', next.toString());
+                        return next;
+                    });
+                }
+
+                if (isSafe && urls.length > 1) {
+                    toast.success(`Done! Saved as ${urls.length} parts — each ready to upload to eFiling.`, { id: loadingToast, duration: 4000 });
+                } else if (isSafe) {
+                    toast.success(`Done! Your file is ${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB and ready for SARS eFiling.`, { id: loadingToast, duration: 4000 });
+                } else {
+                    toast.error(`Heads up: one or more parts may still be over ${targetMB} MB. Try uploading anyway.`, { id: loadingToast, duration: 6000 });
+                }
+            }
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || "Something went wrong. Please try again with a different file.", { id: loadingToast, duration: 5000 });
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleDownload = () => {
+        if (finalPdfUrls.length === 0) return;
+
+        // Processing is already gated by credits in handleFilesReady.
+        // If finalPdfUrls is populated the user has already paid — with a free
+        // credit or a premium license. Allow the download unconditionally.
+        finalPdfUrls.forEach((url, index) => {
+            const link = document.createElement('a');
+            link.href = url;
+            // Sanitized filenames: SARS rejects ' and & characters
+            link.download = finalPdfUrls.length > 1
+                ? `DocReady_Part_${index + 1}_${Date.now()}.pdf`
+                : `DocReady_Final_${Date.now()}.pdf`;
+            link.click();
+        });
+        toast.success(finalPdfUrls.length > 1 ? "Downloaded all parts successfully!" : "Download Successful!");
+    };
+
+    return (
+        <div className="app-container">
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    style: { fontSize: '15px', maxWidth: '460px', padding: '14px 20px', fontWeight: 500 },
+                    loading: { duration: Infinity },
+                    success: { duration: 4000 },
+                    error: { duration: 6000 },
+                }}
+            />
+            <Header
+                currentMode={mode}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+                onStartOver={() => {
+                    navigateTo('landing', null, false);
+                }}
+            />
+
+            <main className="content flex-grow">
+                <AnimatePresence mode="wait">
+                    {mode === 'landing' ? (
+                        <motion.section
+                            key="landing"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05 }}
+                            className="flex flex-col items-center justify-center min-h-[75vh] px-4 max-w-5xl mx-auto w-full"
+                        >
+                            <div className="text-center mb-12">
+                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
+                                    SARS-Ready Documents. <br /> Zero Upload Friction.
+                                </h1>
+                                <p className="text-lg md:text-2xl opacity-70 max-w-2xl mx-auto">
+                                    Compress, merge, and prepare your documents for eFiling — everything runs <span className="text-blue-500 font-semibold italic inline-block px-1 border-b border-blue-500/30">directly on your device</span>. Your files never leave it. No account, no cloud, no risk.
+                                </p>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
+                                {/* Taxpayer Gateway */}
+                                <div
+                                    className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-blue-500 active:scale-95"
+                                    onClick={() => navigateTo('taxpayer-info', 'taxpayer')}
+                                >
+                                    <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-8">
+                                        <div className="w-6 h-6 bg-blue-500 rounded-sm"></div>
+                                    </div>
+                                    <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>I am a Taxpayer</h2>
+                                    <p className="opacity-70 mb-8 flex-grow leading-relaxed text-sm">
+                                        Combine and optimize IDs, receipts, and PDFs for any upload. Perfectly sized for the 5MB eFiling limit. Fast, private, zero-server processing.
+                                    </p>
+                                    <div className="text-blue-500 font-bold flex items-center gap-2 group">
+                                        View Solutions <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </div>
+                                </div>
+
+                                {/* Practitioner Gateway */}
+                                <div
+                                    className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-indigo-500 active:scale-95"
+                                    onClick={() => navigateTo('practitioner-info', 'practitioner')}
+                                >
+                                    <div className="w-14 h-14 rounded-full bg-indigo-500/10 flex items-center justify-center mb-8">
+                                        <div className="w-6 h-6 bg-indigo-500 rounded-sm"></div>
+                                        <div className="w-6 h-6 bg-indigo-400 rounded-sm -ml-2 -mt-2 opacity-80"></div>
+                                    </div>
+                                    <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>I am a Practitioner</h2>
+                                    <p className="opacity-70 mb-8 flex-grow leading-relaxed text-sm">
+                                        Secure, private folder management. Request, optimize, and organize client documents — everything stays on your device, no cloud uploads.
+                                    </p>
+                                    <div className="text-indigo-500 font-bold flex items-center gap-2 group">
+                                        Open Practitioner Hub <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <footer className="mt-20 py-8 border-t border-[var(--glass-border)] w-full text-center">
+                                <div className="flex flex-col items-center gap-2">
+                                    <p className="text-sm font-semibold opacity-60 tracking-tight">
+                                        DocReady: Private Document Optimization
+                                    </p>
+                                    <div className="flex items-center gap-4 opacity-40 text-[10px] uppercase tracking-widest font-bold">
+                                        <span>No Cloud Uploads</span>
+                                        <span className="w-1 h-1 bg-current rounded-full" />
+                                        <span>100% Client-Side</span>
+                                        <span className="w-1 h-1 bg-current rounded-full" />
+                                        <a href="mailto:support@docready.co.za" className="hover:text-primary transition-colors">Support</a>
+                                    </div>
+                                </div>
+                            </footer>
+
+                        </motion.section>
+                    ) : mode === 'taxpayer-info' ? (
+                        <TaxpayerView
+                            onEnterWorkspace={() => navigateTo('workspace')}
+                            onOpenPricing={() => setIsPricingOpen(true)}
+                        />
+                    ) : mode === 'practitioner-info' ? (
+                        <PractitionerView
+                            onEnterWorkspace={() => navigateTo('workspace')}
+                            onOpenPricing={() => setIsPricingOpen(true)}
+                        />
+                    ) : (
+                        <motion.div
+                            key="workspace"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05 }}
+                            className="workspace py-12 px-4 relative"
+                        >
+                            {finalPdfUrls.length === 0 ? (
+                                <FileWorkspace
+                                    onFilesReady={handleFilesReady}
+                                    isProcessing={isProcessing}
+                                    isPremium={isPremium}
+                                />
+                            ) : (
+                                <ReceiptCard
+                                    originalSize={fileSizes.original}
+                                    compressedSize={fileSizes.compressed}
+                                    maxPartSize={fileSizes.maxPartSize}
+                                    onDownload={handleDownload}
+                                    onRestart={() => navigateTo('workspace', persona, false)}
+                                    partCount={finalPdfUrls.length}
+                                    isSafe={resultIsSafe}
+                                />
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </main>
+
+            {/* Modals & UI Overlays */}
+            <SettingsDrawer
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                onOpenPrivacy={() => setIsPrivacyOpen(true)}
+                theme={theme}
+                onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+            />
+            <PricingModal
+                isOpen={isPricingOpen}
+                onClose={() => setIsPricingOpen(false)}
+                persona={persona}
+                onSuccess={() => {
+                    writePremiumFlag(true).then(() => {
+                        setIsPremium(true);
+                        setTimeout(handleDownload, 500);
+                    });
+                }}
+            />
+
+            <ConsentModal
+                isOpen={!isConsentAccepted}
+                onAccept={() => {
+                    localStorage.setItem('dr_consent_accepted', 'true');
+                    setIsConsentAccepted(true);
+                }}
+                onOpenPrivacy={() => setIsPrivacyOpen(true)}
+            />
+
+            <PrivacyModal
+                isOpen={isPrivacyOpen}
+                onClose={() => setIsPrivacyOpen(false)}
+            />
+        </div>
+    );
+}
