@@ -41,6 +41,50 @@ export default function App() {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
+    // Routing: Synchronize state with history for back-button support
+    useEffect(() => {
+        // Handle initial hash if present
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            if (hash === 'taxpayer-info') {
+                setMode('taxpayer-info');
+                setPersona('taxpayer');
+            } else if (hash === 'practitioner-info') {
+                setMode('practitioner-info');
+                setPersona('practitioner');
+            } else if (hash.startsWith('workspace')) {
+                setMode('workspace');
+                // Persona is usually remembered if navigation was internal, 
+                // but for fresh loads we'll just stay in workspace.
+            }
+        }
+
+        // Initial state
+        const initialState = { mode, persona, hasResults: finalPdfUrls.length > 0 };
+        window.history.replaceState(initialState, '');
+
+        const handlePopState = (event: PopStateEvent) => {
+            if (event.state) {
+                const { mode: nMode, persona: nPersona, hasResults } = event.state;
+                setMode(nMode);
+                setPersona(nPersona);
+                if (!hasResults) setFinalPdfUrls([]);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const navigateTo = (newMode: typeof mode, newPersona: typeof persona = persona, hasResults: boolean = false) => {
+        const nextState = { mode: newMode, persona: newPersona, hasResults };
+        const hash = newMode === 'landing' ? '' : `#${newMode}${hasResults ? '-results' : ''}`;
+        window.history.pushState(nextState, '', hash || window.location.pathname);
+        setMode(newMode);
+        setPersona(newPersona);
+        if (!hasResults) setFinalPdfUrls([]);
+    };
+
     // Read premium flag from IndexedDB + localStorage on mount
     useEffect(() => {
         readPremiumFlag().then(setIsPremium);
@@ -130,6 +174,8 @@ export default function App() {
                 maxPartSize,
             });
             setFinalPdfUrls(urls);
+            // Push state for results view
+            window.history.pushState({ mode, persona, hasResults: true }, '', '#workspace-results');
 
             if (mergeOnly) {
                 toast.success("Done! Files merged — no compression applied.", { id: loadingToast, duration: 4000 });
@@ -192,8 +238,7 @@ export default function App() {
                 currentMode={mode}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onStartOver={() => {
-                    setMode('landing');
-                    setFinalPdfUrls([]);
+                    navigateTo('landing', null, false);
                 }}
             />
 
@@ -220,10 +265,7 @@ export default function App() {
                                 {/* Taxpayer Gateway */}
                                 <div
                                     className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-blue-500 active:scale-95"
-                                    onClick={() => {
-                                        setPersona('taxpayer');
-                                        setMode('taxpayer-info');
-                                    }}
+                                    onClick={() => navigateTo('taxpayer-info', 'taxpayer')}
                                 >
                                     <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-8">
                                         <div className="w-6 h-6 bg-blue-500 rounded-sm"></div>
@@ -240,10 +282,7 @@ export default function App() {
                                 {/* Practitioner Gateway */}
                                 <div
                                     className="glass-panel p-10 flex flex-col items-start hover-lift cursor-pointer transition-all border border-[var(--glass-border)] hover:border-indigo-500 active:scale-95"
-                                    onClick={() => {
-                                        setPersona('practitioner');
-                                        setMode('practitioner-info');
-                                    }}
+                                    onClick={() => navigateTo('practitioner-info', 'practitioner')}
                                 >
                                     <div className="w-14 h-14 rounded-full bg-indigo-500/10 flex items-center justify-center mb-8">
                                         <div className="w-6 h-6 bg-indigo-500 rounded-sm"></div>
@@ -276,12 +315,12 @@ export default function App() {
                         </motion.section>
                     ) : mode === 'taxpayer-info' ? (
                         <TaxpayerView
-                            onEnterWorkspace={() => setMode('workspace')}
+                            onEnterWorkspace={() => navigateTo('workspace')}
                             onOpenPricing={() => setIsPricingOpen(true)}
                         />
                     ) : mode === 'practitioner-info' ? (
                         <PractitionerView
-                            onEnterWorkspace={() => setMode('workspace')}
+                            onEnterWorkspace={() => navigateTo('workspace')}
                             onOpenPricing={() => setIsPricingOpen(true)}
                         />
                     ) : (
@@ -304,7 +343,7 @@ export default function App() {
                                     compressedSize={fileSizes.compressed}
                                     maxPartSize={fileSizes.maxPartSize}
                                     onDownload={handleDownload}
-                                    onRestart={() => setFinalPdfUrls([])}
+                                    onRestart={() => navigateTo('workspace', persona, false)}
                                     partCount={finalPdfUrls.length}
                                     isSafe={resultIsSafe}
                                 />
