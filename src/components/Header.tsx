@@ -35,6 +35,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                 )}
 
                 <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (typeof window !== 'undefined' && (window as any).openPricingPage) {
+                            (window as any).openPricingPage();
+                        }
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium opacity-80 hover:opacity-100 transition-opacity"
+                >
+                    Pricing
+                </button>
+
+                <button
                     onClick={onOpenSettings}
                     className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors active-scale"
                     aria-label="Settings"
