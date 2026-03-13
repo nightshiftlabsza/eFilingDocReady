@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-02-28
 **Stack:** React 19 + Vite 7 + TypeScript + Tailwind CSS 4 + pdf-lib + pdfjs-dist
-**Repo:** `nightshiftlabsza/eFilingDocReady` (primary branch: `main`)
+**Repo:** `nightshiftlabsza/eFilingDocReady` (primary branch: `master`)
 **Working path:** `D:\Apps\DocReady`
 
 ---
