@@ -208,13 +208,6 @@ export default function App() {
                             className="flex flex-col items-center justify-center min-h-[75vh] px-4 max-w-5xl mx-auto w-full"
                         >
                             <div className="text-center mb-12">
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold text-sm mb-6 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                                >
-                                    100% Client-Side Processing • SARS Optimized • No Cloud Uploads • 3 Free Compressions Included
-                                </motion.div>
                                 <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
                                     SARS-Ready Documents. <br /> Zero Upload Friction.
                                 </h1>
