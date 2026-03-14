@@ -248,7 +248,11 @@ export default function App() {
                     {mode === 'landing' ? (
                         <LandingPage 
                             onStartFreeTrial={() => navigateTo('taxpayer-info', 'taxpayer')}
-                            onViewPricing={() => setIsPricingOpen(true)}
+                            onViewPricing={() => {
+                                if (typeof window !== 'undefined' && (window as any).openPricingPage) {
+                                    (window as any).openPricingPage();
+                                }
+                            }}
                         />
                     ) : mode === 'taxpayer-info' ? (
                         <TaxpayerView
