@@ -1,7 +1,7 @@
 // Service Worker — eFiling DocReady
 // v2: adds Share Target (POST) handler for Android share sheet integration.
 
-var CACHE       = 'docready-v4';
+var CACHE       = 'docready-v5';
 var SHARE_CACHE = 'sars-share-v1';
 
 var APP_SHELL = [
