@@ -17,8 +17,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartFreeTrial, onVi
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
+                    <div className="mb-10 flex justify-center">
+                        <motion.img 
+                            src="/logo.svg" 
+                            alt="DocReady Logo" 
+                            className="w-24 h-24 md:w-32 md:h-32 shadow-2xl rounded-3xl"
+                            initial={{ scale: 0.8, rotate: -5 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        />
+                    </div>
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm font-bold uppercase tracking-wider mb-8">
-                        <Shield className="w-4 h-4" />
+                        <img src="/logo.svg" className="w-4 h-4" alt="" />
                         100% Private. Secure Processing. Fast & Easy.
                     </div>
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.05] tracking-tight">

@@ -12,8 +12,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, onO
     return (
         <nav className="navbar glass-panel">
             <div className="flex items-center gap-3 cursor-pointer" onClick={onStartOver}>
-                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                    <Shield className="text-primary w-6 h-6" />
+                <div className="w-10 h-10 flex items-center justify-center">
+                    <img src="/logo.svg" alt="DocReady Logo" className="w-full h-full rounded-xl object-contain" />
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xl font-bold tracking-tight text-white leading-none">DocReady</span>
