@@ -4,10 +4,11 @@ import { Shield, LayoutDashboard, Settings } from 'lucide-react';
 interface HeaderProps {
     onOpenSettings: () => void;
     onStartOver: () => void;
+    onOpenPricing: () => void;
     currentMode?: 'landing' | 'taxpayer-info' | 'practitioner-info' | 'workspace';
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, currentMode = 'landing' }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, onOpenPricing, currentMode = 'landing' }) => {
     return (
         <nav className="navbar glass-panel">
             <div className="flex items-center gap-3 cursor-pointer" onClick={onStartOver}>
@@ -37,9 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                 <button
                     onClick={(e) => {
                         e.preventDefault();
-                        if (typeof window !== 'undefined' && (window as any).openPricingPage) {
-                            (window as any).openPricingPage();
-                        }
+                        onOpenPricing();
                     }}
                     className="hidden sm:flex items-center gap-2 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity"
                 >
@@ -49,9 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, cur
                 <button
                     onClick={(e) => {
                         e.preventDefault();
-                        if (typeof window !== 'undefined' && (window as any).openPricingPage) {
-                            (window as any).openPricingPage();
-                        }
+                        onOpenPricing();
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
