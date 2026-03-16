@@ -1,6 +1,5 @@
-// v3: Updated redesign deployment - 2026-03-16
-
-var CACHE       = 'docready-v5';
+// v6: Final pricing fixes and magic-link activation - 2026-03-17
+var CACHE       = 'docready-v6';
 var SHARE_CACHE = 'sars-share-v1';
 
 var APP_SHELL = [
