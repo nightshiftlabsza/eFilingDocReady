@@ -86,9 +86,29 @@ export default function App() {
         if (!hasResults) setFinalPdfUrls([]);
     };
 
-    // Read premium flag from IndexedDB + localStorage on mount
+    // Sync Pro status from server + local fallback
     useEffect(() => {
-        readPremiumFlag().then(setIsPremium);
+        // Local fast path
+        readPremiumFlag().then(localStatus => {
+            if (localStatus) setIsPremium(true);
+            
+            // Server truth path
+            fetch('/api/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.hasProAccess) {
+                        setIsPremium(true);
+                        writePremiumFlag(true); // Sync back to local storage
+                    } else if (localStatus) {
+                        // If server says no access but local says yes, 
+                        // we might let local persist or override. 
+                        // For now, let local be a fallback if offline.
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to sync Pro status:', err);
+                });
+        });
     }, []);
 
     const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5, outputPassword?: string) => {

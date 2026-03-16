@@ -461,6 +461,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                             )}
                         </AnimatePresence>
 
+                        {/* ── ALREADY PURCHASED? ── */}
+                        <div className="mt-8 pt-6 border-t border-white/5 text-center">
+                            <MagicLinkFlow />
+                        </div>
+
                         {/* Footer disclaimer */}
                         <p className="text-[10px] text-center text-[var(--text-color)]/30 mt-6 leading-relaxed">
                             DocReady is an independent South African tool for tax professionals.{' '}
@@ -471,5 +476,107 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                 </div>
             )}
         </AnimatePresence>
+    );
+};
+
+const MagicLinkFlow: React.FC = () => {
+    const [isRequesting, setIsRequesting] = useState(false);
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [requested, setRequested] = useState(false);
+
+    const handleRequest = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !email.includes('@')) {
+            toast.error('Valid email required');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch('/api/auth/magic-link/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setRequested(true);
+                toast.success('Magic link sent! Check your email.');
+            } else {
+                toast.error(data.error || 'Failed to send magic link');
+            }
+        } catch (err) {
+            toast.error('Network error. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isRequesting) {
+        return (
+            <button
+                onClick={() => setIsRequesting(true)}
+                className="text-xs font-medium text-[var(--text-color)]/40 hover:text-primary transition-colors"
+            >
+                Already purchased? <span className="underline">Get access link</span>
+            </button>
+        );
+    }
+
+    if (requested) {
+        return (
+            <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
+                    <Check className="w-5 h-5 text-emerald-400" />
+                </div>
+                <h4 className="text-sm font-bold text-[var(--text-color)]">Check your email</h4>
+                <p className="text-xs text-[var(--text-color)]/60 max-w-[280px] mx-auto leading-relaxed">
+                    We've sent a magic activation link to <strong>{email}</strong>. 
+                    Click it to unlock DocReady Pro on this device.
+                </p>
+                <button
+                    onClick={() => setRequested(false)}
+                    className="text-[10px] uppercase tracking-widest text-primary font-bold hover:underline"
+                >
+                    Try another email
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleRequest} className="space-y-4 max-w-[320px] mx-auto animate-in fade-in slide-in-from-bottom-2">
+            <h4 className="text-sm font-bold text-[var(--text-color)]">Restore Access</h4>
+            <p className="text-xs text-[var(--text-color)]/60 leading-relaxed">
+                Enter the email you used for purchase to receive a magic activation link.
+            </p>
+            <div className="relative">
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-[var(--text-color)] placeholder-slate-500 outline-none focus:ring-1 focus:ring-primary transition-all"
+                    required
+                />
+            </div>
+            <div className="flex flex-col gap-2">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50"
+                >
+                    {loading ? 'Sending Link…' : 'Send Magic Link'}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setIsRequesting(false)}
+                    className="text-[10px] uppercase tracking-widest text-[var(--text-color)]/40 font-bold hover:text-[var(--text-color)]/60 transition-colors"
+                >
+                    Cancel
+                </button>
+            </div>
+        </form>
     );
 };
