@@ -268,7 +268,7 @@ export default function App() {
                 <AnimatePresence mode="wait">
                     {mode === 'landing' ? (
                         <LandingPage 
-                            onStartFreeTrial={() => navigateTo('taxpayer-info', 'taxpayer')}
+                            onStartProcessing={() => navigateTo('workspace')}
                             onViewPricing={() => setIsPricingOpen(true)}
                         />
                     ) : mode === 'taxpayer-info' ? (

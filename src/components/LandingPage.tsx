@@ -3,11 +3,11 @@ import { Shield, Lock, Zap, CheckCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface LandingPageProps {
-    onStartFreeTrial: () => void;
+    onStartProcessing: () => void;
     onViewPricing: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStartFreeTrial, onViewPricing }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onStartProcessing, onViewPricing }) => {
     return (
         <div className="landing-v2">
             {/* Hero Section */}
@@ -40,10 +40,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartFreeTrial, onVi
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button 
-                            onClick={onStartFreeTrial}
-                            className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-emerald-900/20"
+                            onClick={onStartProcessing}
+                            className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-emerald-900/40"
                         >
-                            Start Free Trial <ArrowRight className="w-5 h-5" />
+                            Start Processing <ArrowRight className="w-5 h-5" />
                         </button>
                         <button 
                             onClick={onViewPricing}
@@ -153,10 +153,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartFreeTrial, onVi
                     Start with 3 free optimizations. No credit card required. Private and secure.
                 </p>
                 <button 
-                    onClick={onStartFreeTrial}
+                    onClick={onStartProcessing}
                     className="px-12 py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-900/40"
                 >
-                    Start Free Trial
+                    Start Processing
                 </button>
             </section>
 
