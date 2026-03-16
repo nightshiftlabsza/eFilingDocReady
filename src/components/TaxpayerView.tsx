@@ -49,19 +49,19 @@ export const TaxpayerView: React.FC<TaxpayerViewProps> = ({ onEnterWorkspace, on
                 </div>
             </div>
 
-            <div className="glass-panel p-8 md:p-12 mb-12 border-blue-500/30 bg-blue-500/[0.02]">
+            <div className="glass-panel p-8 md:p-12 mb-12 border-emerald-500/30 bg-emerald-500/[0.02]">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                     <div className="flex-grow">
-                        <div className="badge mb-4">Limited Offer</div>
-                        <h3 className="text-3xl font-bold mb-4">Lifetime Access</h3>
+                        <div className="badge mb-4">Smart Choice</div>
+                        <h3 className="text-3xl font-bold mb-4">DocReady Pro</h3>
                         <ul className="space-y-3 mb-8">
-                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> Unlimited Merges & Compressions</li>
-                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> No Watermarks</li>
-                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> Advanced Legibility Mode</li>
+                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> Professional 300 DPI Optimization</li>
+                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> Automatic SARS Part Splitting</li>
+                            <li className="flex items-center gap-2 opacity-80"><Check className="w-4 h-4 text-emerald-500" /> Unlock Bulk Document Processing</li>
                         </ul>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-black">R89</span>
-                            <span className="text-sm opacity-50 font-medium">ONCE-OFF</span>
+                            <span className="text-4xl font-black uppercase text-emerald-500">Upgrade</span>
+                            <span className="text-sm opacity-50 font-medium">FOR AS LITTLE AS R29</span>
                         </div>
                     </div>
                     <div className="w-full md:w-auto flex flex-col gap-4">

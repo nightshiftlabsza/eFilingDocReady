@@ -11,7 +11,7 @@ interface PaystackOptions {
 
 /**
  * Centered Paystack Success/Close callback handlers.
- * Optimized for DocReady R69 Lifetime Pass.
+ * Optimized for DocReady Premium.
  */
 export const launchPaystack = (options: PaystackOptions) => {
     const paystack = new PaystackPop();
@@ -34,7 +34,7 @@ export const launchPaystack = (options: PaystackOptions) => {
                 {
                     display_name: "Service",
                     variable_name: "service",
-                    value: "DocReady Premium (Lifetime)"
+                    value: "DocReady Premium"
                 }
             ],
             ...options.metadata
