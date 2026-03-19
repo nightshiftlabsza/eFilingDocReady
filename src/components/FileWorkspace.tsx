@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { UploadCloud, FileText, Image as ImageIcon, Trash2, GripVertical, AlertCircle, Zap, Lock, Eye, EyeOff, ShieldCheck, Crown } from 'lucide-react';
+import { UploadCloud, FileText, Image as ImageIcon, Trash2, GripVertical, AlertCircle, Zap, Lock, Eye, EyeOff, ShieldCheck, Crown, FileCheck, PenTool, RotateCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { sanitizeSarsFilename, isFilenameRisky } from '../lib/sanitizer';
@@ -20,16 +20,18 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface FileWorkspaceProps {
-    onFilesReady: (files: File[], mergeOnly?: boolean, targetMB?: number, outputPassword?: string) => void;
+    onFilesReady: (files: File[], mergeOnly?: boolean, targetMB?: number, outputPassword?: string, workspaceMode?: 'efiling' | 'general', rotations?: Record<string, number>) => void;
     isProcessing: boolean;
     isPremium: boolean;
 }
 
 export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isProcessing, isPremium }) => {
+    const [workspaceMode, setWorkspaceMode] = useState<'efiling' | 'general'>('efiling');
     const [files, setFiles] = useState<File[]>([]);
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
     const [targetMB, setTargetMB] = useState<number>(5);
     const [lockedFile, setLockedFile] = useState<File | null>(null);
+    const [rotations, setRotations] = useState<Record<string, number>>({});
     const objectUrlsRef = useRef<Set<string>>(new Set());
     // Output password state (premium only)
     const [outputPasswordEnabled, setOutputPasswordEnabled] = useState(false);
@@ -173,22 +175,59 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
         });
     }, []);
 
-    const handleCompress = () => {
+    const rotateFile = useCallback((key: string) => {
+        setRotations(prev => ({
+            ...prev,
+            [key]: ((prev[key] || 0) + 90) % 360,
+        }));
+    }, []);
+
+    const handleProcess = () => {
         if (files.length > 0) {
             const pwd = isPremium && outputPasswordEnabled && outputPassword && !passwordMismatch ? outputPassword : undefined;
-            onFilesReady(files, false, targetMB, pwd);
+            onFilesReady(files, false, targetMB, pwd, workspaceMode, rotations);
         }
     };
 
     const handleMergeOnly = () => {
         if (files.length > 0) {
             const pwd = isPremium && outputPasswordEnabled && outputPassword && !passwordMismatch ? outputPassword : undefined;
-            onFilesReady(files, true, targetMB, pwd);
+            onFilesReady(files, true, targetMB, pwd, workspaceMode, rotations);
         }
     };
 
     return (
         <div className="w-full max-w-5xl mx-auto space-y-6">
+            {/* ── Mode Toggle ─────────────────────────────────────────────── */}
+            <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto">
+                <button
+                    type="button"
+                    onClick={() => setWorkspaceMode('efiling')}
+                    className={cn(
+                        "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all",
+                        workspaceMode === 'efiling'
+                            ? "bg-primary text-white shadow-lg shadow-primary/20"
+                            : "text-[var(--text-color)]/50 hover:text-[var(--text-color)]/80 hover:bg-white/5"
+                    )}
+                >
+                    <FileCheck className="w-4 h-4" />
+                    Prepare for eFiling
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setWorkspaceMode('general')}
+                    className={cn(
+                        "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all",
+                        workspaceMode === 'general'
+                            ? "bg-primary text-white shadow-lg shadow-primary/20"
+                            : "text-[var(--text-color)]/50 hover:text-[var(--text-color)]/80 hover:bg-white/5"
+                    )}
+                >
+                    <PenTool className="w-4 h-4" />
+                    Edit Documents
+                </button>
+            </div>
+
             {/* Dropzone */}
             <div
                 {...getRootProps()}
@@ -248,7 +287,8 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                                 <img
                                                     src={thumb}
                                                     alt={file.name}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover transition-transform"
+                                                    style={{ transform: `rotate(${rotations[key] || 0}deg)` }}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center gap-2">
@@ -262,14 +302,33 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             <div className="absolute top-2 left-2 p-1 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <GripVertical className="w-4 h-4 text-white/80" />
                                             </div>
-                                            {/* Delete button */}
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); removeFile(index); }}
-                                                aria-label={`Remove ${file.name}`}
-                                                className="absolute top-2 right-2 p-1 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
-                                            >
-                                                <Trash2 className="w-4 h-4 text-white" />
-                                            </button>
+                                            {/* Action buttons */}
+                                            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); rotateFile(key); }}
+                                                    aria-label={`Rotate ${file.name} 90°`}
+                                                    className="p-1 bg-black/40 rounded-md hover:bg-blue-500/80"
+                                                >
+                                                    <RotateCw className="w-4 h-4 text-white" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                                                    aria-label={`Remove ${file.name}`}
+                                                    className="p-1 bg-black/40 rounded-md hover:bg-red-500/80"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-white" />
+                                                </button>
+                                            </div>
+                                            {/* Rotation indicator */}
+                                            {(rotations[key] || 0) > 0 && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="absolute bottom-2 right-2 flex items-center gap-1 bg-blue-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                                >
+                                                    <RotateCw className="w-2.5 h-2.5" /> {rotations[key]}°
+                                                </motion.div>
+                                            )}
                                             {/* Lock indicator badge for encrypted PDFs (premium can remove) */}
                                             {!thumbnails[`${file.name}-${file.size}`] && file.type === 'application/pdf' && isPremium && (
                                                 <motion.div
@@ -332,29 +391,32 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
 
                         {/* Action Buttons */}
                         <div className="space-y-3">
-                            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
-                                <label htmlFor="target-size" className="text-sm font-semibold text-[var(--text-color)]/80 flex-1">
-                                    Target size per part (MB)
-                                </label>
-                                <input
-                                    id="target-size"
-                                    type="number"
-                                    min={1}
-                                    max={50}
-                                    value={targetMB}
-                                    onChange={(e) => {
-                                        const val = parseInt(e.target.value, 10);
-                                        if (!isNaN(val)) setTargetMB(val);
-                                    }}
-                                    onBlur={(e) => {
-                                        let val = parseInt(e.target.value, 10);
-                                        if (isNaN(val) || val < 1) val = 1;
-                                        if (val > 50) val = 50;
-                                        setTargetMB(val);
-                                    }}
-                                    className="w-20 bg-black/20 border border-white/20 rounded-lg p-2 text-center text-[var(--text-color)] font-bold focus:ring-2 focus:ring-primary outline-none"
-                                />
-                            </div>
+                            {/* Target size — eFiling mode only */}
+                            {workspaceMode === 'efiling' && (
+                                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4">
+                                    <label htmlFor="target-size" className="text-sm font-semibold text-[var(--text-color)]/80 flex-1">
+                                        Target size per part (MB)
+                                    </label>
+                                    <input
+                                        id="target-size"
+                                        type="number"
+                                        min={1}
+                                        max={50}
+                                        value={targetMB}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10);
+                                            if (!isNaN(val)) setTargetMB(val);
+                                        }}
+                                        onBlur={(e) => {
+                                            let val = parseInt(e.target.value, 10);
+                                            if (isNaN(val) || val < 1) val = 1;
+                                            if (val > 50) val = 50;
+                                            setTargetMB(val);
+                                        }}
+                                        className="w-20 bg-black/20 border border-white/20 rounded-lg p-2 text-center text-[var(--text-color)] font-bold focus:ring-2 focus:ring-primary outline-none"
+                                    />
+                                </div>
+                            )}
 
                             {/* ── Premium: Output Password Protection ─────────────────────── */}
                             {isPremium ? (
@@ -496,40 +558,73 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                 </div>
                             )}
 
-                            <motion.button
-                                onClick={handleCompress}
-                                disabled={isProcessing || (outputPasswordEnabled && (passwordMismatch || !outputPassword))}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {outputPasswordEnabled && !passwordMismatch && outputPassword
-                                    ? <ShieldCheck className="w-5 h-5" />
-                                    : <Zap className="w-5 h-5" />
-                                }
-                                {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
-                            </motion.button>
-                            <motion.button
-                                onClick={handleMergeOnly}
-                                disabled={isProcessing}
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
-                                className="w-full py-3 bg-transparent border-2 border-[var(--glass-border)] hover:bg-white/5 text-[var(--text-color)] font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                            >
-                                <FileText className="w-4 h-4" />
-                                Merge only
-                            </motion.button>
+                            {workspaceMode === 'efiling' ? (
+                                <>
+                                    <motion.button
+                                        onClick={handleProcess}
+                                        disabled={isProcessing || (outputPasswordEnabled && (passwordMismatch || !outputPassword))}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {outputPasswordEnabled && !passwordMismatch && outputPassword
+                                            ? <ShieldCheck className="w-5 h-5" />
+                                            : <Zap className="w-5 h-5" />
+                                        }
+                                        {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
+                                    </motion.button>
+                                    <motion.button
+                                        onClick={handleMergeOnly}
+                                        disabled={isProcessing}
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
+                                        className="w-full py-3 bg-transparent border-2 border-[var(--glass-border)] hover:bg-white/5 text-[var(--text-color)] font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        Merge only (no compression)
+                                    </motion.button>
+                                </>
+                            ) : (
+                                <>
+                                    <motion.button
+                                        onClick={handleProcess}
+                                        disabled={isProcessing || (outputPasswordEnabled && (passwordMismatch || !outputPassword))}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active-scale disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {outputPasswordEnabled && !passwordMismatch && outputPassword
+                                            ? <ShieldCheck className="w-5 h-5" />
+                                            : <FileText className="w-5 h-5" />
+                                        }
+                                        {isProcessing ? 'Merging documents...' : 'Merge Documents'}
+                                    </motion.button>
+                                </>
+                            )}
                         </div>
 
-                        <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-4 flex gap-3">
-                            <AlertCircle className="w-5 h-5 text-[#10b981] shrink-0" />
-                            <div>
-                                <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">Ready to prepare for eFiling</p>
-                                <p className="text-xs text-[#10b981]/80 leading-relaxed">
-                                    We'll combine your {files.length} document{files.length !== 1 ? 's' : ''} and compress everything to under {targetMB} MB — without uploading anything.
-                                </p>
+                        {/* Mode-specific info box */}
+                        {workspaceMode === 'efiling' ? (
+                            <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-4 flex gap-3">
+                                <AlertCircle className="w-5 h-5 text-[#10b981] shrink-0" />
+                                <div>
+                                    <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">SARS eFiling Mode</p>
+                                    <p className="text-xs text-[#10b981]/80 leading-relaxed">
+                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be converted to B&W at 300 DPI, compressed to under {targetMB} MB per part, and split into max 20 files if needed.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex gap-3">
+                                <PenTool className="w-5 h-5 text-blue-400 shrink-0" />
+                                <div>
+                                    <p className="text-xs text-blue-400 font-bold uppercase mb-1 tracking-wider">General Editing</p>
+                                    <p className="text-xs text-blue-400/80 leading-relaxed">
+                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be merged at full quality with original colors preserved. No compression or size limits applied.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

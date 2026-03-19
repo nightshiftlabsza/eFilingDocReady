@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Share2, Download, RefreshCw, Sparkles, ShieldCheck } from 'lucide-react';
+import { Activity, Share2, Download, RefreshCw, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ReceiptCardProps {
@@ -10,6 +10,8 @@ interface ReceiptCardProps {
     onRestart: () => void;
     partCount?: number;
     isSafe: boolean;
+    workspaceMode?: 'efiling' | 'general';
+    truncated?: boolean;
 }
 
 const formatBytes = (bytes: number) => {
@@ -28,9 +30,12 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
     onRestart,
     partCount = 1,
     isSafe,
+    workspaceMode = 'efiling',
+    truncated = false,
 }) => {
     const reduction = originalSize > 0 ? Math.round((1 - compressedSize / originalSize) * 100) : 0;
     const isSplit = partCount > 1;
+    const isEfiling = workspaceMode === 'efiling';
 
     return (
         <div className="w-full max-w-md mx-auto space-y-6">
@@ -48,8 +53,12 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                 </div>
 
                 <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-[var(--text-color)] mb-2">Optimization Receipt</h3>
-                    <p className="text-sm text-[var(--text-color)]/60">Your document is ready for eFiling.</p>
+                    <h3 className="text-2xl font-bold text-[var(--text-color)] mb-2">
+                        {isEfiling ? 'Optimization Receipt' : 'Merge Complete'}
+                    </h3>
+                    <p className="text-sm text-[var(--text-color)]/60">
+                        {isEfiling ? 'Your document is ready for eFiling.' : 'Your documents have been merged successfully.'}
+                    </p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -81,16 +90,34 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                         </span>
                     </div>
 
-                    <div className={`p-4 rounded-2xl flex gap-3 ${isSafe ? 'bg-white/5 border border-white/10' : 'bg-red-500/10 border border-red-500/20'}`}>
-                        <ShieldCheck className={`w-5 h-5 shrink-0 ${isSafe ? 'text-primary' : 'text-red-500'}`} />
-                        <p className={`text-xs leading-relaxed ${isSafe ? 'text-[var(--text-color)]/60' : 'text-red-400'}`}>
-                            {isSafe
-                                ? isSplit
-                                    ? `All ${partCount} parts are within the 5MB SARS eFiling limit and are audit-compliant.`
-                                    : "This file is within the 5MB limit and is audit-compliant for eFiling."
-                                : "Warning: Part sizes still exceed 5MB. They may be rejected during upload."}
-                        </p>
-                    </div>
+                    {truncated && (
+                        <div className="p-4 rounded-2xl flex gap-3 bg-amber-500/10 border border-amber-500/20">
+                            <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
+                            <p className="text-xs leading-relaxed text-amber-300">
+                                Split capped at {partCount} parts (SARS maximum: 20). The last part may exceed 5MB.
+                            </p>
+                        </div>
+                    )}
+
+                    {isEfiling ? (
+                        <div className={`p-4 rounded-2xl flex gap-3 ${isSafe ? 'bg-white/5 border border-white/10' : 'bg-red-500/10 border border-red-500/20'}`}>
+                            <ShieldCheck className={`w-5 h-5 shrink-0 ${isSafe ? 'text-primary' : 'text-red-500'}`} />
+                            <p className={`text-xs leading-relaxed ${isSafe ? 'text-[var(--text-color)]/60' : 'text-red-400'}`}>
+                                {isSafe
+                                    ? isSplit
+                                        ? `All ${partCount} parts are within the 5MB SARS eFiling limit and are audit-compliant.`
+                                        : "This file is within the 5MB limit and is audit-compliant for eFiling."
+                                    : "Warning: Part sizes still exceed 5MB. They may be rejected during upload."}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="p-4 rounded-2xl flex gap-3 bg-white/5 border border-white/10">
+                            <ShieldCheck className="w-5 h-5 shrink-0 text-primary" />
+                            <p className="text-xs leading-relaxed text-[var(--text-color)]/60">
+                                Documents merged at full quality with original colors and resolution preserved.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-3">

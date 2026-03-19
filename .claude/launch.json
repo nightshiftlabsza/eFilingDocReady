@@ -4,7 +4,7 @@
     {
       "name": "DocReady Dev",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["serve-dev.js"],
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "3000"],
       "port": 3000
     }
   ]

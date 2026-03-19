@@ -1,4 +1,4 @@
-import { PDFDocument, PageSizes } from '@cantoo/pdf-lib';
+import { PDFDocument, PageSizes, degrees } from '@cantoo/pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { sanitizeSarsFilename } from './sanitizer';
 
@@ -23,12 +23,21 @@ const CONTRAST_INTERCEPT = 128 * (1 - CONTRAST_FACTOR);
 /**
  * Builds a "Pure" PDF - native merge with no quality loss.
  * Images are embedded at original quality.
+ *
+ * @param rotations - Optional map of `"${filename}-${filesize}"` → degrees (0/90/180/270).
+ *                    Applied per-file: images are rotated via page rotation; PDF pages via setRotation.
  */
-export const buildPurePdf = async (files: File[]): Promise<Uint8Array> => {
+export const buildPurePdf = async (
+    files: File[],
+    rotations: Record<string, number> = {},
+): Promise<Uint8Array> => {
 
     const finalPdf = await PDFDocument.create();
 
     for (const file of files) {
+        const fileKey = `${file.name}-${file.size}`;
+        const rotation = rotations[fileKey] || 0;
+
         if (file.type.startsWith('image/')) {
             const imgBytes = await file.arrayBuffer();
             let image;
@@ -50,12 +59,19 @@ export const buildPurePdf = async (files: File[]): Promise<Uint8Array> => {
                 width,
                 height,
             });
+            if (rotation) page.setRotation(degrees(rotation));
         } else if (file.type === 'application/pdf') {
             const pdfBytes = await file.arrayBuffer();
             try {
                 const sourcePdf = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
                 const copiedPages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
-                copiedPages.forEach((page) => finalPdf.addPage(page));
+                copiedPages.forEach((page) => {
+                    if (rotation) {
+                        const existing = page.getRotation().angle;
+                        page.setRotation(degrees(existing + rotation));
+                    }
+                    finalPdf.addPage(page);
+                });
             } catch (err: any) {
                 const safeName = sanitizeSarsFilename(file.name);
                 if (err?.message?.toLowerCase().includes('password') || err?.message?.toLowerCase().includes('encrypt')) {
@@ -239,27 +255,42 @@ async function canvasToJpegBytes(
 export const buildRasterPdf = async (
     files: File[],
     options: RasterizeOptions = {},
+    rotations: Record<string, number> = {},
 ): Promise<Uint8Array> => {
-    const merged = await buildPurePdf(files);
+    const merged = await buildPurePdf(files, rotations);
     return rasterizePdf(merged, options);
 };
 
+export interface SplitResult {
+    parts: Uint8Array[];
+    /** True if splitting stopped early because maxParts was reached. */
+    truncated: boolean;
+}
+
 /**
  * Phase 3 Multi-Volume Splitter:
- * If the final PDF array buffer still exceeds 5MB after all compression, 
+ * If the final PDF array buffer still exceeds 5MB after all compression,
  * this chunks the pages into multiple PDFs sequentially to meet the strict bounds.
+ *
+ * @param maxParts - Maximum number of output parts (default 20 for SARS eFiling).
+ *                   Remaining pages are bundled into the last part even if oversized.
  */
-export const splitPdfIfNeeded = async (pdfBytes: Uint8Array, maxBytes: number = 4.8 * 1024 * 1024): Promise<Uint8Array[]> => {
-    if (pdfBytes.length <= maxBytes) return [pdfBytes];
+export const splitPdfIfNeeded = async (
+    pdfBytes: Uint8Array,
+    maxBytes: number = 4.8 * 1024 * 1024,
+    maxParts: number = 20,
+): Promise<SplitResult> => {
+    if (pdfBytes.length <= maxBytes) return { parts: [pdfBytes], truncated: false };
 
     const sourcePdf = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const totalPages = sourcePdf.getPageCount();
 
     // If it's literally 1 page and enormous, we can't split it further.
-    if (totalPages <= 1) return [pdfBytes];
+    if (totalPages <= 1) return { parts: [pdfBytes], truncated: false };
 
     let currentPdf = await PDFDocument.create();
     const parts: Uint8Array[] = [];
+    let truncated = false;
 
     for (let i = 0; i < totalPages; i++) {
         // Copy one page into current PDF
@@ -275,6 +306,18 @@ export const splitPdfIfNeeded = async (pdfBytes: Uint8Array, maxBytes: number = 
             currentPdf.removePage(currentPdf.getPageCount() - 1);
             parts.push(await currentPdf.save());
 
+            // Check if we've hit the max parts limit — bundle remaining pages into last part
+            if (parts.length >= maxParts - 1) {
+                const lastPdf = await PDFDocument.create();
+                for (let j = i; j < totalPages; j++) {
+                    const [remainingPage] = await lastPdf.copyPages(sourcePdf, [j]);
+                    lastPdf.addPage(remainingPage);
+                }
+                parts.push(await lastPdf.save());
+                truncated = true;
+                return { parts, truncated };
+            }
+
             // Start a new PDF with the chunked page
             currentPdf = await PDFDocument.create();
             const [newCopiedPage] = await currentPdf.copyPages(sourcePdf, [i]);
@@ -287,7 +330,7 @@ export const splitPdfIfNeeded = async (pdfBytes: Uint8Array, maxBytes: number = 
         parts.push(await currentPdf.save());
     }
 
-    return parts;
+    return { parts, truncated };
 };
 
 

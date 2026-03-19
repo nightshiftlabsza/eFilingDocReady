@@ -4,60 +4,93 @@
 DocReady (docready.co.za) is a Progressive Web App (PWA) for South Africans to:
 - Merge multiple PDFs and images into a single PDF
 - Compress documents to meet SARS eFiling's strict 5 MB limit
-- Export/share the compiled document for SARS eFiling
+- General document editing (merge, rotate, password add/remove)
+- Export/share the compiled document for SARS eFiling or general use
 
 ## Target domain
 **docready.co.za** (deployed via Vercel at e-filing-doc-ready.vercel.app)
 
 ## Tech stack
-- Pure HTML/CSS/JavaScript (no framework, no build step required)
-- PDF-lib for PDF generation and merging
-- pdf.js for PDF page rendering
-- Paystack for premium unlock (R69 once-off payment)
-- Cloudflare Worker (`cloudflare-worker.js`) for Paystack IPN verification
+- React 19 + TypeScript (Vite build system)
+- Tailwind CSS 4.0 + Framer Motion for animations
+- @cantoo/pdf-lib for PDF generation, merging, encryption
+- pdfjs-dist for PDF page rendering and thumbnails
+- react-dropzone for file upload
+- react-hot-toast for notifications
+- lucide-react for icons
+- Paystack (@paystack/inline-js) for premium payments
 - Service Worker (`sw.js`) for PWA/offline support and Android share target
+- Cloudflare Worker (`cloudflare-worker.js`) for Paystack IPN verification
 
 ## File structure
-- `index.html` — entire app (all UI + all logic in one file)
-- `sw.js` — service worker (caching + share target POST handler)
-- `cloudflare-worker.js` — Paystack IPN handler (deploy to Cloudflare Workers)
-- `manifest.json` — PWA manifest (icons, share_target, file_handlers)
-- `vercel.json` — static hosting config
-- `docfit-tool/` — companion Python compression tool
-- `.well-known/assetlinks.json` — Android TWA asset links
+- `index.html` — Vite SPA root
+- `src/main.tsx` — React entry point
+- `src/App.tsx` — Main app shell, routing, processing pipeline
+- `src/App.css` — Global styles + CSS variables
+- `src/components/` — React components:
+  - `LandingPage.tsx` — Hero + dual-audience gateway
+  - `TaxpayerView.tsx` — Taxpayer onboarding info
+  - `PractitionerView.tsx` — Practitioner onboarding info
+  - `FileWorkspace.tsx` — File upload, preview, reorder, mode toggle, processing controls
+  - `ReceiptCard.tsx` — Results display with download
+  - `Header.tsx` — Navigation bar
+  - `PricingModal.tsx` — Payment tiers + Paystack integration
+  - `SettingsDrawer.tsx` — Theme toggle, privacy settings
+  - `ConsentModal.tsx` — Privacy consent
+  - `PrivacyModal.tsx` — Full privacy policy
+  - `UnlockerModal.tsx` — Password removal prompt
+- `src/lib/` — Core logic:
+  - `pdf-generator.ts` — Merge (buildPurePdf), rasterize (300 DPI), split (max 20 parts)
+  - `lockPdf.ts` — AES-256 output encryption
+  - `unlockPdf.ts` — Password removal (ignoreEncryption + password fallback)
+  - `sanitizer.ts` — SARS-safe filename sanitization
+  - `storage.ts` — localStorage + IndexedDB dual-write for premium flag
+  - `paystack.ts` — Paystack payment launcher
+- `api/` — Vercel serverless functions:
+  - `me.ts` — Session/premium status check
+  - `webhooks/paystack.ts` — Payment entitlement
+  - `auth/magic-link/` — Magic link request + consume
+- `sw.js` — Service worker (caching + share target POST handler)
+- `cloudflare-worker.js` — Paystack IPN handler
+- `manifest.json` — PWA manifest
+- `docfit-tool/` — Companion Python compression tool (not used in web app)
 
-## Design system
-- Mobile-first card layout, max-width 480px on mobile
-- Desktop: sticky nav bar, two-column layout, scales up to 2400px+
-- Color tokens (CSS variables):
-  - `--primary: #154734` (dark forest green)
-  - `--primary-hover: #0E3324`
-  - `--accent: #CBA052` (warm gold)
-  - `--bg: #F4F5F2` (light) / `#141615` (dark)
-  - `--card: #FFFFFF` (light) / `#1F2220` (dark)
-  - `--border: #E6E8E3` (light) / `#303431` (dark)
-  - `--radius: 10px`
-- Font: Outfit (Google Fonts, weights 300–600)
-- Dark mode via `html.dark-mode` class, stored in localStorage as `docready-theme`
-- Three theme modes: `light`, `dark`, `system`
+## Dual processing modes
+The app has TWO distinct workspace modes with different pipeline behavior:
+
+### eFiling mode (SARS compliance)
+- Forced grayscale (B&W)
+- Forced 300 DPI rasterization
+- Forced <5MB per part
+- Auto-split into max 20 files
+- Aggressive 9-pass JPEG compression
+
+### General editing mode
+- Color preserved (no rasterization)
+- No forced size limits
+- Native lossless merge
+- No splitting
+- Optional password protection
 
 ## Premium / freemium model
-- Free tier: merge-only (no compression), no size limit enforcement
-- Premium (R69 once-off via Paystack): smart compression to any target size
-- Unlock stored in localStorage as `docready-premium = '1'`
-- Paystack public key: `pk_test_3520c14017518f98180b12907a3069d4916eac7c`
+- Free tier: 3 free compression credits, unlimited merge-only
+- Premium tiers via Paystack:
+  - Taxpayer: R29 (pay-as-you-go, 5 bundles) or R199/yr (unlimited)
+  - Practitioner: R399-R2,499/yr (firm licensing)
+- Unlock stored in localStorage `docready-premium` + IndexedDB (dual-write)
+- Magic-link email auth for license restoration
+- Server session via HTTP-only cookie `sess` (30-day)
 
-## Architecture rules (DO NOT CHANGE)
-- Zero-server: no user data ever leaves the device
-- All processing is client-side (PDF generation, compression, image resizing)
-- No npm, no build step, no transpilation — plain ES5-compatible JavaScript
-- Service worker cache name: `docready-v3`
-- localStorage keys: `docready-theme`, `docready-premium`, `docready-ref`, `sars_recent_v1`
+## Architecture rules
+- Zero-server processing: no user data ever leaves the device
+- All PDF processing is client-side (merge, compress, encrypt)
+- Server only stores: premium flag, payment records, magic-link tokens
+- Service worker cache name: `docready-v6`
+- localStorage keys: `docready-premium`, `dr_free_credits`, `dr_consent_accepted`, `dr_eb_count`, `data-theme`
 
 ## DO NOT
-- Add npm packages or a build system
-- Introduce any framework (React, Vue, Next.js, etc.)
-- Store user data on any server
-- Improvise colors, fonts, or spacing — follow existing CSS variables strictly
-- Change the Paystack integration without updating the Cloudflare Worker too
+- Store user documents on any server
+- Improvise colors, fonts, or spacing — follow existing CSS variables and Tailwind classes
+- Change the Paystack integration without updating payment webhook handling
 - Break offline/PWA functionality (always update sw.js cache version if assets change)
+- Remove the dual-write premium storage (localStorage + IndexedDB)

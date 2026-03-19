@@ -7,7 +7,7 @@ import { PricingModal } from './components/PricingModal';
 import { SettingsDrawer } from './components/SettingsDrawer';
 import { ReceiptCard } from './components/ReceiptCard';
 import { Toaster, toast } from 'react-hot-toast';
-import { buildPurePdf, rasterizePdf, splitPdfIfNeeded } from './lib/pdf-generator';
+import { buildPurePdf, rasterizePdf, splitPdfIfNeeded, type SplitResult } from './lib/pdf-generator';
 import { addPasswordToPdf } from './lib/lockPdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentModal } from './components/ConsentModal';
@@ -37,6 +37,8 @@ export default function App() {
     const [isConsentAccepted, setIsConsentAccepted] = useState<boolean>(() => {
         return localStorage.getItem('dr_consent_accepted') === 'true';
     });
+    const [resultWorkspaceMode, setResultWorkspaceMode] = useState<'efiling' | 'general'>('efiling');
+    const [resultTruncated, setResultTruncated] = useState(false);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -111,9 +113,18 @@ export default function App() {
         });
     }, []);
 
-    const handleFilesReady = async (files: File[], mergeOnly: boolean = false, targetMB: number = 5, outputPassword?: string) => {
-        // Gating Check
-        if (!mergeOnly && !isPremium && freeCredits <= 0) {
+    const handleFilesReady = async (
+        files: File[],
+        mergeOnly: boolean = false,
+        targetMB: number = 5,
+        outputPassword?: string,
+        workspaceMode: 'efiling' | 'general' = 'efiling',
+        rotations: Record<string, number> = {},
+    ) => {
+        const isEfiling = workspaceMode === 'efiling';
+
+        // Gating Check — compression credits only matter in eFiling mode
+        if (isEfiling && !mergeOnly && !isPremium && freeCredits <= 0) {
             toast.error("You've used your free credits — upgrade to keep compressing.");
             setIsPricingOpen(true);
             return;
@@ -126,13 +137,15 @@ export default function App() {
         try {
             // Phase 1: Native Merge Attempt (No Quality Loss)
             if (import.meta.env.DEV) console.log("Phase 1: Attempting Native Merge");
-            let pdfBytes = await buildPurePdf(files);
-            const initialSize = pdfBytes.length; // More efficient than new Blob().size
+            let pdfBytes = await buildPurePdf(files, rotations);
+            const initialSize = pdfBytes.length;
 
             let finalOutputBytes = [pdfBytes];
+            let splitTruncated = false;
 
-            if (!mergeOnly) {
-                // Phase 2: Native merge exceeded targetBytes — Optimize for eFiling at 300 DPI.
+            if (isEfiling && !mergeOnly) {
+                // ── eFiling Pipeline ─────────────────────────────────────────
+                // Phase 2: Forced B&W, 300 DPI, aggressive compression
                 if (initialSize > targetBytes) {
                     if (!isPremium && freeCredits <= 0) {
                         toast.error(`This file is over ${targetMB} MB — unlock compression to continue.`, { id: loadingToast, duration: 4000 });
@@ -141,10 +154,8 @@ export default function App() {
                         return;
                     }
 
-                    if (import.meta.env.DEV) console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Triggering Phase 2: Adaptive Quality Optimization at 300 DPI.`);
+                    if (import.meta.env.DEV) console.log(`Native merge too large (${(initialSize / 1024 / 1024).toFixed(2)}MB). Phase 2: 300 DPI B&W compression.`);
 
-                    // Constant 300 DPI (SARS requirement). Only JPEG quality decreases each pass.
-                    // Extended to 9 passes (down to q=3%) to handle even very large inputs.
                     const phase1Bytes = pdfBytes;
                     const qualitySteps = [0.70, 0.50, 0.35, 0.20, 0.15, 0.10, 0.07, 0.05, 0.03];
                     for (let qi = 0; qi < qualitySteps.length; qi++) {
@@ -162,13 +173,20 @@ export default function App() {
                     }
                 }
 
-                // Phase 3: Split if final result still > targetBytes
+                // Phase 3: Split if still over target (max 20 parts for SARS)
                 finalOutputBytes = [pdfBytes];
                 if (pdfBytes.length > targetBytes) {
-                    if (import.meta.env.DEV) console.log(`Still > ${targetMB}MB. Triggering Phase 3 Multi-Volume Split.`);
+                    if (import.meta.env.DEV) console.log(`Still > ${targetMB}MB. Phase 3: Multi-Volume Split (max 20 parts).`);
                     toast.loading("Almost there — splitting into upload-ready parts…", { id: loadingToast });
-                    finalOutputBytes = await splitPdfIfNeeded(pdfBytes, targetBytes * 0.9);
+                    const splitResult = await splitPdfIfNeeded(pdfBytes, targetBytes * 0.9, 20);
+                    finalOutputBytes = splitResult.parts;
+                    splitTruncated = splitResult.truncated;
                 }
+            } else if (!isEfiling && !mergeOnly) {
+                // ── General Editing Pipeline ─────────────────────────────────
+                // No forced compression, no forced grayscale, no splitting.
+                // Just native merge (already done above).
+                // Future: optional user-requested compression can go here.
             }
 
             // Apply output password if set (premium feature)
@@ -186,22 +204,30 @@ export default function App() {
 
             const totalCompressedSize = finalOutputBytes.reduce((acc, bytes) => acc + bytes.length, 0);
             const maxPartSize = Math.max(...finalOutputBytes.map(b => b.length));
-            const isSafe = finalOutputBytes.every(b => b.length <= targetBytes);
+            const isSafe = isEfiling
+                ? finalOutputBytes.every(b => b.length <= targetBytes)
+                : true; // General mode has no size constraint
 
             setResultIsSafe(isSafe);
+            setResultWorkspaceMode(workspaceMode);
+            setResultTruncated(splitTruncated);
             setFileSizes({
                 original: files.reduce((acc, f) => acc + f.size, 0),
                 compressed: totalCompressedSize,
                 maxPartSize,
             });
             setFinalPdfUrls(urls);
-            // Push state for results view
             window.history.pushState({ mode, persona, hasResults: true }, '', '#workspace-results');
 
-            if (mergeOnly) {
-                toast.success("Done! Files merged — no compression applied.", { id: loadingToast, duration: 4000 });
+            if (mergeOnly || !isEfiling) {
+                toast.success(
+                    isEfiling
+                        ? "Done! Files merged — no compression applied."
+                        : `Done! Documents merged (${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB).`,
+                    { id: loadingToast, duration: 4000 },
+                );
             } else {
-                // Consume credit if work was done (Phase 2 or Phase 3 triggered)
+                // Consume credit if compression was triggered
                 if (!isPremium && (initialSize > targetBytes || finalOutputBytes.length > 1)) {
                     setFreeCredits(prev => {
                         const next = Math.max(0, prev - 1);
@@ -210,7 +236,9 @@ export default function App() {
                     });
                 }
 
-                if (isSafe && urls.length > 1) {
+                if (splitTruncated) {
+                    toast.error(`Split into ${urls.length} parts (SARS max 20). The last part may exceed ${targetMB} MB.`, { id: loadingToast, duration: 6000 });
+                } else if (isSafe && urls.length > 1) {
                     toast.success(`Done! Saved as ${urls.length} parts — each ready to upload to eFiling.`, { id: loadingToast, duration: 4000 });
                 } else if (isSafe) {
                     toast.success(`Done! Your file is ${(totalCompressedSize / 1024 / 1024).toFixed(2)} MB and ready for SARS eFiling.`, { id: loadingToast, duration: 4000 });
@@ -267,8 +295,9 @@ export default function App() {
             <main className="content flex-grow">
                 <AnimatePresence mode="wait">
                     {mode === 'landing' ? (
-                        <LandingPage 
-                            onStartProcessing={() => navigateTo('workspace')}
+                        <LandingPage
+                            onSelectTaxpayer={() => navigateTo('taxpayer-info', 'taxpayer')}
+                            onSelectPractitioner={() => navigateTo('practitioner-info', 'practitioner')}
                             onViewPricing={() => setIsPricingOpen(true)}
                         />
                     ) : mode === 'taxpayer-info' ? (
@@ -304,6 +333,8 @@ export default function App() {
                                     onRestart={() => navigateTo('workspace', persona, false)}
                                     partCount={finalPdfUrls.length}
                                     isSafe={resultIsSafe}
+                                    workspaceMode={resultWorkspaceMode}
+                                    truncated={resultTruncated}
                                 />
                             )}
                         </motion.div>

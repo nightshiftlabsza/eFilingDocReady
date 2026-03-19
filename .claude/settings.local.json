@@ -11,7 +11,8 @@
       "Bash(grep -v \"node_modules\")",
       "Bash(where npm)",
       "Bash(where node)",
-      "mcp__Desktop_Commander__read_file"
+      "mcp__Desktop_Commander__read_file",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }
