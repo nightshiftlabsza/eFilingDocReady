@@ -7,7 +7,7 @@ import { PricingModal } from './components/PricingModal';
 import { SettingsDrawer } from './components/SettingsDrawer';
 import { ReceiptCard } from './components/ReceiptCard';
 import { Toaster, toast } from 'react-hot-toast';
-import { buildPurePdf, rasterizePdf, splitPdfIfNeeded, type SplitResult } from './lib/pdf-generator';
+import { buildPurePdf, rasterizePdf, splitPdfIfNeeded } from './lib/pdf-generator';
 import { addPasswordToPdf } from './lib/lockPdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConsentModal } from './components/ConsentModal';
