@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 process.env.FRONTEND_APP_URL = 'http://localhost:3000';
 process.env.DATABASE_URL = 'postgres://postgres:postgres@localhost:5432/docready';
 process.env.PAYSTACK_SECRET_KEY = 'secret';
+process.env.APP_ENV = 'production';
 process.env.VITE_SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role';
 
@@ -58,12 +59,18 @@ describe('/api/webhooks/paystack', () => {
             .mockResolvedValueOnce({ id: 'event-1' })
             .mockResolvedValueOnce(null);
         mockVerifyPaystackPayment.mockResolvedValue({
-            reference: 'dr_ref',
+            reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
             amount: 4900,
             currency: 'ZAR',
             status: 'success',
             paid_at: new Date().toISOString(),
-            metadata: { productCode: 'taxpayer_pass_onceoff' },
+            metadata: {
+                product_slug: 'docready',
+                plan_code: 'taxpayer_pass_onceoff',
+                internal_tx_id: 'txn-1',
+                customer_email: 'user@example.com',
+                environment: 'production',
+            },
             customer: { email: 'user@example.com' },
         });
 
@@ -72,13 +79,17 @@ describe('/api/webhooks/paystack', () => {
             event: 'charge.success',
             data: {
                 id: 10,
-                reference: 'dr_ref',
+                reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
                 status: 'success',
                 customer: {
                     email: 'user@example.com',
                 },
                 metadata: {
-                    productCode: 'taxpayer_pass_onceoff',
+                    product_slug: 'docready',
+                    plan_code: 'taxpayer_pass_onceoff',
+                    internal_tx_id: 'txn-1',
+                    customer_email: 'user@example.com',
+                    environment: 'production',
                 },
             },
         };
@@ -104,14 +115,13 @@ describe('/api/webhooks/paystack', () => {
         expect(mockMarkWebhookProcessed).toHaveBeenCalledWith('paystack:charge.success:10', 'processed', expect.any(Object));
     });
 
-    it('marks abandoned charges without granting access', async () => {
-        mockRecordWebhookReceipt.mockResolvedValue({ id: 'event-2' });
-
+    it('ignores shared-account references for other products', async () => {
         const { createApp } = await import('../app');
         const payload = {
-            event: 'charge.abandoned',
+            event: 'charge.success',
             data: {
-                reference: 'dr_abandoned',
+                id: 11,
+                reference: 'LL_production_1776412800001_fedcba9876543210',
             },
         };
         const body = JSON.stringify(payload);
@@ -124,7 +134,32 @@ describe('/api/webhooks/paystack', () => {
             .send(body);
 
         expect(response.status).toBe(200);
-        expect(mockMarkTransactionAbandoned).toHaveBeenCalledWith('dr_abandoned', expect.any(Object));
+        expect(response.body).toEqual({ ok: true, ignored: true });
+        expect(mockRecordWebhookReceipt).not.toHaveBeenCalled();
+        expect(mockVerifyPaystackPayment).not.toHaveBeenCalled();
+    });
+
+    it('marks abandoned charges without granting access', async () => {
+        mockRecordWebhookReceipt.mockResolvedValue({ id: 'event-2' });
+
+        const { createApp } = await import('../app');
+        const payload = {
+            event: 'charge.abandoned',
+            data: {
+                reference: 'DR_production_1776412800002_0011223344556677',
+            },
+        };
+        const body = JSON.stringify(payload);
+        const signature = crypto.createHmac('sha512', 'secret').update(body).digest('hex');
+
+        const response = await request(createApp())
+            .post('/api/webhooks/paystack')
+            .set('Content-Type', 'application/json')
+            .set('x-paystack-signature', signature)
+            .send(body);
+
+        expect(response.status).toBe(200);
+        expect(mockMarkTransactionAbandoned).toHaveBeenCalledWith('DR_production_1776412800002_0011223344556677', expect.any(Object));
         expect(mockReconcileVerifiedPayment).not.toHaveBeenCalled();
     });
 });

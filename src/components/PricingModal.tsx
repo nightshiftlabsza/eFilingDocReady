@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Shield, Receipt, CreditCard, Lock, Users, FileCheck } from 'lucide-react';
 import { apiFetchJson } from '../lib/api';
 import type { PaymentInitResponse, ProductCode } from '../types/account';
-import { SUPPORT_EMAIL } from '../lib/site';
+import { LEGAL_OPERATOR_NAME, SUPPORT_EMAIL } from '../lib/site';
 
 interface PricingModalProps {
     isOpen: boolean;
@@ -265,7 +265,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                             </button>
 
                             <p className="text-xs text-[var(--text-color)]/55 leading-relaxed">
-                                Refund policy: 7 days. Support email placeholder: {SUPPORT_EMAIL}. DocReady is not affiliated with SARS.
+                                Secure checkout by Paystack. Payments may appear under {LEGAL_OPERATOR_NAME}. Refund policy: 7 days. Support: {SUPPORT_EMAIL}. DocReady is not affiliated with SARS.
                             </p>
                         </div>
 

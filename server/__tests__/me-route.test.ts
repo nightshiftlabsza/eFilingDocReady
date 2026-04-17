@@ -38,6 +38,14 @@ describe('/api/account', () => {
         vi.clearAllMocks();
     });
 
+    it('returns a simple healthcheck response', async () => {
+        const { createApp } = await import('../app');
+        const response = await request(createApp()).get('/api/health');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ ok: true, service: 'docready-api' });
+    });
+
     it('returns an anonymous response when no session is present', async () => {
         mockResolveAuthenticatedAccount.mockResolvedValue(null);
 

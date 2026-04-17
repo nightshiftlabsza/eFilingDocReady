@@ -12,10 +12,12 @@ import {
     getPayloadHash,
     getWebhookDedupeKey,
     initializePaystackPayment,
+    isDocReadyReference,
     markTransactionAbandoned,
     markWebhookProcessed,
     recordWebhookReceipt,
     reconcileVerifiedPayment,
+    shouldIgnorePaystackReference,
     verifyPaystackPayment,
     verifyPaystackSignature,
     type PaystackWebhookEvent,
@@ -84,6 +86,10 @@ export function createApp(options: { vite?: ViteDevServer } = {}) {
     app.post('/api/webhooks/paystack', express.raw({ type: 'application/json' }));
     app.use('/api', express.json({ limit: '128kb' }));
 
+    app.get('/api/health', (_req, res) => {
+        res.status(200).json({ ok: true, service: 'docready-api' });
+    });
+
     app.get('/api/account', async (req, res) => {
         try {
             const account = await buildAccountResponse(req);
@@ -147,11 +153,12 @@ export function createApp(options: { vite?: ViteDevServer } = {}) {
                 }, client);
 
                 const payment = await initializePaystackPayment({
+                    transactionId: transaction.id,
                     email: resolvedEmail,
+                    normalizedEmail: transaction.normalized_email,
                     amountMinor: transaction.amount_minor,
                     reference: transaction.paystack_reference,
                     productCode,
-                    personaHint: persona,
                 });
 
                 await attachPaymentInitialization({
@@ -183,7 +190,7 @@ export function createApp(options: { vite?: ViteDevServer } = {}) {
     app.post('/api/payments/verify', async (req, res) => {
         try {
             const reference = typeof req.body?.reference === 'string' ? req.body.reference.trim() : '';
-            if (!reference) {
+            if (!reference || !isDocReadyReference(reference)) {
                 return jsonError(res, 400, 'Payment reference is required');
             }
 
@@ -226,7 +233,7 @@ export function createApp(options: { vite?: ViteDevServer } = {}) {
     app.get('/api/payments/status', async (req, res) => {
         try {
             const reference = typeof req.query.reference === 'string' ? req.query.reference.trim() : '';
-            if (!reference) {
+            if (!reference || !isDocReadyReference(reference)) {
                 return jsonError(res, 400, 'Payment reference is required');
             }
 
@@ -270,6 +277,10 @@ export function createApp(options: { vite?: ViteDevServer } = {}) {
             const reference = event.data?.reference ?? null;
             if (!event.event || !reference) {
                 return jsonError(res, 400, 'Malformed webhook payload');
+            }
+
+            if (shouldIgnorePaystackReference(reference)) {
+                return res.status(200).json({ ok: true, ignored: true });
             }
 
             const eventKey = getWebhookDedupeKey(event);

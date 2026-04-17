@@ -5,6 +5,7 @@ process.env.FRONTEND_APP_URL = 'http://localhost:3000';
 process.env.PAYSTACK_CALLBACK_URL = 'http://localhost:3000/payment/callback';
 process.env.DATABASE_URL = 'postgres://postgres:postgres@localhost:5432/docready';
 process.env.PAYSTACK_SECRET_KEY = 'secret';
+process.env.APP_ENV = 'production';
 process.env.VITE_SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role';
 
@@ -82,7 +83,7 @@ describe('payment routes', () => {
             user_id: 'user-1',
             email: 'buyer@example.com',
             normalized_email: 'buyer@example.com',
-            paystack_reference: 'dr_ref_1',
+            paystack_reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
             plan_code: 'taxpayer_pass_onceoff',
             amount_minor: 4900,
             currency: 'ZAR',
@@ -91,7 +92,7 @@ describe('payment routes', () => {
         mockInitializePaystackPayment.mockResolvedValue({
             authorization_url: 'https://checkout.paystack.com/abc',
             access_code: 'access_123',
-            reference: 'dr_ref_1',
+            reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
         });
         mockAttachPaymentInitialization.mockResolvedValue({});
 
@@ -106,7 +107,7 @@ describe('payment routes', () => {
 
         expect(response.status).toBe(201);
         expect(response.body).toMatchObject({
-            reference: 'dr_ref_1',
+            reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
             authorizationUrl: 'https://checkout.paystack.com/abc',
             accessCode: 'access_123',
             amountMinor: 4900,
@@ -116,16 +117,30 @@ describe('payment routes', () => {
         });
         expect(mockCreatePendingTransaction).toHaveBeenCalledTimes(1);
         expect(mockInitializePaystackPayment).toHaveBeenCalledTimes(1);
+        expect(mockInitializePaystackPayment).toHaveBeenCalledWith({
+            transactionId: 'txn-1',
+            email: 'buyer@example.com',
+            normalizedEmail: 'buyer@example.com',
+            amountMinor: 4900,
+            reference: 'DR_production_1776412800000_a1b2c3d4e5f60718',
+            productCode: 'taxpayer_pass_onceoff',
+        });
     });
 
     it('verifies a payment server-side before reporting premium access', async () => {
         mockVerifyPaystackPayment.mockResolvedValue({
-            reference: 'dr_ref_2',
+            reference: 'DR_production_1776412800001_fedcba9876543210',
             amount: 39900,
             currency: 'ZAR',
             status: 'success',
             paid_at: new Date().toISOString(),
-            metadata: { productCode: 'practitioner_pass_onceoff' },
+            metadata: {
+                product_slug: 'docready',
+                plan_code: 'practitioner_pass_onceoff',
+                internal_tx_id: 'txn-2',
+                customer_email: 'firm@example.com',
+                environment: 'production',
+            },
             customer: { email: 'firm@example.com' },
         });
         mockReconcileVerifiedPayment.mockResolvedValue({});
@@ -134,7 +149,7 @@ describe('payment routes', () => {
             user_id: 'user-2',
             email: 'firm@example.com',
             normalized_email: 'firm@example.com',
-            paystack_reference: 'dr_ref_2',
+            paystack_reference: 'DR_production_1776412800001_fedcba9876543210',
             plan_code: 'practitioner_pass_onceoff',
             amount_minor: 39900,
             currency: 'ZAR',
@@ -159,13 +174,13 @@ describe('payment routes', () => {
         const { createApp } = await import('../app');
         const response = await request(createApp())
             .post('/api/payments/verify')
-            .send({ reference: 'dr_ref_2' });
+            .send({ reference: 'DR_production_1776412800001_fedcba9876543210' });
 
         expect(response.status).toBe(200);
-        expect(mockVerifyPaystackPayment).toHaveBeenCalledWith('dr_ref_2');
+        expect(mockVerifyPaystackPayment).toHaveBeenCalledWith('DR_production_1776412800001_fedcba9876543210');
         expect(mockReconcileVerifiedPayment).toHaveBeenCalledTimes(1);
         expect(response.body).toMatchObject({
-            reference: 'dr_ref_2',
+            reference: 'DR_production_1776412800001_fedcba9876543210',
             transactionStatus: 'success',
             hasPremiumAccess: true,
             entitlementReady: true,
@@ -174,5 +189,15 @@ describe('payment routes', () => {
                 label: 'Practitioner Pass',
             },
         });
+    });
+
+    it('rejects references that do not belong to DocReady', async () => {
+        const { createApp } = await import('../app');
+        const response = await request(createApp())
+            .post('/api/payments/verify')
+            .send({ reference: 'LL_production_1776412800002_0123456789abcdef' });
+
+        expect(response.status).toBe(400);
+        expect(mockVerifyPaystackPayment).not.toHaveBeenCalled();
     });
 });

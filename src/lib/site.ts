@@ -1,4 +1,4 @@
-export const LEGAL_OPERATOR_NAME = 'Night Shift Labs ZA';
+export const LEGAL_OPERATOR_NAME = 'Nightshift Labs ZA';
 export const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || 'support@example.com';
 
 export const SUPPORTED_FILE_TYPES = ['PDF', 'JPG', 'JPEG', 'PNG'] as const;

@@ -27,10 +27,10 @@ These records exist only to support sign-in, restore access, payment verificatio
 3. The browser calls `GET /api/account` with a Supabase bearer token when signed in.
 4. The backend resolves the account and entitlement state from Postgres.
 5. Payment checkout starts with `POST /api/payments/initiate`.
-6. The backend creates a pending transaction and calls Paystack initialize.
-7. Paystack webhook confirmation lands on `POST /api/webhooks/paystack`.
-8. The backend verifies the payment, updates the transaction, and grants the entitlement idempotently.
-9. The frontend can confirm a callback through `POST /api/payments/verify` or poll `GET /api/payments/status`.
+6. The backend creates a pending transaction, generates a `DR_` reference, and calls Paystack initialize with `product_slug=docready`.
+7. Paystack returns the customer to `/payment/callback` and the frontend immediately calls `POST /api/payments/verify`.
+8. The backend verifies the payment by reference, updates the transaction, and grants the entitlement only after the DocReady-specific checks pass.
+9. `POST /api/webhooks/paystack` remains idempotent for reconciliation, but launch does not depend on taking over a shared account-level webhook.
 
 ## Product model
 
