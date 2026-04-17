@@ -2,8 +2,8 @@ import { chromium, type FullConfig } from '@playwright/test';
 
 /**
  * Runs once before the entire test suite.
- * Navigates to the app, pre-accepts the consent modal and sets free credits
- * to 3, then saves the resulting localStorage as storageState.json.
+ * Navigates to the app and pre-accepts the consent modal, then saves the
+ * resulting localStorage as storageState.json.
  *
  * Most tests inherit this state automatically via playwright.config.ts
  * `use.storageState`. The Consent Gate describe block overrides it with
@@ -18,7 +18,6 @@ async function globalSetup(config: FullConfig) {
 
     await page.evaluate(() => {
         localStorage.setItem('dr_consent_accepted', 'true');
-        localStorage.setItem('dr_free_credits', '3');
     });
 
     await page.context().storageState({ path: 'e2e/storageState.json' });

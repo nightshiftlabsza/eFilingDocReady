@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(git push)",
-      "Bash(git add index.html sw.js cloudflare-worker.js manifest.json vercel.json)",
+      "Bash(git add .)",
       "Bash(git commit:*)",
       "Bash(git push origin main)",
       "Bash(node serve-dev.js)",

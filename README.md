@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# DocReady
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+DocReady is a privacy-first web app for South Africans to prepare supporting documents for strict upload limits without uploading files to a server.
 
-Currently, two official plugins are available:
+## Privacy boundary
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+DocReady does store remote account and billing data:
+- Supabase Auth users and account records
+- Payment transactions and webhook events
+- Pass entitlements
 
-## React Compiler
+DocReady does not store remote document data:
+- PDFs, images, filenames, page counts, page sizes, OCR text, or document metadata
+- Any server-side document upload or processing payloads
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+All PDF and image processing remains inside the browser.
 
-## Expanding the ESLint configuration
+## Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Frontend: React + Vite + TypeScript
+- Auth and data: Supabase Auth + Supabase Postgres
+- Payments: Paystack
+- Runtime: Express on Railway
+- Edge layer: Cloudflare for DNS, CDN, proxy, and WAF only
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Local development
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The local app runs through the Express server with Vite middleware, so both the SPA and `/api/*` routes are available from one local port.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Build and test
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
+npm test
 ```
+
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in:
+
+- `APP_URL`
+- `FRONTEND_APP_URL`
+- `PORT`
+- `PAYSTACK_CALLBACK_URL`
+- `DATABASE_URL`
+- `VITE_API_BASE_URL`
+- `VITE_SUPPORT_EMAIL`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `PAYSTACK_SECRET_KEY`
+- `VITE_PAYSTACK_PUBLIC_KEY`
+
+## Deployment docs
+
+- [Architecture](C:\Users\mzaka.ZAK-PC\Documents\Apps\DocReady\docs\architecture.md)
+- [Supabase Setup](C:\Users\mzaka.ZAK-PC\Documents\Apps\DocReady\docs\supabase.md)
+- [Paystack Setup](C:\Users\mzaka.ZAK-PC\Documents\Apps\DocReady\docs\paystack.md)
+- [Railway Deployment](C:\Users\mzaka.ZAK-PC\Documents\Apps\DocReady\docs\deploy-railway.md)

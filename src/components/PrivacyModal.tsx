@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, ShieldCheck, Mail, UserCheck, Scale } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LEGAL_OPERATOR_NAME, SUPPORT_EMAIL } from '../lib/site';
 
 interface PrivacyModalProps {
     isOpen: boolean;
@@ -26,60 +27,49 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="relative w-full max-w-2xl glass-panel border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                     >
-                        {/* Header */}
                         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                             <div className="flex items-center gap-3">
                                 <ShieldCheck className="text-primary w-6 h-6" />
-                                <h2 className="text-xl font-bold text-white">Privacy Details</h2>
+                                <h2 className="text-xl font-bold text-white">Privacy Notice</h2>
                             </div>
-                            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors" aria-label="Close privacy notice">
                                 <X className="w-5 h-5 text-slate-400" />
                             </button>
                         </div>
 
-                        {/* Content */}
                         <div className="p-8 overflow-y-auto custom-scrollbar space-y-8 text-slate-300">
                             <section>
                                 <h3 className="text-white font-bold mb-3 flex items-center gap-2">
-                                    <Scale className="w-4 h-4 text-blue-500" /> 1. Introduction
+                                    <Scale className="w-4 h-4 text-blue-500" /> 1. Service position
                                 </h3>
                                 <p className="text-sm leading-relaxed">
-                                    DocReady is an independent productivity tool. It is not a law firm and does not provide legal, tax, or compliance advice. This page explains how your data is handled when you use the app.
+                                    DocReady is an independent document-preparation tool operated by {LEGAL_OPERATOR_NAME}. It is not affiliated with SARS and does not guarantee submission acceptance.
                                 </p>
                             </section>
 
                             <section>
                                 <h3 className="text-white font-bold mb-3 flex items-center gap-2">
-                                    <ShieldCheck className="w-4 h-4 text-emerald-500" /> 2. Data Processing Strategy
+                                    <ShieldCheck className="w-4 h-4 text-emerald-500" /> 2. Local document processing
                                 </h3>
-                                <p className="text-sm leading-relaxed mb-3">
-                                    Our application follows a "Zero-Server" architecture. All processing of your tax documents and personal information occurs exclusively within your browser's local environment.
-                                </p>
                                 <ul className="list-disc list-inside text-xs space-y-2 ml-2">
-                                    <li>Files are never uploaded to any server.</li>
-                                    <li>No personal data is stored in our databases.</li>
-                                    <li>All data is volatile and cleared upon session termination or manual wiping.</li>
+                                    <li>Document files are processed in your browser.</li>
+                                    <li>Customer document blobs, filenames, and document-derived metadata are not stored remotely for processing.</li>
+                                    <li>No server endpoint accepts customer PDFs or images for compression or merging.</li>
                                 </ul>
                             </section>
 
                             <section>
-                                <h3 className="text-white font-bold mb-3">3. Purpose of Collection</h3>
-                                <p className="text-sm leading-relaxed">
-                                    Providing information is voluntary. The data is processed solely to:
-                                </p>
+                                <h3 className="text-white font-bold mb-3">3. Remote records</h3>
                                 <ul className="list-disc list-inside text-xs space-y-2 mt-2 ml-2">
-                                    <li>Merge multiple files into a single PDF.</li>
-                                    <li>Compress documents to meet SARS 5MB limits.</li>
-                                    <li>Sanitize filenames for SARS eFiling compliance.</li>
+                                    <li>Email-based authentication records may be stored to support sign-in and restore access.</li>
+                                    <li>Payment transactions, entitlements, and webhook events may be stored to verify paid access truthfully.</li>
+                                    <li>Third-party services used for these functions may include Supabase, Paystack, Railway, and Cloudflare.</li>
                                 </ul>
-                                <p className="text-xs text-amber-500 mt-3 font-medium">
-                                    Consequence of failure to provide info: The tool will be unable to perform the requested optimizations.
-                                </p>
                             </section>
 
                             <section className="p-6 rounded-2xl bg-primary/10 border border-primary/20">
                                 <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                                    <UserCheck className="w-5 h-5 text-primary" /> Information Officer
+                                    <UserCheck className="w-5 h-5 text-primary" /> Contact
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-3">
@@ -87,18 +77,17 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
                                             <Mail className="w-4 h-4 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-white uppercase tracking-wider">Direct Inquiries</p>
-                                            <a href="mailto:nightshiftlabsza@gmail.com" className="text-sm text-primary hover:underline">nightshiftlabsza@gmail.com</a>
+                                            <p className="text-xs font-bold text-white uppercase tracking-wider">Support Email Placeholder</p>
+                                            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm text-primary hover:underline">{SUPPORT_EMAIL}</a>
                                         </div>
                                     </div>
                                     <p className="text-[11px] text-slate-400 italic mt-4">
-                                        For any questions about how DocReady handles data, contact us at the address below. DocReady is not affiliated with SARS and does not act as an information officer under any regulatory framework.
+                                        Replace this placeholder with the final launch support email if it changes before go-live.
                                     </p>
                                 </div>
                             </section>
                         </div>
 
-                        {/* Footer */}
                         <div className="p-6 border-t border-white/10 bg-white/5 flex justify-end">
                             <button
                                 onClick={onClose}

@@ -27,8 +27,6 @@ jobs:
 
       - name: Run E2E tests
         run: npm run test:e2e
-        env:
-          PLAYWRIGHT_BASE_URL: https://efiling-docready.vercel.app
 
       - name: Upload test report
         if: always()

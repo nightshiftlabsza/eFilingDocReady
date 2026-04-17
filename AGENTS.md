@@ -1,63 +1,59 @@
 # DocReady — Project Context for AI Coding Assistants
 
 ## What this app is
-DocReady (docready.co.za) is a Progressive Web App (PWA) for South Africans to:
-- Merge multiple PDFs and images into a single PDF
-- Compress documents to meet SARS eFiling's strict 5 MB limit
-- Export/share the compiled document for SARS eFiling
+DocReady (docready.co.za) is a launch-ready Progressive Web App for South Africans to:
+- Merge PDFs and supported images into one PDF
+- Compress output toward strict upload limits
+- Auto-split oversized outputs
+- Optionally add or remove PDF passwords
 
-## Target domain
-**docready.co.za** (deployed via Vercel at e-filing-doc-ready.vercel.app)
+DocReady is not affiliated with SARS and does not guarantee that any upload or submission will be accepted.
+
+## Production architecture
+- Frontend: Cloudflare Pages
+- Backend API: Railway
+- Database and auth: Supabase Auth + Supabase Postgres
+- Payments: Paystack
+- DNS, SSL, CDN, WAF: Cloudflare
+
+## Privacy boundary
+- Document processing stays in the browser
+- Customer document files and document metadata must not be stored remotely
+- Remote storage is limited to users, transactions, entitlements, and webhook events
+
+## Launch scope
+- South Africa only
+- Supported inputs: PDF, JPG, JPEG, PNG
+- Free usage: merge into one PDF
+- Paid passes unlock compression, auto-splitting, and password add/remove
+- Two paid passes only:
+  - Taxpayer Pass: R49 once-off
+  - Practitioner Pass: R399 once-off for one practitioner or one office user
+- Refund policy: 7 days
 
 ## Tech stack
-- Pure HTML/CSS/JavaScript (no framework, no build step required)
-- PDF-lib for PDF generation and merging
-- pdf.js for PDF page rendering
-- Paystack for premium unlock (R69 once-off payment)
-- Cloudflare Worker (`cloudflare-worker.js`) for Paystack IPN verification
-- Service Worker (`sw.js`) for PWA/offline support and Android share target
+- React 19 + TypeScript + Vite
+- Tailwind CSS 4 + Framer Motion
+- pdf-lib + pdfjs-dist
+- Express backend in `server/`
+- Supabase client helpers in `src/lib/`
 
-## File structure
-- `index.html` — entire app (all UI + all logic in one file)
-- `sw.js` — service worker (caching + share target POST handler)
-- `cloudflare-worker.js` — Paystack IPN handler (deploy to Cloudflare Workers)
-- `manifest.json` — PWA manifest (icons, share_target, file_handlers)
-- `vercel.json` — static hosting config
-- `docfit-tool/` — companion Python compression tool
-- `.well-known/assetlinks.json` — Android TWA asset links
+## Important files
+- `src/App.tsx` — app shell, route handling, consent gate, payment callback
+- `src/components/LandingPage.tsx` — truthful launch homepage
+- `src/components/FileWorkspace.tsx` — file upload, reorder, rotate, merge/compress controls
+- `src/components/PricingModal.tsx` — two-plan launch checkout modal
+- `src/components/LegalPage.tsx` — terms, privacy, refunds, contact, POPIA, PAIA
+- `server/app.ts` — Railway API routes
+- `server/lib/billing.ts` — Paystack initialize, verify, webhook reconciliation
+- `supabase/migrations/20260329_000001_account_billing_auth.sql` — launch billing/auth schema
+- `public/manifest.json` — PWA manifest
+- `public/_redirects` — Cloudflare Pages SPA fallback
+- `public/_headers` — Cloudflare Pages security/cache headers
 
-## Design system
-- Mobile-first card layout, max-width 480px on mobile
-- Desktop: sticky nav bar, two-column layout, scales up to 2400px+
-- Color tokens (CSS variables):
-  - `--primary: #154734` (dark forest green)
-  - `--primary-hover: #0E3324`
-  - `--accent: #CBA052` (warm gold)
-  - `--bg: #F4F5F2` (light) / `#141615` (dark)
-  - `--card: #FFFFFF` (light) / `#1F2220` (dark)
-  - `--border: #E6E8E3` (light) / `#303431` (dark)
-  - `--radius: 10px`
-- Font: Outfit (Google Fonts, weights 300–600)
-- Dark mode via `html.dark-mode` class, stored in localStorage as `docready-theme`
-- Three theme modes: `light`, `dark`, `system`
-
-## Premium / freemium model
-- Free tier: merge-only (no compression), no size limit enforcement
-- Premium (R69 once-off via Paystack): smart compression to any target size
-- Unlock stored in localStorage as `docready-premium = '1'`
-- Paystack public key: `pk_test_3520c14017518f98180b12907a3069d4916eac7c`
-
-## Architecture rules (DO NOT CHANGE)
-- Zero-server: no user data ever leaves the device
-- All processing is client-side (PDF generation, compression, image resizing)
-- No npm, no build step, no transpilation — plain ES5-compatible JavaScript
-- Service worker cache name: `docready-v3`
-- localStorage keys: `docready-theme`, `docready-premium`, `docready-ref`, `sars_recent_v1`
-
-## DO NOT
-- Add npm packages or a build system
-- Introduce any framework (React, Vue, Next.js, etc.)
-- Store user data on any server
-- Improvise colors, fonts, or spacing — follow existing CSS variables strictly
-- Change the Paystack integration without updating the Cloudflare Worker too
-- Break offline/PWA functionality (always update sw.js cache version if assets change)
+## Do not do
+- Do not reintroduce Vercel deployment assumptions
+- Do not store customer documents server-side
+- Do not add fake enterprise packaging, seat management, or unsupported admin claims
+- Do not restore client-side premium state as the billing source of truth
+- Do not add extra subscription tiers beyond the two launch passes

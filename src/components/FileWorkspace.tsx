@@ -129,7 +129,8 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            'image/*': ['.jpeg', '.jpg', '.png'],
+            'image/jpeg': ['.jpeg', '.jpg'],
+            'image/png': ['.png'],
             'application/pdf': ['.pdf'],
         },
         disabled: isProcessing
@@ -211,7 +212,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     )}
                 >
                     <FileCheck className="w-4 h-4" />
-                    Prepare for eFiling
+                    Strict Upload Mode
                 </button>
                 <button
                     type="button"
@@ -224,7 +225,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     )}
                 >
                     <PenTool className="w-4 h-4" />
-                    Edit Documents
+                    General Document Editing
                 </button>
             </div>
 
@@ -245,7 +246,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                     {isDragActive ? "Drop your files here" : "Drag documents here, or click to upload"}
                 </h3>
                 <p className="text-sm text-[var(--text-color)]/60 max-w-[300px] mx-auto">
-                    ID documents, payslips, bank statements — all processed privately on your device.
+                    Supported types: PDF, JPG, JPEG, and PNG. Files stay on your device while you work.
                 </p>
             </div>
 
@@ -447,7 +448,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             <p className={`text-sm font-bold transition-colors ${outputPasswordEnabled ? 'text-amber-300' : 'text-[var(--text-color)]/70'
                                                 }`}>Protect output with a password</p>
                                             <p className="text-xs text-[var(--text-color)]/40 truncate">
-                                                {outputPasswordEnabled ? 'PDF will be encrypted on download' : 'Premium — tap to enable'}
+                                                {outputPasswordEnabled ? 'PDF will be encrypted on download' : 'Paid pass required'}
                                             </p>
                                         </div>
                                         <Crown className="w-4 h-4 text-amber-400/60 shrink-0" />
@@ -536,7 +537,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                                     <div className="flex items-start gap-2 bg-amber-400/5 rounded-xl p-3 border border-amber-400/10">
                                                         <AlertCircle className="w-3.5 h-3.5 text-amber-400/60 shrink-0 mt-0.5" />
                                                         <p className="text-[10px] text-[var(--text-color)]/50 leading-relaxed">
-                                                            AES-256 encrypted. Keep this password safe — there is no recovery. The encrypted PDF will work in Adobe Reader, Preview, and all standard viewers.
+                                                            AES-256 encrypted. Keep this password safe — there is no recovery. The encrypted PDF should work in standard PDF viewers.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -546,13 +547,13 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                 </motion.div>
                             ) : (
                                 /* Teaser for free users */
-                                <div className="flex items-center gap-3 bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 cursor-not-allowed" title="Upgrade to Premium to unlock this feature">
+                                <div className="flex items-center gap-3 bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 cursor-not-allowed" title="Unlock with a paid pass">
                                     <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                                         <Lock className="w-4 h-4 text-[var(--text-color)]/30" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-[var(--text-color)]/40">Output Password Protection</p>
-                                        <p className="text-xs text-[var(--text-color)]/25">Premium feature — upgrade to enable</p>
+                                        <p className="text-xs text-[var(--text-color)]/25">Unlock with a paid pass</p>
                                     </div>
                                     <Crown className="w-4 h-4 text-amber-400/30 ml-auto shrink-0" />
                                 </div>
@@ -571,7 +572,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                                             ? <ShieldCheck className="w-5 h-5" />
                                             : <Zap className="w-5 h-5" />
                                         }
-                                        {isProcessing ? 'Processing PDF Engine...' : 'Scan & Merge for eFiling'}
+                                        {isProcessing ? 'Preparing output...' : 'Prepare Strict Upload Output'}
                                     </motion.button>
                                     <motion.button
                                         onClick={handleMergeOnly}
@@ -608,9 +609,9 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-4 flex gap-3">
                                 <AlertCircle className="w-5 h-5 text-[#10b981] shrink-0" />
                                 <div>
-                                    <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">SARS eFiling Mode</p>
+                                    <p className="text-xs text-[#10b981] font-bold uppercase mb-1 tracking-wider">Strict Upload Mode</p>
                                     <p className="text-xs text-[#10b981]/80 leading-relaxed">
-                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be converted to B&W at 300 DPI, compressed to under {targetMB} MB per part, and split into max 20 files if needed.
+                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be converted to black and white at 300 DPI, aimed at under {targetMB} MB per part, split into up to 20 files if needed, and saved with sequential filenames such as name-part-1.pdf. Acceptance still depends on the receiving platform.
                                     </p>
                                 </div>
                             </div>
@@ -618,9 +619,9 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex gap-3">
                                 <PenTool className="w-5 h-5 text-blue-400 shrink-0" />
                                 <div>
-                                    <p className="text-xs text-blue-400 font-bold uppercase mb-1 tracking-wider">General Editing</p>
+                                    <p className="text-xs text-blue-400 font-bold uppercase mb-1 tracking-wider">General Document Editing</p>
                                     <p className="text-xs text-blue-400/80 leading-relaxed">
-                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be merged at full quality with original colors preserved. No compression or size limits applied.
+                                        Your {files.length} document{files.length !== 1 ? 's' : ''} will be merged and edited normally, with original colour preserved where possible and no forced SARS compression or compatibility rules applied.
                                     </p>
                                 </div>
                             </div>
@@ -643,7 +644,7 @@ export const FileWorkspace: React.FC<FileWorkspaceProps> = ({ onFilesReady, isPr
                             const unlockedFile = new File([decryptedBytes as any], lockedFile.name, { type: 'application/pdf' });
                             setFiles(prev => prev.map(f => f === lockedFile ? unlockedFile : f));
                             setLockedFile(null);
-                            toast.success(isPremium ? "Password removed — file unlocked and stripped!" : "File unlocked successfully!");
+                            toast.success(isPremium ? 'Password removed and file unlocked.' : 'File unlocked successfully.');
                         } catch (err: any) {
                             toast.error(err.message || "Incorrect password");
                         }

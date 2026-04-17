@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "eFiling DocReady",
+  "name": "DocReady",
   "short_name": "DocReady",
-  "description": "Compress and merge documents for SARS eFiling. 100% private — files never leave your device.",
+  "description": "Prepare supporting documents for strict upload limits. Files stay in your browser while you work.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -52,9 +52,36 @@
     {
       "name": "Prepare Documents",
       "url": "/",
-      "description": "Merge & compress for eFiling"
+      "description": "Merge supported files and prepare outputs locally"
     }
   ],
   "categories": ["productivity", "utilities"],
-  "lang": "en-ZA"
+  "lang": "en-ZA",
+  "share_target": {
+    "action": "/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "documents",
+          "accept": [
+            "application/pdf",
+            "image/jpeg",
+            "image/png"
+          ]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"]
+      }
+    }
+  ]
 }

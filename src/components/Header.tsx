@@ -1,59 +1,71 @@
 import React from 'react';
-import { Shield, LayoutDashboard, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface HeaderProps {
     onOpenSettings: () => void;
     onStartOver: () => void;
     onOpenPricing: () => void;
+    onOpenAuth: () => void;
+    onLogout: () => void;
     currentMode?: 'landing' | 'taxpayer-info' | 'practitioner-info' | 'workspace';
+    isAuthenticated: boolean;
+    accountEmail?: string | null;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSettings, onStartOver, onOpenPricing, currentMode = 'landing' }) => {
+export const Header: React.FC<HeaderProps> = ({
+    onOpenSettings,
+    onStartOver,
+    onOpenPricing,
+    onOpenAuth,
+    onLogout,
+    currentMode = 'landing',
+    isAuthenticated,
+    accountEmail,
+}) => {
     return (
         <nav className="navbar glass-panel">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={onStartOver}>
+            <button className="flex items-center gap-3 cursor-pointer bg-transparent border-0 p-0" onClick={onStartOver}>
                 <div className="w-10 h-10 flex items-center justify-center">
                     <img src="/logo.svg" alt="DocReady Logo" className="w-full h-full rounded-xl object-contain" />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col items-start">
                     <span className="text-xl font-bold tracking-tight text-white leading-none">DocReady</span>
-                    <div className="flex items-center gap-2 overflow-hidden">
-                        <span className="text-[10px] uppercase tracking-widest text-[#10b981] font-semibold whitespace-nowrap">Audit-Ready</span>
-                        <span className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[9px] text-emerald-500 font-bold uppercase tracking-tight whitespace-nowrap">
-                            <Shield className="w-2 h-2" />
-                            Local Only
-                        </span>
-                    </div>
+                    <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-semibold whitespace-nowrap">
+                        South Africa launch scope
+                    </span>
                 </div>
-            </div>
+            </button>
 
             <div className="nav-links">
                 {currentMode === 'workspace' && (
-                    <button className="flex items-center gap-2 text-sm font-medium opacity-80 hover:opacity-100 transition-opacity">
-                        <LayoutDashboard className="w-4 h-4" />
-                        Dashboard
-                    </button>
+                    <span className="hidden sm:inline text-sm font-medium text-[var(--text-color)]/60">
+                        In-browser document prep
+                    </span>
                 )}
 
                 <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onOpenPricing();
-                    }}
-                    className="hidden sm:flex items-center gap-2 text-sm font-bold opacity-80 hover:opacity-100 transition-opacity"
-                >
-                    Features
-                </button>
-
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onOpenPricing();
-                    }}
+                    onClick={onOpenPricing}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
                     View Pricing
                 </button>
+
+                {isAuthenticated ? (
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-sm font-semibold text-[var(--text-color)] hover:bg-white/15 transition-colors"
+                        title={accountEmail ?? 'Signed in'}
+                    >
+                        Log Out
+                    </button>
+                ) : (
+                    <button
+                        onClick={onOpenAuth}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-sm font-semibold text-[var(--text-color)] hover:bg-white/15 transition-colors"
+                    >
+                        Restore Access
+                    </button>
+                )}
 
                 <button
                     onClick={onOpenSettings}

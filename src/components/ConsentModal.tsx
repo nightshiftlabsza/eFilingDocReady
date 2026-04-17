@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConsentModalProps {
@@ -34,8 +34,8 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 <ShieldCheck className="text-primary w-7 h-7" />
                             </div>
                             <div>
-                                <h2 id="consent-modal-title" className="text-2xl font-bold text-white tracking-tight">Privacy & Data Consent</h2>
-                                <p className="text-sm text-emerald-500 font-semibold uppercase tracking-wider">Secure Local Environment</p>
+                                <h2 id="consent-modal-title" className="text-2xl font-bold text-white tracking-tight">POPIA &amp; Privacy Consent</h2>
+                                <p className="text-sm text-emerald-500 font-semibold uppercase tracking-wider">Browser-based document processing</p>
                             </div>
                         </div>
 
@@ -43,9 +43,9 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                             <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex gap-4">
                                 <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-sm font-semibold text-white mb-1">100% On-Device Processing</p>
+                                    <p className="text-sm font-semibold text-white mb-1">Documents stay local</p>
                                     <p className="text-xs text-slate-400 leading-relaxed">
-                                        Your tax documents, IDs, and personal data never leave this device. We use browser-based processing to ensure absolute privacy and SARS-level security.
+                                        Your PDFs and supported images are processed inside your browser. DocReady does not upload your document files to a server for processing.
                                     </p>
                                 </div>
                             </div>
@@ -53,15 +53,15 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                             <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex gap-4">
                                 <AlertCircle className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-sm font-semibold text-white mb-1">Purpose of Collection</p>
+                                    <p className="text-sm font-semibold text-white mb-1">What may be stored remotely</p>
                                     <p className="text-xs text-slate-400 leading-relaxed">
-                                        Data is temporarily processed in your browser's memory solely to merge, compress, and optimize files for SARS eFiling compatibility. No data is stored on external servers.
+                                        Email-based sign-in, payment verification, entitlement assignment, and restore access may use secure third-party services. Customer documents and document metadata are not stored remotely.
                                     </p>
                                 </div>
                             </div>
 
                             <div className="text-xs text-slate-500 leading-relaxed italic border-t border-white/5 pt-4">
-                                By clicking "I Accept", you acknowledge that you are providing this information voluntarily for the purpose of document optimization. You understand that clearing your browser data will permanently delete any local records.
+                                By continuing, you acknowledge this narrow launch scope and understand that DocReady is not affiliated with SARS and does not guarantee upload acceptance.
                             </div>
                         </div>
 
@@ -70,7 +70,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 onClick={onAccept}
                                 className="flex-grow btn-primary py-4 text-lg font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] active-scale hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all"
                             >
-                                I Accept & Continue
+                                I Accept &amp; Continue
                             </button>
                         </div>
 
@@ -79,7 +79,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onAccept, on
                                 onClick={onOpenPrivacy}
                                 className="text-xs text-slate-500 hover:text-white transition-colors underline underline-offset-4"
                             >
-                                Read Full Privacy Details
+                                Read full privacy notice
                             </button>
                         </div>
                     </motion.div>

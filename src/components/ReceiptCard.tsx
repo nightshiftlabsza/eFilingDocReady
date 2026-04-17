@@ -44,20 +44,21 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 className="glass-panel p-8 relative overflow-hidden border border-white/10"
             >
-                {/* Status Badge */}
                 <div className="flex justify-center mb-6">
                     <div className="bg-[#10b981]/10 text-[#10b981] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-[#10b981]/20 flex items-center gap-2">
                         <Sparkles className="w-3 h-3" />
-                        {reduction > 85 ? 'Legibility Risk (Manual Review)' : reduction > 60 ? 'OCR Pass (Acceptable)' : 'High Quality (Print Ready)'}
+                        {isEfiling ? 'Prepared for strict upload limits' : 'Merged locally'}
                     </div>
                 </div>
 
                 <div className="text-center mb-8">
                     <h3 className="text-2xl font-bold text-[var(--text-color)] mb-2">
-                        {isEfiling ? 'Optimization Receipt' : 'Merge Complete'}
+                        {isEfiling ? 'Preparation Complete' : 'Merge Complete'}
                     </h3>
                     <p className="text-sm text-[var(--text-color)]/60">
-                        {isEfiling ? 'Your document is ready for eFiling.' : 'Your documents have been merged successfully.'}
+                        {isEfiling
+                            ? 'DocReady prepared your output locally in the browser.'
+                            : 'Your files were merged into one PDF without compression.'}
                     </p>
                 </div>
 
@@ -70,14 +71,14 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                         <span className="text-[var(--text-color)]/50 text-sm font-semibold">Output Size</span>
                         <div className="text-right">
                             <span className="text-2xl font-black text-[#10b981]">{formatBytes(compressedSize)}</span>
-                            {isSplit && isSafe && (
-                                <div className="text-xs text-emerald-500 font-semibold mt-1">
-                                    Split into {partCount} SARS-safe parts ✓
+                            {isSplit && (
+                                <div className="text-xs text-[var(--text-color)]/50 mt-0.5">
+                                    {partCount} part{partCount === 1 ? '' : 's'} generated
                                 </div>
                             )}
-                            {isSplit && isSafe && maxPartSize > 0 && (
+                            {isSplit && maxPartSize > 0 && (
                                 <div className="text-xs text-[var(--text-color)]/50 mt-0.5">
-                                    Largest part: {formatBytes(maxPartSize)} (under 5MB ✓)
+                                    Largest part: {formatBytes(maxPartSize)}
                                 </div>
                             )}
                         </div>
@@ -86,7 +87,7 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                     <div className="flex items-center gap-2 px-3 py-2 bg-[#10b981]/10 rounded-xl border border-[#10b981]/20">
                         <Activity className="w-4 h-4 text-[#10b981]" />
                         <span className="text-xs text-[#10b981] font-bold">
-                            REDUCED BY {reduction}%
+                            {isEfiling ? `SIZE CHANGED BY ${reduction}%` : 'MERGED INTO ONE PDF'}
                         </span>
                     </div>
 
@@ -94,30 +95,21 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                         <div className="p-4 rounded-2xl flex gap-3 bg-amber-500/10 border border-amber-500/20">
                             <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
                             <p className="text-xs leading-relaxed text-amber-300">
-                                Split capped at {partCount} parts (SARS maximum: 20). The last part may exceed 5MB.
+                                The output was capped at 20 parts. The last part may still be larger than your target.
                             </p>
                         </div>
                     )}
 
-                    {isEfiling ? (
-                        <div className={`p-4 rounded-2xl flex gap-3 ${isSafe ? 'bg-white/5 border border-white/10' : 'bg-red-500/10 border border-red-500/20'}`}>
-                            <ShieldCheck className={`w-5 h-5 shrink-0 ${isSafe ? 'text-primary' : 'text-red-500'}`} />
-                            <p className={`text-xs leading-relaxed ${isSafe ? 'text-[var(--text-color)]/60' : 'text-red-400'}`}>
-                                {isSafe
-                                    ? isSplit
-                                        ? `All ${partCount} parts are within the 5MB SARS eFiling limit and are audit-compliant.`
-                                        : "This file is within the 5MB limit and is audit-compliant for eFiling."
-                                    : "Warning: Part sizes still exceed 5MB. They may be rejected during upload."}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="p-4 rounded-2xl flex gap-3 bg-white/5 border border-white/10">
-                            <ShieldCheck className="w-5 h-5 shrink-0 text-primary" />
-                            <p className="text-xs leading-relaxed text-[var(--text-color)]/60">
-                                Documents merged at full quality with original colors and resolution preserved.
-                            </p>
-                        </div>
-                    )}
+                    <div className={`p-4 rounded-2xl flex gap-3 ${isSafe ? 'bg-white/5 border border-white/10' : 'bg-red-500/10 border border-red-500/20'}`}>
+                        <ShieldCheck className={`w-5 h-5 shrink-0 ${isSafe ? 'text-primary' : 'text-red-500'}`} />
+                        <p className={`text-xs leading-relaxed ${isSafe ? 'text-[var(--text-color)]/60' : 'text-red-400'}`}>
+                            {isEfiling
+                                ? isSafe
+                                    ? 'This output was prepared toward strict upload limits, but acceptance still depends on the receiving platform.'
+                                    : 'One or more output parts may still be larger than your target. DocReady does not guarantee upload acceptance.'
+                                : 'This output was merged locally without compression.'}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="space-y-3">
@@ -136,17 +128,17 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({
                         className="w-full py-4 bg-white/5 text-[var(--text-color)]/60 hover:text-[var(--text-color)] hover:bg-white/10 font-bold rounded-2xl border border-white/5 transition-all flex items-center justify-center gap-2"
                     >
                         <RefreshCw className="w-4 h-4" />
-                        Scan Another Doc
+                        Prepare Another File
                     </button>
 
                     <button
                         onClick={() => {
-                            const text = `Fixed my eFiling upload error! Compressed my docs from ${formatBytes(originalSize)} to ${formatBytes(compressedSize)} instantly. Check out DocReady!`;
+                            const text = `Prepared my supporting documents locally with DocReady and reduced them from ${formatBytes(originalSize)} to ${formatBytes(compressedSize)}.`;
                             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
                         }}
                         className="w-full py-3 text-[var(--text-color)]/40 hover:text-[#25D366] text-xs font-medium transition-colors flex items-center justify-center gap-2"
                     >
-                        <Share2 className="w-4 h-4" /> Share Success on WhatsApp
+                        <Share2 className="w-4 h-4" /> Share on WhatsApp
                     </button>
                 </div>
             </motion.div>

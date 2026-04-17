@@ -2,12 +2,8 @@
   "cookies": [],
   "origins": [
     {
-      "origin": "http://localhost:5173",
+      "origin": "http://localhost:3000",
       "localStorage": [
-        {
-          "name": "dr_free_credits",
-          "value": "3"
-        },
         {
           "name": "dr_consent_accepted",
           "value": "true"
